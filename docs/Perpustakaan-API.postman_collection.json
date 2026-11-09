@@ -1,0 +1,178 @@
+{
+	"info": {
+		"_postman_id": "8f2e1a4b-3c5d-4e6f-9a0b-1c2d3e4f5a6b",
+		"name": "API Perpustakaan - Tugas A (Website)",
+		"description": "REST API sistem perpustakaan sekolah. Framework: Laravel 13. Base URL: {{base_url}}\n\nModul:\n1. Master Buku (Buku, Kategori, Penulis, Penerbit) - CRUD lengkap\n2. Transaksi (Peminjaman & Pengembalian)\n\nSetiap endpoint mendukung: Pagination, Searching, dan Validasi Input.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Buku",
+			"item": [
+				{
+					"name": "Daftar Buku (Pagination + Searching)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/buku?search=&kategori_id=&penulis_id=&penerbit_id=&per_page=10&page=1",
+							"host": ["{{base_url}}"],
+							"path": ["buku"],
+							"query": [
+								{"key": "search", "value": "", "description": "Pencarian judul, ISBN, atau nama penulis"},
+								{"key": "kategori_id", "value": "", "description": "Filter kategori"},
+								{"key": "penulis_id", "value": "", "description": "Filter penulis"},
+								{"key": "penerbit_id", "value": "", "description": "Filter penerbit"},
+								{"key": "per_page", "value": "10"},
+								{"key": "page", "value": "1"}
+							]
+						},
+						"description": "Menampilkan daftar buku dengan pagination, searching, dan filter relasi. Contoh search: ?search=Laskar"
+					},
+					"response": [
+						{
+							"name": "Contoh sukses",
+							"status": "OK",
+							"code": 200,
+							"body": {
+								"success": true,
+								"message": "Daftar buku perpustakaan.",
+								"data": [
+									{
+										"id": 1,
+										"judul": "Laskar Pelangi",
+										"tahun_terbit": 2005,
+										"isbn": "9789793062792",
+										"stok": 8,
+										"stok_tersedia": 7,
+										"kategori": {"id": 1, "nama": "Novel"},
+										"penulis": {"id": 1, "nama": "Andrea Hirata"},
+										"penerbit": {"id": 1, "nama": "Gramedia Pustaka Utama"}
+									}
+								],
+								"meta": {"current_page": 1, "per_page": 10, "total": 15, "last_page": 2}
+							}
+						}
+					]
+				},
+				{
+					"name": "Tambah Buku",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n  \"judul\": \"Buku Baru Pendidikan\",\n  \"deskripsi\": \"Buku uji coba endpoint tambah buku\",\n  \"tahun_terbit\": 2020,\n  \"isbn\": \"9786029999999\",\n  \"sampul\": \"https://example.com/sampul.jpg\",\n  \"stok\": 5,\n  \"kategori_id\": 5,\n  \"penulis_id\": 1,\n  \"penerbit_id\": 1\n}"},
+						"url": {"raw": "{{base_url}}/buku", "host": ["{{base_url}}"], "path": ["buku"]},
+						"description": "Validasi: judul wajib, tahun_terbit 1900 - tahun sekarang, stok minimal 1, kategori_id/penulis_id/penerbit_id wajib ada di database."
+					},
+					"response": [
+						{
+							"name": "Contoh gagal validasi",
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"body": {
+								"message": "Judul buku wajib diisi. (dan detail error lainnya)",
+								"errors": {"judul": ["Judul buku wajib diisi."]}
+							}
+						}
+					]
+				},
+				{
+					"name": "Detail Buku",
+					"request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/buku/1", "host": ["{{base_url}}"], "path": ["buku", "1"]}},
+					"response": [
+						{
+							"name": "Data tidak ditemukan",
+							"status": "Not Found",
+							"code": 404,
+							"body": {"success": false, "message": "Data tidak ditemukan."}
+						}
+					]
+				},
+				{
+					"name": "Ubah Buku",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n  \"judul\": \"Laskar Pelangi (Edisi Revisi)\",\n  \"stok\": 10\n}"},
+						"url": {"raw": "{{base_url}}/buku/1", "host": ["{{base_url}}"], "path": ["buku", "1"]},
+						"description": "Update parsial. Stok akan menyesuaikan stok_tersedia selisihnya (tidak boleh negatif)."
+					},
+					"response": []
+				},
+				{
+					"name": "Hapus Buku",
+					"request": {"method": "DELETE", "header": [], "url": {"raw": "{{base_url}}/buku/15", "host": ["{{base_url}}"], "path": ["buku", "15"]}, "description": "Buku yang memiliki riwayat peminjaman tidak boleh dihapus (400)."},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Kategori",
+			"item": [
+				{"name": "Daftar Kategori", "request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/kategori?search=&per_page=10&page=1", "host": ["{{base_url}}"], "path": ["kategori"], "query": [{"key": "search", "value": ""}, {"key": "per_page", "value": "10"}, {"key": "page", "value": "1"}]}}},
+				{"name": "Tambah Kategori", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"nama\": \"Ensiklopedia\"\n}"}, "url": {"raw": "{{base_url}}/kategori", "host": ["{{base_url}}"], "path": ["kategori"]}, "description": "Nama kategori wajib unik."}},
+				{"name": "Detail Kategori", "request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/kategori/1", "host": ["{{base_url}}"], "path": ["kategori", "1"]}}},
+				{"name": "Ubah Kategori", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"nama\": \"Fiksi Ilmiah\"\n}"}, "url": {"raw": "{{base_url}}/kategori/1", "host": ["{{base_url}}"], "path": ["kategori", "1"]}}},
+				{"name": "Hapus Kategori", "request": {"method": "DELETE", "header": [], "url": {"raw": "{{base_url}}/kategori/6", "host": ["{{base_url}}"], "path": ["kategori", "6"]}, "description": "Kategori yang masih dipakai buku tidak boleh dihapus (400)."}}
+			]
+		},
+		{
+			"name": "Penulis",
+			"item": [
+				{"name": "Daftar Penulis", "request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/penulis?search=&per_page=10&page=1", "host": ["{{base_url}}"], "path": ["penulis"], "query": [{"key": "search", "value": ""}, {"key": "per_page", "value": "10"}, {"key": "page", "value": "1"}]}}},
+				{"name": "Tambah Penulis", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"nama\": \"Penulis Uji Coba\",\n  \"biografi\": \"Biografi singkat penulis uji coba.\"\n}"}, "url": {"raw": "{{base_url}}/penulis", "host": ["{{base_url}}"], "path": ["penulis"]}}},
+				{"name": "Detail Penulis", "request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/penulis/1", "host": ["{{base_url}}"], "path": ["penulis", "1"]}}},
+				{"name": "Ubah Penulis", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"nama\": \"Andrea Hirata\",\n  \"biografi\": \"Biografi diperbarui.\"\n}"}, "url": {"raw": "{{base_url}}/penulis/1", "host": ["{{base_url}}"], "path": ["penulis", "1"]}}},
+				{"name": "Hapus Penulis", "request": {"method": "DELETE", "header": [], "url": {"raw": "{{base_url}}/penulis/9", "host": ["{{base_url}}"], "path": ["penulis", "9"]}, "description": "Penulis yang masih dipakai buku tidak boleh dihapus (400)."}}
+			]
+		},
+		{
+			"name": "Penerbit",
+			"item": [
+				{"name": "Daftar Penerbit", "request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/penerbit?search=&per_page=10&page=1", "host": ["{{base_url}}"], "path": ["penerbit"], "query": [{"key": "search", "value": ""}, {"key": "per_page", "value": "10"}, {"key": "page", "value": "1"}]}}},
+				{"name": "Tambah Penerbit", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"nama\": \"Penerbit Uji Coba\",\n  \"alamat\": \"Jl. Coba No. 1, Jember\"\n}"}, "url": {"raw": "{{base_url}}/penerbit", "host": ["{{base_url}}"], "path": ["penerbit"]}}},
+				{"name": "Detail Penerbit", "request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/penerbit/1", "host": ["{{base_url}}"], "path": ["penerbit", "1"]}}},
+				{"name": "Ubah Penerbit", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"nama\": \"Gramedia Pustaka Utama\",\n  \"alamat\": \"Jakarta Pusat\"\n}"}, "url": {"raw": "{{base_url}}/penerbit/1", "host": ["{{base_url}}"], "path": ["penerbit", "1"]}}},
+				{"name": "Hapus Penerbit", "request": {"method": "DELETE", "header": [], "url": {"raw": "{{base_url}}/penerbit/6", "host": ["{{base_url}}"], "path": ["penerbit", "6"]}, "description": "Penerbit yang masih dipakai buku tidak boleh dihapus (400)."}}
+			]
+		},
+		{
+			"name": "Peminjaman",
+			"item": [
+				{"name": "Daftar Peminjaman", "request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/peminjaman?search=&status=dipinjam&per_page=10&page=1", "host": ["{{base_url}}"], "path": ["peminjaman"], "query": [{"key": "search", "value": "", "description": "Nama atau NIS peminjam"}, {"key": "status", "value": "dipinjam", "description": "dipinjam | dikembalikan"}, {"key": "buku_id", "value": ""}, {"key": "per_page", "value": "10"}, {"key": "page", "value": "1"}]}}},
+				{
+					"name": "Catat Peminjaman Buku",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n  \"nama_peminjam\": \"Andi Pratama\",\n  \"nis\": \"20240101\",\n  \"buku_id\": 1\n}"},
+						"url": {"raw": "{{base_url}}/peminjaman", "host": ["{{base_url}}"], "path": ["peminjaman"]},
+						"description": "Stok tersedia otomatis berkurang 1. Tanggal jatuh tempo di-set 7 hari setelah tanggal pinjam. Jika stok habis -> 400."
+					},
+					"response": []
+				},
+				{"name": "Detail Peminjaman", "request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/peminjaman/1", "host": ["{{base_url}}"], "path": ["peminjaman", "1"]}}}
+			]
+		},
+		{
+			"name": "Pengembalian",
+			"item": [
+				{"name": "Daftar Pengembalian", "request": {"method": "GET", "header": [], "url": {"raw": "{{base_url}}/pengembalian?search=&per_page=10&page=1", "host": ["{{base_url}}"], "path": ["pengembalian"], "query": [{"key": "search", "value": "", "description": "Nama/NIS peminjam atau judul buku"}, {"key": "per_page", "value": "10"}, {"key": "page", "value": "1"}]}}},
+				{
+					"name": "Proses Pengembalian Buku",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n  \"peminjaman_id\": 2\n}"},
+						"url": {"raw": "{{base_url}}/pengembalian", "host": ["{{base_url}}"], "path": ["pengembalian"]},
+						"description": "Status peminjaman berubah menjadi dikembalikan dan stok tersedia otomatis bertambah 1. Pengembalian ganda ditolak (400)."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{"key": "base_url", "value": "http://127.0.0.1:8000/api/v1", "type": "string"}
+	]
+}
