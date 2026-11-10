@@ -5,8 +5,10 @@ Dokumen rancangan: `../PLAN-Langkah-1-REST-API.md`
 REST API sederhana untuk digitalisasi sistem perpustakaan sekolah. API ini menjadi backend untuk aplikasi **Website (Admin)** dan nantinya dikonsumsi oleh aplikasi **Android (User)** pada Tugas B.
 
 - **Framework:** Laravel 13 (PHP 8.3)
-- **Database:** MySQL 8.4 (`db_perpustakaan`)
-- **Environment:** Laragon (PHP + MySQL), Postman untuk pengujian
+- **Database lokal:** MySQL 8.4 (`db_perpustakaan`)
+- **Database production:** PostgreSQL Neon
+- **Deployment production:** Docker + Render
+- **Environment lokal:** Laragon (PHP + MySQL), Postman untuk pengujian
 - **Dokumentasi API:** `docs/Perpustakaan-API.postman_collection.json` (import ke Postman)
 
 ---
@@ -59,11 +61,33 @@ API tersedia di `http://127.0.0.1:8000/api/v1`
 2. **Import** → pilih `docs/Perpustakaan-API.postman_collection.json`
 3. Jalankan request — variable `base_url` sudah diatur otomatis
 
-### 7. Jalankan Test Otomatis
+### Deployment Production
+
+Panduan lengkap Render + Neon + Docker tersedia di [`DEPLOYMENT.md`](DEPLOYMENT.md).
+
+Minimum environment production:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:...
+APP_URL=https://nama-service.onrender.com
+DB_CONNECTION=pgsql
+DB_URL=postgresql://...
+DB_SSLMODE=require
+LOG_CHANNEL=stderr
+CACHE_STORE=array
+SESSION_DRIVER=array
+QUEUE_CONNECTION=sync
+```
+
+Health check production: `GET https://nama-service.onrender.com/health`.
+
+## 7. Jalankan Test Otomatis
 ```bash
 php artisan test tests/Feature/ApiPerpustakaanTest.php
 ```
-6 feature test mencakup: pagination, searching, CRUD master proteksi hapus, validasi 422, pengurangan stok saat peminjaman, dan pengembalian stok saat pengembalian.
+Feature test mencakup: health check, pagination, searching, CRUD master proteksi hapus, validasi 422, pengurangan stok saat peminjaman, dan pengembalian stok saat pengembalian.
 
 ---
 
