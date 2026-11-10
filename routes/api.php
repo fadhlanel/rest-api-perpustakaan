@@ -22,6 +22,7 @@ Route::prefix('v1')->group(function () {
     Route::get('peminjaman', [PeminjamanController::class, 'index']);
     Route::get('peminjaman/{peminjaman}', [PeminjamanController::class, 'show']);
     Route::post('peminjaman', [PeminjamanController::class, 'store']);
+    Route::post('peminjaman/{peminjaman}/perpanjang', [PeminjamanController::class, 'extend']);
 
     Route::get('pengembalian', [PengembalianController::class, 'index']);
     Route::post('pengembalian', [PengembalianController::class, 'store']);

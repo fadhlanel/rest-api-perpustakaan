@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use App\Models\Peminjaman;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PeminjamanResource extends JsonResource
@@ -20,7 +21,10 @@ class PeminjamanResource extends JsonResource
             'nis' => $this->nis,
             'buku' => $this->whenLoaded('buku', fn () => new BukuResource($this->buku)),
             'tanggal_pinjam' => $this->tanggal_pinjam?->toDateString(),
+            'tanggal_ambil' => $this->tanggal_ambil?->toDateString(),
             'tanggal_jatuh_tempo' => $this->tanggal_jatuh_tempo?->toDateString(),
+            'jumlah_perpanjangan' => $this->jumlah_perpanjangan,
+            'bisa_perpanjang' => $this->status === Peminjaman::STATUS_DIPINJAM && $this->jumlah_perpanjangan < 1,
             'status' => $this->status,
             'pengembalian' => $this->whenLoaded('pengembalian', fn () => new PengembalianResource($this->pengembalian)),
             'dibuat' => $this->created_at?->toDateTimeString(),

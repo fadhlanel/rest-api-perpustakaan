@@ -65,6 +65,7 @@ class PeminjamanController extends Controller
                 'nis' => $validated['nis'],
                 'buku_id' => $buku->id,
                 'tanggal_pinjam' => now()->toDateString(),
+                'tanggal_ambil' => $validated['tanggal_ambil'] ?? now()->toDateString(),
                 'tanggal_jatuh_tempo' => now()->addDays(7)->toDateString(),
                 'status' => Peminjaman::STATUS_DIPINJAM,
             ]);
@@ -77,6 +78,30 @@ class PeminjamanController extends Controller
         }
 
         return $this->successResponse($hasil['data'], 'Peminjaman buku berhasil dicatat.', 201);
+    }
+
+    /**
+     * Memperpanjang peminjaman satu kali selama tujuh hari.
+     */
+    public function extend(Peminjaman $peminjaman): JsonResponse
+    {
+        if ($peminjaman->status !== Peminjaman::STATUS_DIPINJAM) {
+            return $this->errorResponse('Peminjaman sudah dikembalikan.', 400);
+        }
+
+        if ($peminjaman->jumlah_perpanjangan >= 1) {
+            return $this->errorResponse('Peminjaman hanya dapat diperpanjang satu kali.', 400);
+        }
+
+        $peminjaman->update([
+            'tanggal_jatuh_tempo' => $peminjaman->tanggal_jatuh_tempo->addDays(7),
+            'jumlah_perpanjangan' => $peminjaman->jumlah_perpanjangan + 1,
+        ]);
+
+        return $this->successResponse(
+            new PeminjamanResource($peminjaman->fresh()->load('buku')),
+            'Peminjaman berhasil diperpanjang.',
+        );
     }
 
     /**

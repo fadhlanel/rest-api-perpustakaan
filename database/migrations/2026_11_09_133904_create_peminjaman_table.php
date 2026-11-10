@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('nis', 20);
             $table->foreignId('buku_id')->constrained('buku')->cascadeOnDelete();
             $table->date('tanggal_pinjam');
+            $table->date('tanggal_ambil')->nullable();
             $table->date('tanggal_jatuh_tempo');
+            $table->unsignedTinyInteger('jumlah_perpanjangan')->default(0);
             $table->enum('status', ['dipinjam', 'dikembalikan'])->default('dipinjam');
             $table->timestamps();
         });

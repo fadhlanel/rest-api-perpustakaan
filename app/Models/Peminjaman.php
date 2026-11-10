@@ -29,7 +29,9 @@ class Peminjaman extends Model
         'nis',
         'buku_id',
         'tanggal_pinjam',
+        'tanggal_ambil',
         'tanggal_jatuh_tempo',
+        'jumlah_perpanjangan',
         'status',
     ];
 
@@ -40,6 +42,7 @@ class Peminjaman extends Model
      */
     protected $casts = [
         'tanggal_pinjam' => 'date:Y-m-d',
+        'tanggal_ambil' => 'date:Y-m-d',
         'tanggal_jatuh_tempo' => 'date:Y-m-d',
     ];
 
