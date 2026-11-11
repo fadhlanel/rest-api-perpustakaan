@@ -3,6 +3,14 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --prefer-dist --no-progress --optimize-autoloader --no-scripts
 
+FROM node:22-alpine AS assets
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY resources ./resources
+COPY vite.config.js ./
+RUN npm run build
+
 FROM php:8.3-cli
 WORKDIR /app
 
@@ -24,6 +32,7 @@ RUN { \
 
 COPY --from=vendor /app/vendor ./vendor
 COPY . .
+COPY --from=assets /app/public/build ./public/build
 
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chmod -R ug+rwX storage bootstrap/cache \

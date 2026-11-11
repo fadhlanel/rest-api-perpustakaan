@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') - PustakaDigital</title>
-    @import "tailwindcss";
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 text-slate-900">
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col">
+        <aside class="hidden w-64 shrink-0 bg-white border-r border-slate-200 md:flex md:flex-col">
             <div class="p-6">
                 <h1 class="text-xl font-bold text-slate-800">PustakaDigital</h1>
                 <p class="text-xs text-slate-500 uppercase tracking-wider mt-1">SIPUSTAKA SMK / SMA</p>
@@ -45,9 +45,9 @@
 
         <!-- Main Content -->
         <main class="flex-1 flex flex-col">
-            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
-                <div class="flex items-center bg-slate-100 px-3 py-1.5 rounded-lg w-96">
-                    <input type="text" placeholder="Cari..." class="bg-transparent border-none focus:ring-0 text-sm w-full">
+            <header class="min-h-16 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
+                <div class="flex items-center bg-slate-100 px-3 py-1.5 rounded-lg w-full md:w-96">
+                    <input type="search" aria-label="Cari panel admin" placeholder="Cari..." class="bg-transparent border-none focus:ring-0 text-sm w-full">
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
@@ -58,12 +58,14 @@
                 </div>
             </header>
 
-            <div class="p-8">
-                @if(session('success'))
-                    <div class="mb-4 p-4 bg-green-50 text-green-700 rounded-lg text-sm border border-green-100">
-                        {{ session('success') }}
-                    </div>
-                @endif
+            <div class="p-4 md:p-8">
+                @foreach(['success' => 'green', 'error' => 'red'] as $type => $color)
+                    @if(session($type))
+                        <div class="mb-4 p-4 bg-{{ $color }}-50 text-{{ $color }}-700 rounded-lg text-sm border border-{{ $color }}-100" role="alert">
+                            {{ session($type) }}
+                        </div>
+                    @endif
+                @endforeach
 
                 @yield('content')
             </div>

@@ -1,19 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\BukuController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LoginController;
+use App\Http\Controllers\Admin\PeminjamanController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 
-
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\LoginController;
-use App\Http\Controllers\Admin\BukuController;
-use App\Http\Controllers\Admin\PeminjamanController;
-
 Route::get('/', function () {
-    return redirect('/api');
+    return redirect()->route('admin.login');
 });
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -25,14 +23,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('logout', [LoginController::class, 'logout'])->name('logout');
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-        
-        Route::resource('buku', BukuController::class);
-        
+
+        Route::resource('buku', BukuController::class)->except(['show']);
+
         Route::get('peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
         Route::post('peminjaman/{peminjaman}/return', [PeminjamanController::class, 'return'])->name('peminjaman.return');
     });
 });
-
 
 Route::get('/api', function (): View|JsonResponse {
     $databaseOk = true;

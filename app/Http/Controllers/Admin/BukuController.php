@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Buku;
 use App\Models\Kategori;
-use App\Models\Penulis;
 use App\Models\Penerbit;
+use App\Models\Penulis;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class BukuController extends Controller
 {
@@ -16,12 +17,17 @@ class BukuController extends Controller
     {
         $query = Buku::with(['kategori', 'penulis', 'penerbit']);
 
-        if ($request->search) {
-            $query->where('judul', 'like', '%' . $request->search . '%')
-                  ->orWhere('isbn', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $search = $request->string('search')->toString();
+
+            $query->where(function ($query) use ($search) {
+                $query->where('judul', 'like', '%'.$search.'%')
+                    ->orWhere('isbn', 'like', '%'.$search.'%');
+            });
         }
 
         $buku = $query->latest()->paginate(10);
+
         return view('admin.buku.index', compact('buku'));
     }
 
@@ -30,6 +36,7 @@ class BukuController extends Controller
         $kategori = Kategori::all();
         $penulis = Penulis::all();
         $penerbit = Penerbit::all();
+
         return view('admin.buku.form', compact('kategori', 'penulis', 'penerbit'));
     }
 
@@ -54,6 +61,7 @@ class BukuController extends Controller
         }
 
         Buku::create($data);
+
         return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil ditambah.');
     }
 
@@ -62,6 +70,7 @@ class BukuController extends Controller
         $kategori = Kategori::all();
         $penulis = Penulis::all();
         $penerbit = Penerbit::all();
+
         return view('admin.buku.form', compact('buku', 'kategori', 'penulis', 'penerbit'));
     }
 
@@ -79,9 +88,14 @@ class BukuController extends Controller
             'sampul' => 'nullable|image|max:2048',
         ]);
 
-        // Hitung selisih stok untuk update stok_tersedia
-        $selisih = $data['stok'] - $buku->stok;
-        $data['stok_tersedia'] = $buku->stok_tersedia + $selisih;
+        $stokDipinjam = $buku->stok - $buku->stok_tersedia;
+        if ($data['stok'] < $stokDipinjam) {
+            throw ValidationException::withMessages([
+                'stok' => "Stok minimal {$stokDipinjam} karena masih ada buku yang dipinjam.",
+            ]);
+        }
+
+        $data['stok_tersedia'] = $data['stok'] - $stokDipinjam;
 
         if ($request->hasFile('sampul')) {
             if ($buku->sampul) {
@@ -91,6 +105,7 @@ class BukuController extends Controller
         }
 
         $buku->update($data);
+
         return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil diupdate.');
     }
 
@@ -100,6 +115,7 @@ class BukuController extends Controller
             Storage::disk('public')->delete($buku->sampul);
         }
         $buku->delete();
+
         return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil dihapus.');
     }
 }

@@ -24,4 +24,8 @@ until php artisan migrate --force; do
   sleep 10
 done
 
+if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
+  php artisan db:seed --class=AdminUserSeeder --force
+fi
+
 exec php artisan serve --host=0.0.0.0 --port="${PORT:-8080}"

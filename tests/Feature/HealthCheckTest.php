@@ -33,7 +33,7 @@ class HealthCheckTest extends TestCase
 
     public function test_root_redirects_to_api_status_page(): void
     {
-        $this->get('/')->assertRedirect('/api');
+        $this->get('/')->assertRedirect('/admin/login');
     }
 
     public function test_browser_api_status_page_renders(): void
