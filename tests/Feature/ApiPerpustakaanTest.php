@@ -115,7 +115,8 @@ class ApiPerpustakaanTest extends TestCase
         $pinjam->assertCreated()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.status', 'dipinjam')
-            ->assertJsonStructure(['data' => ['tanggal_pinjam', 'tanggal_jatuh_tempo']]);
+            ->assertJsonStructure(['data' => ['tanggal_pinjam', 'tanggal_jatuh_tempo']])
+            ->assertJsonPath('data.tanggal_jatuh_tempo', now()->addDays((int) env('LOAN_DURATION_DAYS', 3))->toDateString());
 
         $this->assertSame($buku->stok_tersedia - 1, $buku->fresh()->stok_tersedia);
 
