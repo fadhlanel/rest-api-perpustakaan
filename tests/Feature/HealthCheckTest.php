@@ -8,7 +8,7 @@ class HealthCheckTest extends TestCase
 {
     public function test_health_check_reports_application_and_database_status(): void
     {
-        $this->getJson('/health')
+        $this->getJson('/api')
             ->assertOk()
             ->assertJson([
                 'status' => 'ok',

@@ -42,7 +42,7 @@ Validasi (422) mengikuti format Laravel: `message` + `errors{field: [pesan]}`.
 | `PinjamanProvider.fetchApiLoans` | GET | `/peminjaman` | — | `data[]` |
 | `PinjamanProvider.pinjamBuku` | POST | `/peminjaman` | `buku_id`, `nis`, `nama_peminjam`, `tanggal_ambil` | status + `data` |
 | `PinjamanProvider.perpanjangPinjaman` | POST | `/peminjaman/{id}/perpanjang` | — | `data` peminjaman terbaru |
-| `NetworkService.checkConnection` | GET | `/health` | — | `status`, `database` |
+| `NetworkService.checkConnection` | GET | `/api` | — | `status`, `database` |
 
 `tanggal_ambil` nullable; backend mengisi `now()` bila kosong.
 
@@ -76,6 +76,6 @@ Semua operasi tulis dapat dipanggil tanpa autentikasi. Ini keterbatasan yang dik
 
 ## Health
 
-`GET /health` → `200 {"status":"ok","database":"ok"}` atau `503 {"status":"error","database":"unavailable"}`.
+`GET /api` → `200 {"status":"ok","database":"ok"}` atau `503 {"status":"error","database":"unavailable"}`.
 
 `GET /up` → health bawaan Laravel (tanpa cek database).

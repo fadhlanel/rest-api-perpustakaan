@@ -81,7 +81,7 @@ SESSION_DRIVER=array
 QUEUE_CONNECTION=sync
 ```
 
-Health check production: `GET https://nama-service.onrender.com/health`.
+Health check production: `GET https://restapiperpustakaan-zwnd33xl.back4.app/api`.
 
 ## 7. Jalankan Test Otomatis
 ```bash

@@ -71,10 +71,10 @@ Jangan masukkan `db:wipe` atau `DB_RESET_ON_DEPLOY` — fitur itu sudah dihapus 
 
 ## 5. Health check
 
-Path: `/health`
+Path: `/api`
 
 ```bash
-curl -i https://restapiperpustakaan-cqtsulgh.back4.app/health
+curl -i https://restapiperpustakaan-zwnd33xl.back4.app/api
 ```
 
 Respons sehat:
@@ -127,7 +127,7 @@ Tanpa `--dart-define`, default emulator Android: `http://10.0.2.2:8000/api/v1`, 
 | Gejala | Penyebab umum |
 |---|---|
 | Container gagal start | `APP_KEY` kosong / `DB_URL` salah / migration error |
-| `/health` 503 | `DB_URL` salah, password Neon, host `-pooler` dipakai, atau Neon suspended |
+| `/api` 503 | `DB_URL` salah, password Neon, host `-pooler` dipakai, atau Neon suspended |
 | Migration gagal | `-pooler` pada DB_URL, kredensial salah, Neon suspended |
 | Data hilang | `db:wipe` / `migrate:fresh` — jangan lakukan di production |
 | Request lambat pertama kali | Free tier 256 MB, cold start |

@@ -7,7 +7,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/health', function () {
+Route::get('/api', function () {
     try {
         DB::connection()->getPdo();
 
