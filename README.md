@@ -81,7 +81,7 @@ SESSION_DRIVER=array
 QUEUE_CONNECTION=sync
 ```
 
-Health check production: `GET https://restapiperpustakaan-zwnd33xl.back4.app/api`.
+Health check production: `GET https://restapiperpustakaan-oyzv47sh.back4.app/api`.
 
 ## 7. Jalankan Test Otomatis
 ```bash
