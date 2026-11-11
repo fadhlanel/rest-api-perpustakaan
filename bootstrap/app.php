@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Cloud Run mengakhiri TLS di load balancer lalu meneruskan header
         // X-Forwarded-*. Tanpa ini url()/redirect() menghasilkan skema http.
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\EnsureAdmin::class,
+        ]);
         $middleware->trustProxies(at: '*');
         $middleware->appendToGroup('api', [LogApiRequest::class]);
     })

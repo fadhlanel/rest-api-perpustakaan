@@ -1,0 +1,90 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Katalog & Master Buku')
+
+@section('content')
+<div class="flex justify-between items-start mb-8">
+    <div>
+        <h2 class="text-2xl font-bold text-slate-800">Master Data & Katalog Buku</h2>
+        <p class="text-slate-500 text-sm">Kelola koleksi pustaka dan sinkronisasi aplikasi mobile.</p>
+    </div>
+    <a href="{{ route('admin.buku.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
+        + Tambah Koleksi Buku
+    </a>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="p-4 border-b border-slate-100 flex gap-4">
+        <form action="{{ route('admin.buku.index') }}" method="GET" class="flex-1 flex gap-2">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari judul atau ISBN..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+            <button type="submit" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Cari</button>
+            <a href="{{ route('admin.buku.index') }}" class="px-4 py-2 text-sm text-slate-500 flex items-center">Reset</a>
+        </form>
+    </div>
+
+    <table class="w-full text-left">
+        <thead>
+            <tr class="bg-slate-50 border-b border-slate-100">
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cover & Informasi Buku</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kategori</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Penulis & Penerbit</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Stok Koleksi</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            @foreach($buku as $item)
+            <tr class="hover:bg-slate-50 transition">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-16 bg-slate-100 rounded overflow-hidden flex-shrink-0 border border-slate-200">
+                            @if($item->sampul)
+                                <img src="{{ asset('storage/' . $item->sampul) }}" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-[10px] text-slate-300 font-bold uppercase text-center p-1 leading-tight">No Cover</div>
+                            @endif
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">{{ $item->judul }}</p>
+                            <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-tighter">ISBN: {{ $item->isbn ?? '-' }} • {{ $item->tahun_terbit }}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 bg-cyan-50 text-cyan-700 text-[10px] font-bold rounded uppercase">
+                        {{ $item->kategori->nama }}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <p class="text-xs font-bold text-slate-700">{{ $item->penulis->nama }}</p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">{{ $item->penerbit->nama }}</p>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <div class="inline-block text-right">
+                        <p class="text-sm font-bold {{ $item->stok_tersedia == 0 ? 'text-red-600' : 'text-slate-800' }}">
+                            {{ $item->stok_tersedia }} / {{ $item->stok }}
+                        </p>
+                        <p class="text-[9px] text-slate-400 uppercase mt-0.5">Eksemplar Siap</p>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex justify-end gap-2">
+                        <a href="{{ route('admin.buku.edit', $item) }}" class="p-1.5 text-slate-400 hover:text-blue-600 transition">
+                            Edit
+                        </a>
+                        <form action="{{ route('admin.buku.destroy', $item) }}" method="POST" onsubmit="return confirm('Hapus buku ini?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="p-1.5 text-slate-400 hover:text-red-600 transition">Hapus</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    
+    <div class="p-6 border-t border-slate-100">
+        {{ $buku->links() }}
+    </div>
+</div>
+@endsection
