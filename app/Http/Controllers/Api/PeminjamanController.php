@@ -66,7 +66,7 @@ class PeminjamanController extends Controller
                 'buku_id' => $buku->id,
                 'tanggal_pinjam' => now()->toDateString(),
                 'tanggal_ambil' => $validated['tanggal_ambil'] ?? now()->toDateString(),
-                'tanggal_jatuh_tempo' => now()->addDays(7)->toDateString(),
+                'tanggal_jatuh_tempo' => now()->addDays((int) env('LOAN_DURATION_DAYS', 3))->toDateString(),
                 'status' => Peminjaman::STATUS_DIPINJAM,
             ]);
 
@@ -94,7 +94,7 @@ class PeminjamanController extends Controller
         }
 
         $peminjaman->update([
-            'tanggal_jatuh_tempo' => $peminjaman->tanggal_jatuh_tempo->addDays(7),
+            'tanggal_jatuh_tempo' => $peminjaman->tanggal_jatuh_tempo->addDays((int) env('LOAN_EXTENSION_DAYS', 1)),
             'jumlah_perpanjangan' => $peminjaman->jumlah_perpanjangan + 1,
         ]);
 

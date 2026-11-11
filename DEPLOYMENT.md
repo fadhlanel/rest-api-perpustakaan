@@ -62,6 +62,8 @@ Jangan menyimpan nilai tersebut di repository.
 | `SESSION_LIFETIME` | `120` |
 | `CACHE_STORE` | `array` |
 | `QUEUE_CONNECTION` | `sync` |
+| `LOAN_DURATION_DAYS` | `3` |
+| `LOAN_EXTENSION_DAYS` | `1` |
 | `FILESYSTEM_DISK` | `local` |
 | `CORS_ALLOWED_ORIGINS` | (kosong — Flutter mobile saja) |
 
