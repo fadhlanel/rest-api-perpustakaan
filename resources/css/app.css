@@ -7,3 +7,17 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+@layer base {
+    :where(a, button, input, select, textarea) {
+        cursor: pointer;
+    }
+
+    :where(input, select, textarea) {
+        cursor: text;
+    }
+
+    :where(button:disabled, input:disabled, select:disabled, textarea:disabled) {
+        cursor: not-allowed;
+    }
+}

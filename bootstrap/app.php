@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\LogApiRequest;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,7 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Cloud Run mengakhiri TLS di load balancer lalu meneruskan header
         // X-Forwarded-*. Tanpa ini url()/redirect() menghasilkan skema http.
         $middleware->alias([
-            'admin' => \App\Http\Middleware\EnsureAdmin::class,
+            'admin' => EnsureAdmin::class,
+            'auth' => Authenticate::class,
         ]);
         $middleware->trustProxies(at: '*');
         $middleware->appendToGroup('api', [LogApiRequest::class]);
