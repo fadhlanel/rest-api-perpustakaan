@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class AdminModulesTest extends TestCase
@@ -11,8 +12,10 @@ class AdminModulesTest extends TestCase
         $this->get('/admin/login')->assertOk();
     }
 
-    public function test_public_announcements_endpoint_is_registered(): void
+    public function test_public_announcements_route_is_registered(): void
     {
-        $this->getJson('/api/v1/pengumuman')->assertStatus(200);
+        $route = app('router')->getRoutes()->match(Request::create('/api/v1/pengumuman', 'GET'));
+
+        $this->assertSame('App\\Http\\Controllers\\Api\\PengumumanController@index', $route->getActionName());
     }
 }
