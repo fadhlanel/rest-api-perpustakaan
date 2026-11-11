@@ -33,9 +33,10 @@
                 </a>
 
                 <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Anggota & Siswa</div>
-                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-600 hover:bg-slate-50">
+                <a href="{{ route('admin.anggota.index') }}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-600 hover:bg-slate-50">
                     Data Siswa / Anggota
                 </a>
+                <a href="{{ route('admin.pengumuman.index') }}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-600 hover:bg-slate-50">Pengumuman</a>
 
                 <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Pengaturan</div>
                 <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-600 hover:bg-slate-50">

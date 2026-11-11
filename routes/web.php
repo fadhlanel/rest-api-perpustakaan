@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\AnggotaController;
 use App\Http\Controllers\Admin\BukuController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LoginController;
+use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\PeminjamanController;
+use App\Http\Controllers\Admin\PengumumanController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +28,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::resource('buku', BukuController::class)->except(['show']);
+        Route::get('master/{type}', [MasterController::class, 'index'])->name('master.index');
+        Route::post('master/{type}', [MasterController::class, 'store'])->name('master.store');
+        Route::put('master/{type}/{id}', [MasterController::class, 'update'])->name('master.update');
+        Route::delete('master/{type}/{id}', [MasterController::class, 'destroy'])->name('master.destroy');
+        Route::resource('anggota', AnggotaController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('pengumuman', PengumumanController::class)->only(['index', 'store', 'update', 'destroy']);
 
         Route::get('peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
         Route::post('peminjaman/{peminjaman}/return', [PeminjamanController::class, 'return'])->name('peminjaman.return');

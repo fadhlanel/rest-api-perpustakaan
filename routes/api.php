@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\PeminjamanController;
 use App\Http\Controllers\Api\PenerbitController;
 use App\Http\Controllers\Api\PengembalianController;
+use App\Http\Controllers\Api\PengumumanController;
 use App\Http\Controllers\Api\PenulisController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,9 @@ Route::prefix('v1')->group(function () {
     Route::get('peminjaman/{peminjaman}', [PeminjamanController::class, 'show']);
     Route::post('peminjaman', [PeminjamanController::class, 'store']);
     Route::post('peminjaman/{peminjaman}/perpanjang', [PeminjamanController::class, 'extend']);
+
+    Route::get('pengumuman', [PengumumanController::class, 'index']);
+    Route::get('pengumuman/{pengumuman}', [PengumumanController::class, 'show']);
 
     Route::get('pengembalian', [PengembalianController::class, 'index']);
     Route::post('pengembalian', [PengembalianController::class, 'store']);
