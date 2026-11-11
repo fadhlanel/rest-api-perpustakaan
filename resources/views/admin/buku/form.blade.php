@@ -45,32 +45,35 @@
             <div class="space-y-6">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kategori</label>
-                    <select name="kategori_id" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    <div class="flex gap-2">
+                    <select name="kategori_id" class="min-w-0 flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" required>
                         <option value="">Pilih Kategori</option>
                         @foreach($kategori as $cat)
                             <option value="{{ $cat->id }}" {{ (old('kategori_id', $buku->kategori_id ?? '') == $cat->id) ? 'selected' : '' }}>{{ $cat->nama }}</option>
                         @endforeach
                     </select>
+                    <a href="{{ route('admin.master.index', 'kategori') }}" class="shrink-0 rounded-lg border border-cyan-200 px-3 py-2 text-sm font-semibold text-cyan-700 hover:bg-cyan-50" aria-label="Tambah kategori">+</a>
+                    </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Penulis</label>
-                    <select name="penulis_id" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    <div class="flex gap-2"><select name="penulis_id" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" required>
                         <option value="">Pilih Penulis</option>
                         @foreach($penulis as $p)
                             <option value="{{ $p->id }}" {{ (old('penulis_id', $buku->penulis_id ?? '') == $p->id) ? 'selected' : '' }}>{{ $p->nama }}</option>
                         @endforeach
-                    </select>
+                    </select><a href="{{ route('admin.master.index', 'penulis') }}" class="shrink-0 rounded-lg border border-cyan-200 px-3 py-2 text-sm font-semibold text-cyan-700 hover:bg-cyan-50" aria-label="Tambah penulis">+</a></div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Penerbit</label>
-                    <select name="penerbit_id" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    <div class="flex gap-2"><select name="penerbit_id" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" required>
                         <option value="">Pilih Penerbit</option>
                         @foreach($penerbit as $pub)
                             <option value="{{ $pub->id }}" {{ (old('penerbit_id', $buku->penerbit_id ?? '') == $pub->id) ? 'selected' : '' }}>{{ $pub->nama }}</option>
                         @endforeach
-                    </select>
+                    </select><a href="{{ route('admin.master.index', 'penerbit') }}" class="shrink-0 rounded-lg border border-cyan-200 px-3 py-2 text-sm font-semibold text-cyan-700 hover:bg-cyan-50" aria-label="Tambah penerbit">+</a></div>
                 </div>
 
                 <div>

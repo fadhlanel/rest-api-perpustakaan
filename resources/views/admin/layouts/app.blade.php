@@ -18,29 +18,29 @@
 
             <nav class="flex-1 px-4 space-y-1">
                 <div class="py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Ringkasan</div>
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50' }}">
-                    Dashboard
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.dashboard') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-600 hover:bg-slate-50' }}">
+                    <span aria-hidden="true">⌂</span> Dashboard
                 </a>
 
                 <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Master Data</div>
-                <a href="{{ route('admin.buku.index') }}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.buku.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50' }}">
-                    Katalog & Master Buku
+                <a href="{{ route('admin.buku.index') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.buku.*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-600 hover:bg-slate-50' }}">
+                    <span aria-hidden="true">▣</span> Katalog & Master Buku
                 </a>
 
                 <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Sirkulasi / Transaksi</div>
-                <a href="{{ route('admin.peminjaman.index') }}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.peminjaman.*') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50' }}">
-                    Peminjaman Buku
+                <a href="{{ route('admin.peminjaman.index') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.peminjaman.*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-600 hover:bg-slate-50' }}">
+                    <span aria-hidden="true">↔</span> Peminjaman Buku
                 </a>
 
                 <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Anggota & Siswa</div>
-                <a href="{{ route('admin.anggota.index') }}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-600 hover:bg-slate-50">
-                    Data Siswa / Anggota
+                <a href="{{ route('admin.anggota.index') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.anggota.*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-600 hover:bg-slate-50' }}">
+                    <span aria-hidden="true">♙</span> Data Siswa / Anggota
                 </a>
-                <a href="{{ route('admin.pengumuman.index') }}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-600 hover:bg-slate-50">Pengumuman</a>
+                <a href="{{ route('admin.pengumuman.index') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.pengumuman.*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-600 hover:bg-slate-50' }}"><span aria-hidden="true">▤</span> Pengumuman</a>
 
                 <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Pengaturan</div>
-                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-600 hover:bg-slate-50">
-                    Pengaturan Sistem
+                <a href="{{ route('admin.master.index', 'kategori') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-slate-600 hover:bg-slate-50">
+                    <span aria-hidden="true">⚙</span> Pengaturan Sistem
                 </a>
             </nav>
 
