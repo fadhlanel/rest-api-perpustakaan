@@ -33,16 +33,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 Route::get('/api', function (): View|JsonResponse {
     $databaseOk = true;
+    $bukuCount = 0;
+    $checkedAt = now()->toISOString();
 
     try {
-        DB::connection()->getPdo();
+        DB::select('SELECT 1');
+        $bukuCount = DB::table('buku')->count();
     } catch (Throwable) {
         $databaseOk = false;
     }
 
     $payload = [
+        'app' => 'ok',
         'status' => $databaseOk ? 'ok' : 'error',
         'database' => $databaseOk ? 'ok' : 'unavailable',
+        'buku_count' => $bukuCount,
+        'checked_at' => $checkedAt,
     ];
 
     if (request()->expectsJson()) {
@@ -51,6 +57,8 @@ Route::get('/api', function (): View|JsonResponse {
 
     return view('status', [
         'databaseOk' => $databaseOk,
+        'bukuCount' => $bukuCount,
+        'checkedAt' => $checkedAt,
         'logs' => Cache::store('file')->get('api_request_logs', []),
     ]);
 });
