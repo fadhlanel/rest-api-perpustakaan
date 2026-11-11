@@ -12,29 +12,28 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Kode image immutable, jadi validasi timestamp opcache boleh dimatikan.
+# Back4App free tier hanya 256 MB RAM, jadi opcache dan memory_limit dibatasi.
 RUN { \
         echo 'opcache.enable=1'; \
-        echo 'opcache.memory_consumption=128'; \
-        echo 'opcache.max_accelerated_files=20000'; \
+        echo 'opcache.memory_consumption=64'; \
+        echo 'opcache.max_accelerated_files=10000'; \
         echo 'opcache.validate_timestamps=0'; \
+        echo 'memory_limit=192M'; \
         echo 'expose_php=Off'; \
     } > /usr/local/etc/php/conf.d/zz-app.ini
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY --from=vendor /app/vendor ./vendor
 COPY . .
 
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
-    && chmod -R ug+rwX storage bootstrap/cache
+    && chmod -R ug+rwX storage bootstrap/cache \
+    && php artisan package:discover --ansi
 
-# Cloud Run mengirim PORT (default 8080). PHP built-in server single-thread,
-# jadi pakai worker agar beberapa request bisa ditangani bersamaan.
-ENV PHP_CLI_SERVER_WORKERS=4
+# Back4App mengirim PORT (default 10000). Worker dibatasi agar hemat RAM.
+ENV PHP_CLI_SERVER_WORKERS=2
 ENV PORT=8080
-
 EXPOSE 8080
 
-# Migration tidak dijalankan di sini: multi-instance Cloud Run bisa balapan.
-# Jalankan `php artisan migrate --force` sekali lewat Cloud Run Job (lihat DEPLOYMENT.md).
-CMD ["sh", "-c", "php artisan config:cache && php artisan route:cache && php artisan view:cache && exec php artisan serve --host=0.0.0.0 --port=${PORT}"]
+# Entrypoint menjalankan migration (Back4App tidak punya job terpisah),
+# lalu menyalakan server pada 0.0.0.0:$PORT.
+CMD ["sh", "docker-entrypoint.sh"]

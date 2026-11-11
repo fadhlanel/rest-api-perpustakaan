@@ -1,167 +1,78 @@
-# Deployment Laravel API ke Google Cloud Run
+# Deployment Laravel API ke Back4App Containers + Neon PostgreSQL
 
-Target: container stateless di Cloud Run, database PostgreSQL eksternal (Neon).
+Backend di-deploy dari repository GitHub sebagai container Docker di Back4App. Database tetap di Neon (eksternal).
 
-Ganti placeholder berikut sebelum menjalankan perintah:
+## 1. GitHub
 
-| Placeholder | Nilai |
+- Commit source code tanpa `.env`.
+- Pastikan secret tidak pernah masuk repository atau Git history.
+- Push repository ke GitHub: `fadhlanel/rest-api-perpustakaan`, branch `master`.
+
+## 2. Neon PostgreSQL
+
+Buat project PostgreSQL di Neon. Salin connection string sebagai `DB_URL`:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=<host direct Neon>
+DB_PORT=5432
+DB_DATABASE=neondb
+DB_USERNAME=<user>
+DB_PASSWORD=<password>
+DB_SSLMODE=require
+```
+
+Gunakan **host direct** (tanpa `-pooler`), terutama untuk migration. Pooler gagal pada DDL (`SQLSTATE[25P02]`).
+
+Jangan menyimpan nilai tersebut di repository.
+
+## 3. Back4App
+
+1. Masuk ke Back4App → **Containers**.
+2. Buat aplikasi dari repository GitHub:
+
+   - Repository: `fadhlanel/rest-api-perpustakaan`
+   - Branch: `master`
+   - Lokasi `Dockerfile`: root repository
+   - Runtime: Docker
+
+3. **Deployments → Action → Redeploy** (transient image push error bisa diulang).
+4. Domain otomatis Back4App, contoh:
+
+   ```text
+   https://restapiperpustakaan-cqtsulgh.back4.app
+   ```
+
+## 4. Environment variables (Back4App Settings → Environment)
+
+| Variabel | Nilai |
 |---|---|
-| `PROJECT_ID` | ID project Google Cloud Anda |
-| `REGION` | `asia-southeast2` (Jakarta) |
-| `SERVICE` | `perpustakaan-api` |
-| `REPO` | `perpustakaan` (Artifact Registry) |
+| `APP_ENV` | `production` |
+| `APP_DEBUG` | `false` |
+| `APP_KEY` | `base64:...` (rotate di Back4App) |
+| `APP_URL` | `https://restapiperpustakaan-cqtsulgh.back4.app` |
+| `APP_NAME` | `Perpustakaan API` |
+| `LOG_CHANNEL` | `stderr` |
+| `LOG_STACK` | `stderr` |
+| `LOG_LEVEL` | `warning` |
+| `DB_CONNECTION` | `pgsql` |
+| `DB_URL` | `postgresql://user:pass@host-direct/neondb?sslmode=require` |
+| `DB_SSLMODE` | `require` |
+| `SESSION_DRIVER` | `array` |
+| `SESSION_LIFETIME` | `120` |
+| `CACHE_STORE` | `array` |
+| `QUEUE_CONNECTION` | `sync` |
+| `FILESYSTEM_DISK` | `local` |
+| `CORS_ALLOWED_ORIGINS` | (kosong — Flutter mobile saja) |
 
----
+Jangan masukkan `db:wipe` atau `DB_RESET_ON_DEPLOY` — fitur itu sudah dihapus dari Dockerfile agar tidak merusak data production.
 
-## 1. Persiapan project
+## 5. Health check
 
-```bash
-gcloud auth login
-gcloud config set project PROJECT_ID
-gcloud config set run/region REGION
-```
-
-Aktifkan API:
-
-```bash
-gcloud services enable \
-  run.googleapis.com \
-  artifactregistry.googleapis.com \
-  cloudbuild.googleapis.com \
-  secretmanager.googleapis.com
-```
-
-## 2. Artifact Registry
+Path: `/health`
 
 ```bash
-gcloud artifacts repositories create REPO \
-  --repository-format=docker \
-  --location=REGION \
-  --description="Image Laravel perpustakaan"
-```
-
-Konfigurasi Docker lokal agar bisa push:
-
-```bash
-gcloud auth configure-docker REGION-docker.pkg.dev
-```
-
-## 3. Build image
-
-Dari root repository (lokasi `Dockerfile`):
-
-```bash
-gcloud builds submit \
-  --tag REGION-docker.pkg.dev/PROJECT_ID/REPO/perpustakaan-api:latest
-```
-
-Build lokal alternatif:
-
-```bash
-docker build -t REGION-docker.pkg.dev/PROJECT_ID/REPO/perpustakaan-api:latest .
-docker push REGION-docker.pkg.dev/PROJECT_ID/REPO/perpustakaan-api:latest
-```
-
-## 4. Secret Manager
-
-Simpan nilai sensitif sebagai secret, jangan sebagai env biasa.
-
-```bash
-printf '%s' 'base64:APP_KEY_ANDA' | gcloud secrets create laravel-app-key --data-file=-
-printf '%s' 'postgresql://USER:PASSWORD@HOST/neondb?sslmode=require' | gcloud secrets create laravel-db-url --data-file=-
-```
-
-Perbarui nilai di kemudian hari:
-
-```bash
-printf '%s' 'NILAI_BARU' | gcloud secrets versions add laravel-app-key --data-file=-
-```
-
-Beri akses ke service account Cloud Run (default compute service account):
-
-```bash
-PROJECT_NUMBER=$(gcloud projects describe PROJECT_ID --format='value(projectNumber)')
-gcloud secrets add-iam-policy-binding laravel-app-key \
-  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
-gcloud secrets add-iam-policy-binding laravel-db-url \
-  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
-```
-
-## 5. Database eksternal
-
-Cloud Run dapat menghubungi PostgreSQL publik bertanda SSL tanpa VPC connector. Neon cocok karena sudah menyediakan `sslmode=require`.
-
-Gunakan host **direct** (tanpa `-pooler`) untuk migration, dan boleh pooled untuk runtime biasa. Bila ragu, pakai direct untuk keduanya.
-
-Alternatif di dalam GCP: Cloud SQL, tetapi memerlukan Serverless VPC Connector dan biaya instance. Tidak dipakai di proyek ini.
-
-## 6. Deploy ke Cloud Run
-
-```bash
-gcloud run deploy SERVICE \
-  --image REGION-docker.pkg.dev/PROJECT_ID/REPO/perpustakaan-api:latest \
-  --region REGION \
-  --platform managed \
-  --allow-unauthenticated \
-  --port 8080 \
-  --memory 512Mi \
-  --cpu 1 \
-  --concurrency 8 \
-  --min-instances 0 \
-  --max-instances 4 \
-  --set-env-vars "APP_ENV=production,APP_DEBUG=false,APP_NAME=Perpustakaan API,LOG_CHANNEL=stderr,LOG_LEVEL=warning,DB_CONNECTION=pgsql,DB_SSLMODE=require,SESSION_DRIVER=array,CACHE_STORE=array,QUEUE_CONNECTION=sync,FILESYSTEM_DISK=local" \
-  --set-secrets "APP_KEY=laravel-app-key:latest,DB_URL=laravel-db-url:latest"
-```
-
-Service URL akan muncul di akhir perintah, formatnya:
-
-```text
-https://SERVICE-xxxxx-REGION_CODE.a.run.app
-```
-
-Setelah URL diketahui, set `APP_URL`:
-
-```bash
-gcloud run services update SERVICE \
-  --region REGION \
-  --update-env-vars "APP_URL=https://SERVICE-xxxxx-REGION_CODE.a.run.app"
-```
-
-Catatan:
-
-- `--concurrency 8` wajar karena PHP built-in server dijalankan dengan `PHP_CLI_SERVER_WORKERS=4`.
-- `--min-instances 0` hemat biaya, tetapi request pertama setelah idle lebih lambat (cold start).
-- `--allow-unauthenticated` diperlukan agar Flutter dapat memanggil API tanpa token IAM.
-
-## 7. Migration
-
-Migration **tidak** dijalankan saat container start. Jalankan sekali sebagai job:
-
-```bash
-gcloud run jobs create SERVICE-migrate \
-  --image REGION-docker.pkg.dev/PROJECT_ID/REPO/perpustakaan-api:latest \
-  --region REGION \
-  --command "php" \
-  --args "artisan,migrate,--force" \
-  --set-env-vars "APP_ENV=production,DB_CONNECTION=pgsql,DB_SSLMODE=require" \
-  --set-secrets "APP_KEY=laravel-app-key:latest,DB_URL=laravel-db-url:latest" \
-  --max-retries 0
-
-gcloud run jobs execute SERVICE-migrate --region REGION --wait
-```
-
-Ulangi `jobs execute` setiap kali ada migration baru.
-
-Jangan memakai `migrate:fresh`, `db:wipe`, atau `migrate:refresh` pada database production.
-
-## 8. Health check
-
-Cloud Run tidak mewajibkan health check, tetapi endpoint tersedia:
-
-```bash
-curl -i https://SERVICE-URL/health
+curl -i https://restapiperpustakaan-cqtsulgh.back4.app/health
 ```
 
 Respons sehat:
@@ -170,99 +81,56 @@ Respons sehat:
 {"status":"ok","database":"ok"}
 ```
 
-Bila `503`:
+Respons database bermasalah:
 
 ```json
 {"status":"error","database":"unavailable"}
 ```
 
-berarti `DB_URL`/kredensial/SSL bermasalah. Cek log:
+Periksa log di Back4App bila `503`.
+
+## 6. Migration
+
+Migration dijalankan otomatis di `docker-entrypoint.sh` saat container mulai, dengan retry 5× jika Neon free tier suspend saat idle. Data production **tidak** dihapus.
+
+Jangan menjalankan `migrate:fresh`, `migrate:refresh`, atau `db:wipe` di production tanpa konfirmasi bahwa data disposable.
+
+## 7. Uji endpoint API
 
 ```bash
-gcloud run services logs read SERVICE --region REGION --limit 50
+curl -i https://restapiperpustakaan-cqtsulgh.back4.app/api/v1/buku
+curl -i "https://restapiperpustakaan-cqtsulgh.back4.app/api/v1/buku?per_page=5&search=flutter"
+curl -i https://restapiperpustakaan-cqtsulgh.back4.app/api/v1/kategori
 ```
 
-## 9. Uji endpoint API
+## 8. Hubungkan Flutter
 
-```bash
-curl -i https://SERVICE-URL/api/v1/buku
-curl -i "https://SERVICE-URL/api/v1/buku?per_page=5&search=flutter"
-curl -i https://SERVICE-URL/api/v1/kategori
-curl -i https://SERVICE-URL/api/v1/peminjaman
-curl -i -X POST https://SERVICE-URL/api/v1/peminjaman \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -d '{"buku_id":1,"nis":"2122.10.490","nama_peminjam":"Uji Coba"}'
-```
+Build APK production:
 
-Kalau data kosong, isi contoh data (opsional, jangan di production tanpa izin):
-
-```bash
-gcloud run jobs execute SERVICE-migrate --region REGION --wait   # migration dulu
-```
-
-Seeder dijalankan manual, bukan otomatis:
-
-```bash
-php artisan db:seed --force   # jalankan hanya ke database yang memang boleh diisi dummy
-```
-
-## 10. Domain dan HTTPS
-
-Cloud Run sudah memberi HTTPS otomatis untuk `*.run.app`.
-
-Domain kustom:
-
-```bash
-gcloud run domain-mappings create \
-  --service SERVICE \
-  --domain api.contoh.sch.id \
-  --region REGION
-```
-
-Ikuti instruksi DNS (CNAME/records) yang dicetak perintah tersebut.
-
-## 11. Hubungkan Flutter
-
-Build dengan URL Cloud Run:
-
-```bash
-flutter build apk --release \
-  --dart-define=API_BASE_URL=https://SERVICE-URL/api/v1
+```powershell
+flutter build apk --release `
+  --dart-define="API_BASE_URL=https://restapiperpustakaan-cqtsulgh.back4.app/api/v1"
 ```
 
 Development lokal tetap:
 
-```bash
-flutter run --dart-define=API_BASE_URL=http://192.168.1.10:8000/api/v1
+```powershell
+flutter run --dart-define="API_BASE_URL=http://10.0.2.2:8000/api/v1"
 ```
 
-Tanpa `--dart-define`, default otomatis: web `http://127.0.0.1:8000/api/v1`, emulator Android `http://10.0.2.2:8000/api/v1`.
+Tanpa `--dart-define`, default emulator Android: `http://10.0.2.2:8000/api/v1`, web: `http://127.0.0.1:8000/api/v1`.
 
-CORS hanya relevan untuk Flutter Web. Bila dipakai, set:
-
-```bash
-gcloud run services update SERVICE --region REGION \
-  --update-env-vars "CORS_ALLOWED_ORIGINS=https://domain-web-anda"
-```
-
-## 12. Troubleshooting
+## 9. Troubleshooting
 
 | Gejala | Penyebab umum |
 |---|---|
-| Container gagal start | `APP_KEY` kosong / secret tidak terbaca |
-| 500 saat request | `APP_KEY` tidak valid, log di Cloud Logging |
-| `/health` 503 | `DB_URL` salah, SSL Neon, atau Neon suspended |
-| Request lambat pertama kali | cold start (`--min-instances 0`) |
-| 404 pada semua route | `APP_URL`/prefix salah, cek `php artisan route:list` |
-| Migration gagal | jalankan lewat job, cek host direct vs pooled |
-| Data hilang setelah restart | aplikasi menulis ke filesystem lokal; gunakan object storage |
+| Container gagal start | `APP_KEY` kosong / `DB_URL` salah / migration error |
+| `/health` 503 | `DB_URL` salah, password Neon, host `-pooler` dipakai, atau Neon suspended |
+| Migration gagal | `-pooler` pada DB_URL, kredensial salah, Neon suspended |
+| Data hilang | `db:wipe` / `migrate:fresh` — jangan lakukan di production |
+| Request lambat pertama kali | Free tier 256 MB, cold start |
 
-## 13. Biaya
+## 10. Biaya
 
-- Cloud Run: bayar per request + waktu CPU; skala ke nol saat idle.
-- Artifact Registry: biaya penyimpanan image kecil.
-- Secret Manager: biaya per secret + akses.
-- Neon: free tier cukup untuk proyek ini.
-
-Pantau di **Billing → Budgets & alerts**.
+- Back4App free tier: 256 MB RAM, domain temporary.
+- Neon free tier cukup untuk proyek ini.
