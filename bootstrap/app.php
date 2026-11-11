@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\LogApiRequest;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Cloud Run mengakhiri TLS di load balancer lalu meneruskan header
         // X-Forwarded-*. Tanpa ini url()/redirect() menghasilkan skema http.
         $middleware->trustProxies(at: '*');
+        $middleware->appendToGroup('api', [LogApiRequest::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

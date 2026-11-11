@@ -15,4 +15,17 @@ class HealthCheckTest extends TestCase
                 'database' => 'ok',
             ]);
     }
+
+    public function test_root_redirects_to_api_status_page(): void
+    {
+        $this->get('/')->assertRedirect('/api');
+    }
+
+    public function test_browser_api_status_page_renders(): void
+    {
+        $this->get('/api', ['Accept' => 'text/html'])
+            ->assertOk()
+            ->assertSee('Pustaka Digital — API Status')
+            ->assertSee('Database');
+    }
 }
