@@ -11,5 +11,7 @@ class Anggota extends Model
 
     protected $table = 'anggota';
 
-    protected $fillable = ['nis', 'nama', 'kelas', 'email', 'telepon'];
+    protected $fillable = ['nis', 'nama', 'kelas', 'email', 'telepon', 'pin'];
+
+    protected $hidden = ['pin', 'api_token_hash'];
 }

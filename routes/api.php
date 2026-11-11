@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BukuController;
 use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\PeminjamanController;
@@ -10,6 +11,8 @@ use App\Http\Controllers\Api\PenulisController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
+    Route::get('profile', [AuthController::class, 'profile']);
     // Modul Master Buku (CRUD lengkap)
     Route::apiResource('buku', BukuController::class);
     Route::apiResource('kategori', KategoriController::class);

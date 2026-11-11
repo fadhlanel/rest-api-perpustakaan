@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AnggotaController extends Controller
 {
@@ -15,14 +16,22 @@ class AnggotaController extends Controller
 
     public function store(Request $request)
     {
-        Anggota::create($request->validate(['nis' => 'required|string|max:20|unique:anggota,nis', 'nama' => 'required|string|max:255', 'kelas' => 'nullable|string|max:50', 'email' => 'nullable|email', 'telepon' => 'nullable|string|max:30']));
+        $data = $request->validate(['nis' => 'required|string|max:20|unique:anggota,nis', 'nama' => 'required|string|max:255', 'kelas' => 'nullable|string|max:50', 'email' => 'nullable|email', 'telepon' => 'nullable|string|max:30', 'pin' => 'required|string|min:4|max:255']);
+        $data['pin'] = Hash::make($data['pin']);
+        Anggota::create($data);
 
         return back()->with('success', 'Anggota berhasil ditambah.');
     }
 
     public function update(Request $request, Anggota $anggota)
     {
-        $anggota->update($request->validate(['nis' => 'required|string|max:20|unique:anggota,nis,'.$anggota->id, 'nama' => 'required|string|max:255', 'kelas' => 'nullable|string|max:50', 'email' => 'nullable|email', 'telepon' => 'nullable|string|max:30']));
+        $data = $request->validate(['nis' => 'required|string|max:20|unique:anggota,nis,'.$anggota->id, 'nama' => 'required|string|max:255', 'kelas' => 'nullable|string|max:50', 'email' => 'nullable|email', 'telepon' => 'nullable|string|max:30', 'pin' => 'nullable|string|min:4|max:255']);
+        if (! empty($data['pin'])) {
+            $data['pin'] = Hash::make($data['pin']);
+        } else {
+            unset($data['pin']);
+        }
+        $anggota->update($data);
 
         return back()->with('success', 'Anggota berhasil diupdate.');
     }
