@@ -19,6 +19,7 @@ class DashboardController extends Controller
             'dipinjam' => 0,
             'database_ok' => false,
         ];
+        $buku = collect();
 
         try {
             DB::connection()->getPdo();
@@ -29,9 +30,11 @@ class DashboardController extends Controller
                 'dipinjam' => Peminjaman::where('status', Peminjaman::STATUS_DIPINJAM)->count(),
                 'database_ok' => true,
             ];
+
+            $buku = Buku::with(['kategori', 'penulis', 'penerbit'])->latest()->take(8)->get();
         } catch (\Throwable) {
         }
 
-        return view('admin.dashboard', compact('stats'));
+        return view('admin.dashboard', compact('stats', 'buku'));
     }
 }
