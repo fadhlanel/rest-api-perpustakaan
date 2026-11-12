@@ -19,12 +19,16 @@
 </div>
 
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-    <div class="p-4 border-b border-slate-100 flex gap-4">
-        <form action="{{ route('admin.buku.index') }}" method="GET" class="flex-1 flex gap-2">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari judul atau ISBN..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
-            <button type="submit" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Cari</button>
-            <a href="{{ route('admin.buku.index') }}" class="px-4 py-2 text-sm text-slate-500 flex items-center">Reset</a>
+    <div class="p-4 border-b border-slate-100 flex flex-wrap gap-4 items-end">
+        <div class="relative flex-1 min-w-[200px]">
+            <input type="search" name="search" id="bukuSearch" value="{{ request('search') }}" placeholder="Cari judul atau ISBN (realtime)..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
+        </div>
+        <form action="{{ route('admin.buku.import') }}" method="POST" enctype="multipart/form-data" class="flex items-end gap-2" onsubmit="return confirm('Impor buku dari file CSV?')">
+            @csrf
+            <input type="file" name="file" accept=".csv,.txt" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 whitespace-nowrap">
+            <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-700 transition whitespace-nowrap">Import CSV</button>
         </form>
+        <button type="button" onclick="resetBukuSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
     </div>
 
     <table class="w-full text-left">
@@ -37,7 +41,7 @@
                 <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody id="bukuTableBody" class="divide-y divide-slate-50">
             @foreach($buku as $item)
             <tr class="hover:bg-slate-50 transition">
                 <td class="px-6 py-4">
@@ -88,8 +92,44 @@
         </tbody>
     </table>
     
-    <div class="p-6 border-t border-slate-100">
+    <div id="bukuPagination" class="p-6 border-t border-slate-100">
         {{ $buku->links() }}
     </div>
 </div>
+
+<script>
+  function bukuSearchUrl(search) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('search', search);
+    return url.toString();
+  }
+
+  let bukuSearchDebounce;
+  document.getElementById('bukuSearch').addEventListener('input', function () {
+    clearTimeout(bukuSearchDebounce);
+    const value = this.value;
+    bukuSearchDebounce = setTimeout(() => fetchBukuResults(value), 300);
+  });
+
+  function resetBukuSearch() {
+    const input = document.getElementById('bukuSearch');
+    input.value = '';
+    fetchBukuResults('');
+  }
+
+  async function fetchBukuResults(search) {
+    try {
+      const res = await fetch(bukuSearchUrl(search));
+      if (!res.ok) return;
+      const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+      const tbody = doc.getElementById('bukuTableBody');
+      const pagination = doc.getElementById('bukuPagination');
+      if (tbody) document.getElementById('bukuTableBody').innerHTML = tbody.innerHTML;
+      if (pagination) document.getElementById('bukuPagination').innerHTML = pagination.innerHTML;
+      window.history.replaceState(null, '', bukuSearchUrl(search));
+    } catch (_) {
+      // abaikan: biarkan hasil terakhir tetap tampil
+    }
+  }
+</script>
 @endsection

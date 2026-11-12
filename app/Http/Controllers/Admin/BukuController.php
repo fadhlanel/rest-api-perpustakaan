@@ -131,14 +131,14 @@ class BukuController extends Controller
     public function export()
     {
         $buku = Buku::with(['kategori', 'penulis', 'penerbit'])->get();
-        $fileName = 'buku_export_' . date('YmdHis') . '.csv';
+        $fileName = 'buku_export_'.date('YmdHis').'.csv';
         $handle = fopen('php://output', 'w');
-        
+
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="'.$fileName.'"');
-        
+
         fputcsv($handle, ['Judul', 'ISBN', 'Kategori', 'Penulis', 'Penerbit', 'Stok', 'Stok Tersedia']);
-        
+
         foreach ($buku as $item) {
             fputcsv($handle, [
                 $item->judul,
@@ -147,10 +147,10 @@ class BukuController extends Controller
                 $item->penulis->nama,
                 $item->penerbit->nama,
                 $item->stok,
-                $item->stok_tersedia
+                $item->stok_tersedia,
             ]);
         }
-        
+
         fclose($handle);
         exit;
     }
@@ -158,16 +158,47 @@ class BukuController extends Controller
     public function import(Request $request)
     {
         $request->validate(['file' => 'required|file|mimes:csv,txt']);
-        $file = $request->file('file');
-        $handle = fopen($file->getRealPath(), 'r');
-        fgetcsv($handle); // skip header
-        
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        fgetcsv($handle); // lewati baris header
+
+        $berhasil = 0;
+        $gagal = 0;
+
         while (($row = fgetcsv($handle)) !== false) {
-            // Logic to import based on columns: judul, isbn, kategori_id, penulis_id, penerbit_id, stok
-            // For simplicity, skip complex lookup if not possible.
-            // Actually, maybe just tell the user I added the framework.
+            if (empty(array_filter($row))) {
+                continue;
+            }
+
+            [$judul, $isbn, $kategoriNama, $penulisNama, $penerbitNama, $stok] = array_pad($row, 6, null);
+
+            if (blank($judul)) {
+                $gagal++;
+
+                continue;
+            }
+
+            $kategori = Kategori::firstOrCreate(['nama' => trim($kategoriNama ?? '')]);
+            $penulis = Penulis::firstOrCreate(['nama' => trim($penulisNama ?? '')]);
+            $penerbit = Penerbit::firstOrCreate(['nama' => trim($penerbitNama ?? '')]);
+
+            $stokBaru = max(0, (int) ($stok ?? 0));
+
+            Buku::create([
+                'judul' => trim($judul),
+                'isbn' => trim($isbn ?? ''),
+                'stok' => $stokBaru,
+                'stok_tersedia' => $stokBaru,
+                'kategori_id' => $kategori->id,
+                'penulis_id' => $penulis->id,
+                'penerbit_id' => $penerbit->id,
+            ]);
+
+            $berhasil++;
         }
+
         fclose($handle);
-        return back()->with('success', 'Fitur import akan dikembangkan lebih lanjut.');
+
+        return back()->with('success', "Import CSV selesai. Berhasil: {$berhasil}, gagal: {$gagal}.");
     }
 }

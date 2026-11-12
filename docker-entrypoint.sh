@@ -12,6 +12,10 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+# Simbolik link public/storage -> storage/app/public wajib ada agar
+# URL gambar sampul (asset('storage/...')) tidak mengembalikan 404.
+php artisan storage:link --force || true
+
 # Neon free tier bisa suspend saat idle; beri beberapa kesempatan sebelum gagal.
 attempt=1
 until php artisan migrate --force; do
