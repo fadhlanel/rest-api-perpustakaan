@@ -3,7 +3,7 @@
 Sumber kebenaran: `routes/api.php`, `routes/web.php`, dan pemakaian di aplikasi Flutter (`Anodor/lib`).
 
 Base URL development: `http://10.0.2.2:8000/api/v1` (emulator) atau `http://IP-LAN:8000/api/v1` (HP fisik).
-Base URL production: `https://APP-NAME.back4.app/api/v1` (contoh: `https://restapiperpustakaan2-x57pjdou.back4.app/api/v1`).
+Base URL production: `https://APP-NAME.back4.app/api/v1` (contoh: `https://restapiperpustakaan3-dht5yu9j.back4.app/api/v1`).
 
 Semua endpoint API memakai prefix `/api/v1`. Tidak ada autentikasi: seluruh endpoint publik.
 
