@@ -5,13 +5,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Peminjaman;
 use App\Models\Pengembalian;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PeminjamanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $peminjaman = Peminjaman::with('buku')->latest()->paginate(10);
+        $query = Peminjaman::with('buku');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $peminjaman = $query->latest()->paginate(10);
 
         return view('admin.peminjaman.index', compact('peminjaman'));
     }

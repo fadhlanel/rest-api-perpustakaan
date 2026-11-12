@@ -8,9 +8,14 @@
         <h2 class="text-2xl font-bold text-slate-800">Master Data & Katalog Buku</h2>
         <p class="text-slate-500 text-sm">Kelola koleksi pustaka dan sinkronisasi aplikasi mobile.</p>
     </div>
-    <a href="{{ route('admin.buku.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
-        + Tambah Koleksi Buku
-    </a>
+    <div class="flex gap-2">
+        <a href="{{ route('admin.buku.export') }}" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition">
+            Export CSV
+        </a>
+        <a href="{{ route('admin.buku.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
+            + Tambah Koleksi Buku
+        </a>
+    </div>
 </div>
 
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">

@@ -29,6 +29,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::resource('buku', BukuController::class)->except(['show']);
+        Route::get('buku/export', [BukuController::class, 'export'])->name('buku.export');
+        Route::post('buku/import', [BukuController::class, 'import'])->name('buku.import');
         Route::get('master/{type}', [MasterController::class, 'index'])->name('master.index');
         Route::post('master/{type}', [MasterController::class, 'store'])->name('master.store');
         Route::put('master/{type}/{id}', [MasterController::class, 'update'])->name('master.update');
