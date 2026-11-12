@@ -21,8 +21,21 @@ class MasterController extends Controller
     public function store(Request $request, string $type)
     {
         $model = $this->model($type);
-        $data = $request->validate(['nama' => 'required|string|max:100|unique:'.$model->getTable().',nama']);
-        $model::create($data);
+        $tableName = (new $model)->getTable();
+        $data = $request->validate(['nama' => 'required|string|max:100|unique:'.$tableName.',nama']);
+        $item = $model::create($data);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => ucfirst($type).' berhasil ditambah.',
+                'data' => [
+                    'id' => $item->id,
+                    'nama' => $item->nama,
+                    'type' => $type,
+                ],
+            ], 201);
+        }
 
         return back()->with('success', ucfirst($type).' berhasil ditambah.');
     }
@@ -30,8 +43,9 @@ class MasterController extends Controller
     public function update(Request $request, string $type, int $id)
     {
         $model = $this->model($type);
+        $tableName = (new $model)->getTable();
         $item = $model::findOrFail($id);
-        $item->update($request->validate(['nama' => 'required|string|max:100|unique:'.$model->getTable().',nama,'.$id]));
+        $item->update($request->validate(['nama' => 'required|string|max:100|unique:'.$tableName.',nama,'.$id]));
 
         return back()->with('success', ucfirst($type).' berhasil diupdate.');
     }
