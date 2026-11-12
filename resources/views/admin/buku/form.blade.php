@@ -129,7 +129,7 @@
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Sampul Buku (Opsional)</label>
                     @if(isset($buku) && $buku->sampul)
                         <div class="mb-3 flex items-center gap-3">
-                            <img src="{{ asset('storage/' . $buku->sampul) }}" alt="Sampul saat ini" class="w-16 h-24 object-cover rounded border border-slate-200 shadow-xs">
+                            <img src="{{ route('admin.buku.sampul', $buku) }}" alt="Sampul saat ini" class="w-16 h-24 object-cover rounded border border-slate-200 shadow-xs" onerror="this.style.display='none'">
                             <span class="text-xs text-slate-500">Unggah file baru bila ingin mengganti sampul saat ini.</span>
                         </div>
                     @endif

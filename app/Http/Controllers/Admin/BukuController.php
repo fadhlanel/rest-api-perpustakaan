@@ -128,6 +128,19 @@ class BukuController extends Controller
         return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil dihapus.');
     }
 
+    /**
+     * Sajikan file sampul langsung dari disk publik tanpa bergantung pada
+     * symlink public/storage yang hilang saat container di-rebuild.
+     */
+    public function sampul(Buku $buku)
+    {
+        if (! $buku->sampul || ! Storage::disk('public')->exists($buku->sampul)) {
+            abort(404);
+        }
+
+        return Storage::disk('public')->response($buku->sampul);
+    }
+
     public function export()
     {
         $buku = Buku::with(['kategori', 'penulis', 'penerbit'])->get();

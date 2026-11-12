@@ -14,9 +14,11 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::get('profile', [AuthController::class, 'profile']);
+    Route::put('profile', [AuthController::class, 'update']);
     Route::get('config', [ConfigController::class, 'index']);
     // Modul Master Buku (CRUD lengkap)
     Route::apiResource('buku', BukuController::class);
+    Route::get('buku/{buku}/sampul', [BukuController::class, 'sampul'])->name('v1.buku.sampul');
     Route::apiResource('kategori', KategoriController::class);
     Route::apiResource('penulis', PenulisController::class)
         // Laravel meng-singularize "penulis" menjadi "penuli"; paksa agar

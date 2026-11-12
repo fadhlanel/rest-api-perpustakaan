@@ -22,7 +22,7 @@ class BukuResource extends JsonResource
             'isbn' => $this->isbn,
             'sampul' => $this->sampul,
             'sampul_url' => $this->sampul
-                ? url('storage/'.$this->sampul)
+                ? route('v1.buku.sampul', ['buku' => $this->id])
                 : null,
             'stok' => $this->stok,
             'stok_tersedia' => $this->stok_tersedia,

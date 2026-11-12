@@ -58,6 +58,10 @@
                 </a>
 
                 <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Sistem</div>
+                <a href="{{ route('admin.profil.edit') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.profil.*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-600 hover:bg-slate-50' }}">
+                    <svg class="w-4 h-4 text-cyan-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    <span>Profil Admin</span>
+                </a>
                 <a href="{{ route('admin.pengaturan.edit') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.pengaturan.*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-600 hover:bg-slate-50' }}">
                     <svg class="w-4 h-4 text-cyan-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span>Pengaturan Sistem</span>
@@ -77,15 +81,16 @@
         <!-- Main Content -->
         <main class="flex-1 flex flex-col">
             <header class="min-h-16 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
-                <div class="flex items-center bg-slate-100 px-3 py-1.5 rounded-lg w-full md:w-96">
-                    <input type="search" aria-label="Cari panel admin" placeholder="Cari..." class="bg-transparent border-none focus:ring-0 text-sm w-full">
-                </div>
                 <div class="flex items-center gap-4">
-                    <div class="text-right">
-                        <p class="text-sm font-semibold">{{ Auth::user()->name }}</p>
-                        <p class="text-[10px] text-slate-500">Administrator</p>
-                    </div>
-                    <div class="w-8 h-8 bg-slate-200 rounded-full"></div>
+                    <a href="{{ route('admin.profil.edit') }}" class="flex items-center gap-3 group text-right">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800 group-hover:text-cyan-700 transition">{{ Auth::user()->name }}</p>
+                            <p class="text-[10px] text-slate-500">Administrator</p>
+                        </div>
+                        <div class="w-8 h-8 bg-cyan-700 text-white rounded-full flex items-center justify-center font-bold text-xs uppercase shadow-xs">
+                            {{ substr(Auth::user()->name, 0, 1) }}
+                        </div>
+                    </a>
                 </div>
             </header>
 

@@ -48,7 +48,7 @@
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-16 bg-slate-100 rounded overflow-hidden flex-shrink-0 border border-slate-200">
                             @if($item->sampul)
-                                <img src="{{ asset('storage/' . $item->sampul) }}" class="w-full h-full object-cover">
+                                <img src="{{ route('admin.buku.sampul', $item) }}" alt="{{ $item->judul }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-[10px] text-slate-300 font-bold uppercase text-center p-1 leading-tight\'>No Cover</div>'">
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-[10px] text-slate-300 font-bold uppercase text-center p-1 leading-tight">No Cover</div>
                             @endif

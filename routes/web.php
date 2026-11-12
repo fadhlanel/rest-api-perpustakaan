@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\PeminjamanController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\Admin\PengumumanController;
+use App\Http\Controllers\Admin\ProfilController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('buku', BukuController::class)->except(['show']);
         Route::get('buku/export', [BukuController::class, 'export'])->name('buku.export');
         Route::post('buku/import', [BukuController::class, 'import'])->name('buku.import');
+        Route::get('buku/{buku}/sampul', [BukuController::class, 'sampul'])->name('buku.sampul');
         Route::get('master/{type}', [MasterController::class, 'index'])->name('master.index');
         Route::post('master/{type}', [MasterController::class, 'store'])->name('master.store');
         Route::put('master/{type}/{id}', [MasterController::class, 'update'])->name('master.update');
@@ -40,6 +42,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('pengaturan', [PengaturanController::class, 'edit'])->name('pengaturan.edit');
         Route::put('pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
+
+        Route::get('profil', [ProfilController::class, 'edit'])->name('profil.edit');
+        Route::put('profil', [ProfilController::class, 'update'])->name('profil.update');
 
         Route::get('peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
         Route::post('peminjaman/{peminjaman}/return', [PeminjamanController::class, 'return'])->name('peminjaman.return');

@@ -10,6 +10,7 @@ use App\Models\Buku;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BukuController extends Controller
 {
@@ -113,6 +114,21 @@ class BukuController extends Controller
         $buku->delete();
 
         return $this->successResponse(null, 'Buku berhasil dihapus.');
+    }
+
+    /**
+     * Sajikan gambar sampul langsung dari disk publik, tanpa tergantung
+     * symlink storage yang bisa hilang saat container di-rebuild.
+     */
+    public function sampul(Buku $buku)
+    {
+        $disk = Storage::disk('public');
+
+        if (! $buku->sampul || ! $disk->exists($buku->sampul)) {
+            return $this->errorResponse('Sampul tidak ditemukan.', 404);
+        }
+
+        return $disk->response($buku->sampul);
     }
 
     /**
