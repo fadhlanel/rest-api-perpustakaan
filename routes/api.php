@@ -15,6 +15,8 @@ Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::get('profile', [AuthController::class, 'profile']);
     Route::put('profile', [AuthController::class, 'update']);
+    Route::get('profile/edits', [AuthController::class, 'edits']);
+    Route::put('profile/pin', [AuthController::class, 'changePin']);
     Route::get('config', [ConfigController::class, 'index']);
     // Modul Master Buku (CRUD lengkap)
     Route::apiResource('buku', BukuController::class);

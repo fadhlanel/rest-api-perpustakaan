@@ -126,7 +126,7 @@
                                     {{ $item->telepon ?: ($item->email ?: '-') }}
                                 </td>
                                 <td class="py-3.5 px-6 text-right">
-                                    <form method="POST" action="{{ route('admin.anggota.destroy', $item) }}" onsubmit="return confirm('Hapus siswa {{ $item->nama }}?')">
+                                    <form method="POST" action="{{ route('admin.anggota.destroy', $item) }}" data-confirm="Hapus siswa {{ $item->nama }}?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline">Hapus</button>

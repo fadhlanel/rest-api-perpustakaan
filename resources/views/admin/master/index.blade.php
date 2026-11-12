@@ -69,7 +69,7 @@
                                 <td class="py-3.5 px-6 text-xs text-slate-400 font-mono">{{ $items->firstItem() + $index }}</td>
                                 <td class="py-3.5 px-6 font-medium text-slate-800">{{ $item->nama }}</td>
                                 <td class="py-3.5 px-6 text-right">
-                                    <form method="POST" action="{{ route('admin.master.destroy', [$type, $item->id]) }}" onsubmit="return confirm('Hapus {{ $type }} ini?')">
+                                    <form method="POST" action="{{ route('admin.master.destroy', [$type, $item->id]) }}" data-confirm="Hapus {{ $type }} ini?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline">Hapus</button>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
+use App\Models\ProfileEditRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -38,6 +39,10 @@ class AuthController extends Controller
             : $this->errorResponse('Token tidak valid.', 401);
     }
 
+    /**
+     * Perubahan profil siswa tidak langsung diterapkan: disimpan sebagai
+     * permintaan dan baru berlaku setelah admin menyetujuinya.
+     */
     public function update(Request $request): JsonResponse
     {
         $anggota = $this->authenticatedStudent($request);
@@ -47,28 +52,86 @@ class AuthController extends Controller
         }
 
         $data = $request->validate([
+            'nis' => ['sometimes', 'required', 'string', 'max:20', 'unique:anggota,nis,'.$anggota->id],
             'nama' => ['sometimes', 'required', 'string', 'max:255'],
+            'kelas' => ['sometimes', 'required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255', 'unique:anggota,email,'.$anggota->id],
             'telepon' => ['nullable', 'string', 'max:20'],
-            'pin' => ['nullable', 'string', 'min:4', 'max:6'],
         ]);
 
-        if (isset($data['nama'])) {
-            $anggota->nama = $data['nama'];
-        }
-        if (array_key_exists('email', $data)) {
-            $anggota->email = $data['email'];
-        }
-        if (array_key_exists('telepon', $data)) {
-            $anggota->telepon = $data['telepon'];
-        }
-        if (! empty($data['pin'])) {
-            $anggota->pin = Hash::make($data['pin']);
+        $perubahan = collect($data)->filter(
+            fn ($value, $field) => trim((string) $value) !== trim((string) $anggota->{$field})
+        )->map(fn ($value) => trim((string) $value))->all();
+
+        if ($perubahan === []) {
+            return $this->successResponse(
+                ['siswa' => $this->profileData($anggota), 'permintaan_pending' => $this->pendingCount($anggota)],
+                'Tidak ada perubahan data profil.'
+            );
         }
 
+        ProfileEditRequest::create([
+            'anggota_id' => $anggota->id,
+            'perubahan' => $perubahan,
+            'status' => ProfileEditRequest::STATUS_PENDING,
+        ]);
+
+        return $this->successResponse(
+            ['siswa' => $this->profileData($anggota), 'permintaan_pending' => $this->pendingCount($anggota)],
+            'Perubahan profil terkirim. Data akan berubah setelah disetujui admin.'
+        );
+    }
+
+    public function edits(Request $request): JsonResponse
+    {
+        $anggota = $this->authenticatedStudent($request);
+
+        if (! $anggota) {
+            return $this->errorResponse('Token tidak valid.', 401);
+        }
+
+        $permintaan = ProfileEditRequest::where('anggota_id', $anggota->id)
+            ->latest()
+            ->limit(20)
+            ->get(['id', 'perubahan', 'status', 'reviewed_at', 'created_at']);
+
+        return $this->successResponse(
+            ['permintaan' => $permintaan, 'permintaan_pending' => $this->pendingCount($anggota)],
+            'Daftar permintaan perubahan profil.'
+        );
+    }
+
+    /**
+     * Ganti PIN berlaku langsung, tetapi hanya bila PIN lama benar.
+     */
+    public function changePin(Request $request): JsonResponse
+    {
+        $anggota = $this->authenticatedStudent($request);
+
+        if (! $anggota) {
+            return $this->errorResponse('Token tidak valid.', 401);
+        }
+
+        $data = $request->validate([
+            'pin_lama' => ['required', 'string'],
+            'pin_baru' => ['required', 'string', 'min:4', 'max:6'],
+        ]);
+
+        if (! Hash::check($data['pin_lama'], $anggota->pin ?? '')) {
+            return $this->errorResponse('PIN lama tidak sesuai.', 422);
+        }
+
+        $anggota->pin = Hash::make($data['pin_baru']);
         $anggota->save();
 
-        return $this->successResponse(['siswa' => $this->profileData($anggota)], 'Profil berhasil diperbarui.');
+        return $this->successResponse(['siswa' => $this->profileData($anggota)], 'PIN berhasil diperbarui.');
+    }
+
+    private function pendingCount(Anggota $anggota): int
+    {
+        return ProfileEditRequest::where('anggota_id', $anggota->id)
+            ->pending()
+            ->count();
     }
 
     private function authenticatedStudent(Request $request): ?Anggota

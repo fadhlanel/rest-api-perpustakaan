@@ -168,50 +168,61 @@ class BukuController extends Controller
         exit;
     }
 
-    public function import(Request $request)
+    public function importForm()
     {
-        $request->validate(['file' => 'required|file|mimes:csv,txt']);
+        return view('admin.buku.import');
+    }
 
+    public function importPreview(Request $request)
+    {
+        $request->validate(['file' => 'required|file|mimes:csv,txt|max:10240']);
         $handle = fopen($request->file('file')->getRealPath(), 'r');
-        fgetcsv($handle); // lewati baris header
-
-        $berhasil = 0;
-        $gagal = 0;
-
+        $headers = fgetcsv($handle);
+        $rows = [];
         while (($row = fgetcsv($handle)) !== false) {
-            if (empty(array_filter($row))) {
-                continue;
+            if (! empty(array_filter($row))) {
+                $rows[] = array_pad(array_map('trim', $row), 6, '');
             }
-
-            [$judul, $isbn, $kategoriNama, $penulisNama, $penerbitNama, $stok] = array_pad($row, 6, null);
-
-            if (blank($judul)) {
-                $gagal++;
-
-                continue;
-            }
-
-            $kategori = Kategori::firstOrCreate(['nama' => trim($kategoriNama ?? '')]);
-            $penulis = Penulis::firstOrCreate(['nama' => trim($penulisNama ?? '')]);
-            $penerbit = Penerbit::firstOrCreate(['nama' => trim($penerbitNama ?? '')]);
-
-            $stokBaru = max(0, (int) ($stok ?? 0));
-
-            Buku::create([
-                'judul' => trim($judul),
-                'isbn' => trim($isbn ?? ''),
-                'stok' => $stokBaru,
-                'stok_tersedia' => $stokBaru,
-                'kategori_id' => $kategori->id,
-                'penulis_id' => $penulis->id,
-                'penerbit_id' => $penerbit->id,
-            ]);
-
-            $berhasil++;
         }
-
         fclose($handle);
 
-        return back()->with('success', "Import CSV selesai. Berhasil: {$berhasil}, gagal: {$gagal}.");
+        if ($headers === false || count($headers) < 6) {
+            return back()->withErrors(['file' => 'Header CSV harus berisi Judul, ISBN, Kategori, Penulis, Penerbit, Stok.']);
+        }
+
+        session(['buku_import_rows' => $rows]);
+
+        return view('admin.buku.import-preview', compact('rows'));
+    }
+
+    public function importProcess(Request $request)
+    {
+        $rows = $request->input('rows', []);
+        $berhasil = 0;
+        foreach ($rows as $row) {
+            $data = array_pad($row, 6, '');
+            if (blank($data[0])) {
+                continue;
+            }
+            $stok = max(0, (int) $data[5]);
+            $kategori = Kategori::firstOrCreate(['nama' => trim($data[2])]);
+            $penulis = Penulis::firstOrCreate(['nama' => trim($data[3])]);
+            $penerbit = Penerbit::firstOrCreate(['nama' => trim($data[4])]);
+            Buku::create(['judul' => trim($data[0]), 'isbn' => trim($data[1]), 'stok' => $stok, 'stok_tersedia' => $stok, 'kategori_id' => $kategori->id, 'penulis_id' => $penulis->id, 'penerbit_id' => $penerbit->id]);
+            $berhasil++;
+        }
+        session()->forget('buku_import_rows');
+
+        return redirect()->route('admin.buku.index')->with('success', "Import CSV selesai. Berhasil: {$berhasil}.");
+    }
+
+    public function template()
+    {
+        return response()->streamDownload(function (): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Judul', 'ISBN', 'Kategori', 'Penulis', 'Penerbit', 'Stok']);
+            fputcsv($handle, ['Contoh Judul Buku', '9780000000000', 'Teknologi', 'Nama Penulis', 'Nama Penerbit', '5']);
+            fclose($handle);
+        }, 'template_buku.csv', ['Content-Type' => 'text/csv']);
     }
 }

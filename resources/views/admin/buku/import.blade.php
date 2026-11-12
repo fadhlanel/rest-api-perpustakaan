@@ -1,0 +1,6 @@
+@extends('admin.layouts.app')
+@section('title', 'Import CSV Buku')
+@section('content')
+<div class="mx-auto max-w-3xl"><a href="{{ route('admin.buku.index') }}" class="text-sm text-cyan-700">Kembali ke katalog</a><div class="mt-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-2xl font-bold text-slate-800">Import Buku dari CSV</h2><p class="mt-2 text-sm text-slate-500">Pilih file, periksa seluruh baris, lalu edit data sebelum disimpan.</p><a href="{{ route('admin.buku.template') }}" class="mt-4 inline-block text-sm font-semibold text-cyan-700">Unduh template CSV</a><form class="mt-6 space-y-5" method="POST" action="{{ route('admin.buku.import.preview') }}" enctype="multipart/form-data">@csrf<label for="file" class="block text-sm font-semibold text-slate-700">File CSV</label><input id="file" name="file" type="file" accept=".csv,.txt" required class="block w-full rounded-lg border border-slate-300 p-3 text-sm"><p id="fileName" class="text-sm text-slate-500">Belum ada file dipilih.</p><button class="rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700">Tampilkan Preview</button></form></div></div>
+<script>document.getElementById('file').addEventListener('change',function(){document.getElementById('fileName').textContent=this.files[0]?this.files[0].name:'Belum ada file dipilih.'})</script>
+@endsection

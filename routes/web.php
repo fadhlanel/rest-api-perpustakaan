@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\PeminjamanController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\Admin\PengumumanController;
+use App\Http\Controllers\Admin\PermintaanEditController;
 use App\Http\Controllers\Admin\ProfilController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -31,7 +32,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::resource('buku', BukuController::class)->except(['show']);
         Route::get('buku/export', [BukuController::class, 'export'])->name('buku.export');
-        Route::post('buku/import', [BukuController::class, 'import'])->name('buku.import');
+        Route::get('buku/template', [BukuController::class, 'template'])->name('buku.template');
+        Route::get('buku/import', [BukuController::class, 'importForm'])->name('buku.import');
+        Route::post('buku/import/preview', [BukuController::class, 'importPreview'])->name('buku.import.preview');
+        Route::post('buku/import/process', [BukuController::class, 'importProcess'])->name('buku.import.process');
         Route::get('buku/{buku}/sampul', [BukuController::class, 'sampul'])->name('buku.sampul');
         Route::get('master/{type}', [MasterController::class, 'index'])->name('master.index');
         Route::post('master/{type}', [MasterController::class, 'store'])->name('master.store');
@@ -39,6 +43,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('master/{type}/{id}', [MasterController::class, 'destroy'])->name('master.destroy');
         Route::resource('anggota', AnggotaController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('pengumuman', PengumumanController::class)->only(['index', 'store', 'update', 'destroy']);
+
+        Route::get('permintaan-profil', [PermintaanEditController::class, 'index'])->name('permintaan.index');
+        Route::post('permintaan-profil/{permintaan}/setujui', [PermintaanEditController::class, 'approve'])->name('permintaan.approve');
+        Route::post('permintaan-profil/{permintaan}/tolak', [PermintaanEditController::class, 'reject'])->name('permintaan.reject');
 
         Route::get('pengaturan', [PengaturanController::class, 'edit'])->name('pengaturan.edit');
         Route::put('pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');

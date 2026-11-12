@@ -23,11 +23,7 @@
         <div class="relative flex-1 min-w-[200px]">
             <input type="search" name="search" id="bukuSearch" value="{{ request('search') }}" placeholder="Cari judul atau ISBN (realtime)..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
         </div>
-        <form action="{{ route('admin.buku.import') }}" method="POST" enctype="multipart/form-data" class="flex items-end gap-2" onsubmit="return confirm('Impor buku dari file CSV?')">
-            @csrf
-            <input type="file" name="file" accept=".csv,.txt" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 whitespace-nowrap">
-            <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-700 transition whitespace-nowrap">Import CSV</button>
-        </form>
+        <a href="{{ route('admin.buku.import') }}" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-700 transition whitespace-nowrap">Import CSV</a>
         <button type="button" onclick="resetBukuSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
     </div>
 
@@ -81,7 +77,7 @@
                         <a href="{{ route('admin.buku.edit', $item) }}" class="p-1.5 text-slate-400 hover:text-blue-600 transition">
                             Edit
                         </a>
-                        <form action="{{ route('admin.buku.destroy', $item) }}" method="POST" onsubmit="return confirm('Hapus buku ini?')">
+                        <form action="{{ route('admin.buku.destroy', $item) }}" method="POST" data-confirm="Hapus buku ini?">
                             @csrf @method('DELETE')
                             <button type="submit" class="p-1.5 text-slate-400 hover:text-red-600 transition">Hapus</button>
                         </form>

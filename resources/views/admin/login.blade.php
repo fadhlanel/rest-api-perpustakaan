@@ -1,43 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk Admin | PustakaDigital</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-slate-100 font-sans text-slate-900">
-    <main class="mx-auto flex min-h-screen w-full max-w-md items-center px-5 py-10">
-        <section class="w-full border border-slate-200 bg-white p-6 shadow-sm sm:p-8" aria-labelledby="login-title">
-            <header class="border-b border-slate-200 pb-5">
-                <p class="text-sm font-semibold text-sky-800">PustakaDigital</p>
-                <h1 id="login-title" class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Masuk ke panel admin</h1>
-                <p class="mt-2 text-sm leading-6 text-slate-600">Gunakan akun petugas perpustakaan yang terdaftar.</p>
-            </header>
-
-            @if ($errors->any())
-                <div class="mt-5 border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            <form action="{{ route('admin.login') }}" method="POST" class="mt-6 space-y-5">
-                @csrf
-                <div>
-                    <label for="email" class="block text-sm font-semibold text-slate-800">Email</label>
-                    <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="email" class="mt-2 block min-h-11 w-full border border-slate-300 bg-white px-3 text-base text-slate-950 shadow-sm outline-none transition focus:border-sky-700 focus:ring-2 focus:ring-sky-200" required autofocus>
-                </div>
-
-                <div>
-                    <label for="password" class="block text-sm font-semibold text-slate-800">Password</label>
-                    <input id="password" type="password" name="password" autocomplete="current-password" class="mt-2 block min-h-11 w-full border border-slate-300 bg-white px-3 text-base text-slate-950 shadow-sm outline-none transition focus:border-sky-700 focus:ring-2 focus:ring-sky-200" required>
-                </div>
-
-                <button type="submit" class="min-h-11 w-full bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900 focus:outline-none focus:ring-2 focus:ring-sky-700 focus:ring-offset-2 active:bg-sky-950">
-                    Masuk ke panel
-                </button>
-            </form>
-        </section>
-    </main>
-</body>
-</html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Masuk Admin | PustakaDigital</title>@vite(['resources/css/app.css', 'resources/js/app.js'])</head>
+<body class="min-h-screen bg-[#eef3ff] font-sans text-slate-900">
+<main class="grid min-h-screen lg:grid-cols-[1.05fr_.95fr]">
+<section class="relative hidden overflow-hidden bg-[#092b72] p-12 text-white lg:flex lg:flex-col lg:justify-between"><div class="absolute -right-24 -top-24 h-80 w-80 rounded-full border-[40px] border-cyan-300/20"></div><div class="absolute -bottom-32 -left-20 h-96 w-96 rounded-full border-[55px] border-white/10"></div><div class="relative"><p class="text-2xl font-bold tracking-tight">PustakaDigital</p><p class="mt-1 text-xs font-semibold uppercase tracking-[.18em] text-cyan-200">SIPUSTAKA SMK / SMA</p></div><div class="relative max-w-lg"><p class="mb-5 text-sm font-semibold uppercase tracking-[.2em] text-cyan-200">Unit Perpustakaan Induk</p><h1 class="text-5xl font-bold leading-tight">Kelola koleksi. Layani pembaca.</h1><p class="mt-5 max-w-md text-base leading-7 text-blue-100">Panel pengelolaan katalog, sirkulasi, anggota, dan sinkronisasi aplikasi siswa.</p></div><p class="relative text-xs text-blue-200">Ruang kerja petugas perpustakaan</p></section>
+<section class="flex items-center justify-center px-5 py-10"><div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-xl shadow-blue-900/10 sm:p-9"><div class="mb-8 lg:hidden"><p class="text-xl font-bold text-[#092b72]">PustakaDigital</p><p class="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">SIPUSTAKA SMK / SMA</p></div><header class="border-b border-slate-100 pb-6"><p class="text-sm font-semibold text-cyan-700">Selamat datang kembali</p><h2 id="login-title" class="mt-2 text-3xl font-bold tracking-tight text-slate-950">Masuk ke panel admin</h2><p class="mt-3 text-sm leading-6 text-slate-600">Gunakan akun petugas perpustakaan yang terdaftar.</p></header>@if ($errors->any())<div class="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">{{ $errors->first() }}</div>@endif<form action="{{ route('admin.login') }}" method="POST" class="mt-6 space-y-5">@csrf<div><label for="email" class="block text-sm font-semibold text-slate-800">Email</label><input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="email" class="mt-2 block min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-950 shadow-sm outline-none transition focus:border-cyan-700 focus:ring-2 focus:ring-cyan-200" required autofocus></div><div><label for="password" class="block text-sm font-semibold text-slate-800">Password</label><input id="password" type="password" name="password" autocomplete="current-password" class="mt-2 block min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-950 shadow-sm outline-none transition focus:border-cyan-700 focus:ring-2 focus:ring-cyan-200" required></div><button type="submit" class="min-h-12 w-full rounded-lg bg-[#092b72] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#061e50] focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2 active:bg-[#061e50]">Masuk ke panel</button></form></div></section>
+</main></body></html>

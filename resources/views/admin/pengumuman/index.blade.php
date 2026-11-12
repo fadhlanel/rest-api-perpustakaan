@@ -84,7 +84,7 @@
                             <h4 class="text-base font-bold text-slate-800">{{ $item->judul }}</h4>
                             <p class="mt-2 text-sm text-slate-600 whitespace-pre-line leading-relaxed">{{ $item->isi }}</p>
                         </div>
-                        <form method="POST" action="{{ route('admin.pengumuman.destroy', $item) }}" onsubmit="return confirm('Hapus pengumuman ini?')">
+                        <form method="POST" action="{{ route('admin.pengumuman.destroy', $item) }}" data-confirm="Hapus pengumuman ini?">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline p-1">Hapus</button>
