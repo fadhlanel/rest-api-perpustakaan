@@ -1,12 +1,8 @@
 #!/bin/sh
 set -e
 
-# Neon pooler tidak cocok untuk perintah DDL (migrate) dan bisa memicu
-# SQLSTATE[25P02]. Paksa koneksi direct dengan membuang "-pooler".
-if [ -n "$DB_URL" ]; then
-  DB_URL=$(printf '%s' "$DB_URL" | sed 's/-pooler\././g')
-  export DB_URL
-fi
+# Konfigurasi database dibaca dari environment variables (MariaDB Cloudways:
+# DB_HOST / DB_PORT / DB_DATABASE / DB_USERNAME / DB_PASSWORD).
 
 php artisan config:cache
 php artisan route:cache
@@ -16,7 +12,6 @@ php artisan view:cache
 # URL gambar sampul (asset('storage/...')) tidak mengembalikan 404.
 php artisan storage:link --force || true
 
-# Neon free tier bisa suspend saat idle; beri beberapa kesempatan sebelum gagal.
 attempt=1
 until php artisan migrate --force; do
   if [ "$attempt" -ge 5 ]; then

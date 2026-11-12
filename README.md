@@ -5,9 +5,9 @@ Dokumen rancangan: `../PLAN-Langkah-1-REST-API.md`
 REST API sederhana untuk digitalisasi sistem perpustakaan sekolah. API ini menjadi backend untuk aplikasi **Website (Admin)** dan nantinya dikonsumsi oleh aplikasi **Android (User)** pada Tugas B.
 
 - **Framework:** Laravel 13 (PHP 8.3)
-- **Database lokal:** MySQL 8.4 (`db_perpustakaan`)
-- **Database production:** PostgreSQL Neon
-- **Deployment production:** Docker + Render
+- **Database lokal:** MySQL/MariaDB 10.x (`db_perpustakaan`)
+- **Database production:** MariaDB Cloudways (`pkwgrvstke`)
+- **Deployment production:** Cloudways (PHP + MariaDB)
 - **Environment lokal:** Laragon (PHP + MySQL), Postman untuk pengujian
 - **Dokumentasi API:** `docs/Perpustakaan-API.postman_collection.json` (import ke Postman)
 
@@ -27,7 +27,7 @@ composer install
 ```
 
 ### 3. Konfigurasi Database
-Buat database MySQL dengan nama `db_perpustakaan`, atau jalankan SQL berikut di HeidiSQL (Laragon akan membukanya bila database sudah dijalankan):
+Buat database MySQL/MariaDB dengan nama `db_perpustakaan`, atau jalankan SQL berikut di HeidiSQL (Laragon akan membukanya bila database sudah dijalankan):
 
 ```sql
 CREATE DATABASE IF NOT EXISTS db_perpustakaan CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -48,7 +48,7 @@ DB_PASSWORD=
 ```bash
 php artisan migrate --seed
 ```
-Perintah ini membuat 6 tabel (`kategori`, `penulis`, `penerbit`, `buku`, `peminjaman`, `pengembalian`) dan mengisi data dummy: 5 kategori, 8 penulis, 5 penerbit, 15 buku, 3 transaksi peminjaman.
+Perintah ini membuat tabel (`kategori`, `penulis`, `penerbit`, `buku`, `peminjaman`, `pengembalian`, `anggota`, `pengumuman`, `users`, `profile_edit_requests`, `pengaturan`) dan mengisi data dummy: kategori, penulis, penerbit, buku, transaksi peminjaman, akun admin.
 
 ### 5. Jalankan Server
 ```bash
@@ -61,27 +61,33 @@ API tersedia di `http://127.0.0.1:8000/api/v1`
 2. **Import** → pilih `docs/Perpustakaan-API.postman_collection.json`
 3. Jalankan request — variable `base_url` sudah diatur otomatis
 
-### Deployment Production
+### Deployment Production (Cloudways)
 
-Panduan lengkap Render + Neon + Docker tersedia di [`DEPLOYMENT.md`](DEPLOYMENT.md).
+Panduan lengkap Cloudways + MariaDB tersedia di [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 Minimum environment production:
 
 ```env
 APP_ENV=production
 APP_DEBUG=false
-APP_KEY=base64:...
-APP_URL=https://nama-service.onrender.com
-DB_CONNECTION=pgsql
-DB_URL=postgresql://...
-DB_SSLMODE=require
+APP_KEY=base64:...          # php artisan key:generate di server
+APP_URL=https://phplaravel-1688054-6782384.cloudwaysapps.com
+DB_CONNECTION=mariadb
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=pkwgrvstke
+DB_USERNAME=pkwgrvstke
+DB_PASSWORD=                # dari panel Cloudways
 LOG_CHANNEL=stderr
 CACHE_STORE=array
-SESSION_DRIVER=array
+SESSION_DRIVER=cookie
+SESSION_SECURE_COOKIE=true
 QUEUE_CONNECTION=sync
+ADMIN_EMAIL=                # untuk AdminUserSeeder
+ADMIN_PASSWORD=             # untuk AdminUserSeeder
 ```
 
-Health check production: `GET https://restapiperpustakaan3-canedjar.back4.app/api`.
+Health check production: `GET https://phplaravel-1688054-6782384.cloudwaysapps.com/api`.
 
 ## 7. Jalankan Test Otomatis
 ```bash
@@ -93,7 +99,7 @@ Feature test mencakup: health check, pagination, searching, CRUD master proteksi
 
 ## Daftar Endpoint
 
-Base URL: `http://127.0.0.1:8000/api/v1`
+Base URL: `http://127.0.0.1:8000/api/v1` (lokal) atau `https://phplaravel-1688054-6782384.cloudwaysapps.com/api/v1` (produksi)
 
 | Method | Endpoint | Fungsi |
 |--------|----------------|----------------------------------|
@@ -117,91 +123,54 @@ Base URL: `http://127.0.0.1:8000/api/v1`
 | GET | `/penerbit/{id}` | Detail penerbit |
 | PUT | `/penerbit/{id}` | Ubah penerbit |
 | DELETE | `/penerbit/{id}` | Hapus penerbit |
-| GET | `/peminjaman` | Daftar peminjaman (filter status) |
-| POST | `/peminjaman` | Catat peminjaman buku |
+| GET | `/peminjaman` | Daftar peminjaman (admin) |
+| POST | `/peminjaman` | Buat peminjaman (siswa) |
 | GET | `/peminjaman/{id}` | Detail peminjaman |
+| POST | `/peminjaman/{id}/perpanjang` | Perpanjang peminjaman |
 | GET | `/pengembalian` | Daftar pengembalian |
-| POST | `/pengembalian` | Proses pengembalian buku |
+| POST | `/pengembalian` | Buat pengembalian |
+| GET | `/pengumuman` | Daftar pengumuman |
+| GET | `/pengumuman/{id}` | Detail pengumuman |
+| POST | `/pengumuman` | Tambah pengumuman |
+| PUT | `/pengumuman/{id}` | Ubah pengumuman |
+| DELETE | `/pengumuman/{id}` | Hapus pengumuman |
+| GET | `/config` | Konfigurasi publik (nama perpustakaan, status layanan) |
+| POST | `/login` | Login siswa (NIS + PIN) |
+| GET | `/profile` | Profil siswa login |
+| PUT | `/profile` | Ajukan perubahan profil (pending admin) |
+| GET | `/profile/edits` | Riwayat permintaan profil |
+| PUT | `/profile/pin` | Ganti PIN (langsung, butuh PIN lama) |
 
-## Parameter Wajib PDF
+---
 
-| Fitur | Implementasi |
-|-------|--------------|
-| **Pagination** | `?per_page=10&page=1` (maksimum 100 per halaman) dengan meta `current_page`, `total`, `last_page`, dst. |
-| **Searching** | `?search=...` — mencari judul/ISBN/nama penulis pada buku; nama/NIS pada peminjaman; nama pada kategori, penulis, penerbit |
-| **Validasi Input** | FormRequest terpisah per operasi; gagal validasi mengembalikan `422` berisi detail error per field |
+## Autentikasi
 
-## Format Respons Standar
+- **Admin (web):** session/cookie via `/admin/login`
+- **Siswa (mobile/API):** Bearer token dari `POST /api/v1/login` (NIS + PIN)
 
-```json
-{
-  "success": true,
-  "message": "Daftar buku perpustakaan.",
-  "data": [ ... ],
-  "meta": { "current_page": 1, "per_page": 10, "total": 15, "last_page": 2 }
-}
-```
+---
 
-Gagal:
+## Struktur Database
 
-```json
-{
-  "success": false,
-  "message": "Data tidak ditemukan."
-}
-```
+| Tabel | Deskripsi |
+|-------|-----------|
+| `users` | Admin website |
+| `kategori` | Kategori buku (Dewey) |
+| `penulis` | Penulis buku |
+| `penerbit` | Penerbit buku |
+| `buku` | Katalog buku + stok |
+| `anggota` | Siswa / anggota (NIS, PIN, token API) |
+| `peminjaman` | Transaksi peminjaman |
+| `pengembalian` | Transaksi pengembalian |
+| `pengumuman` | Pengumuman perpustakaan |
+| `pengaturan` | Key-value settings |
+| `profile_edit_requests` | Permintaan edit profil siswa (pending admin) |
 
-## Struktur Database (6 Tabel)
+---
 
-```
-kategori (id, nama)
-penulis (id, nama, biografi)
-penerbit (id, nama, alamat)
-buku (id, judul, deskripsi, tahun_terbit, isbn, sampul, stok, stok_tersedia,
-      kategori_id FK -> kategori, penulis_id FK -> penulis, penerbit_id FK -> penerbit)
-peminjaman (id, nama_peminjam, nis, buku_id FK -> buku,
-            tanggal_pinjam, tanggal_jatuh_tempo, status [dipinjam|dikembalikan])
-pengembalian (id, peminjaman_id FK -> peminjaman, tanggal_kembali)
-```
+## Catatan Development
 
-## Aturan Bisnis Transaksi
-
-1. **Peminjaman:** stok tersedia dicek & dikurangi 1 di dalam database transaction (`lockForUpdate`); `tanggal_jatuh_tempo` = tanggal pinjam + 7 hari; stok habis ditolak dengan pesan jelas.
-2. **Pengembalian:** hanya peminjaman berstatus `dipinjam` yang bisa diproses (sekali saja); stok tersedia ditambah kembali 1.
-3. **Integritas hapus:** kategori/penulis/penerbit yang masih dipakai buku tidak boleh dihapus; buku dengan riwayat peminjaman tidak boleh dihapus.
-4. **Update stok:** mengubah `stok` otomatis menyesuaikan `stok_tersedia` selisihnya dan ditolak bila membuat stok tersedia negatif.
-
-## Struktur Folder Penting
-
-```
-rest-api-perpustakaan/
-├── app/Http/Controllers/Api/   # Buku, Kategori, Penulis, Penerbit, Peminjaman, Pengembalian
-├── app/Http/Requests/          # FormRequest validasi (10 kelas)
-├── app/Http/Resources/         # API Resource (BukuResource, dll.)
-├── app/Models/                 # Model + relasi Eloquent
-├── database/migrations/        # Migrasi 6 tabel
-├── database/seeders/           # Seeder data dummy
-├── docs/                       # Koleksi Postman (.json)
-├── routes/api.php              # Endpoint v1
-└── tests/Feature/              # Feature test API
-```
-
-## Pemanfaatan AI (Tugas E)
-
-Bagian project yang dikerjakan dengan bantuan AI (asisten AI dalam IDE):
-
-| Bagian | Bantuan AI | Contoh prompt |
-|--------|-----------------------|----------------------------------|
-| Perancangan rencana & skema database | Menyusun rencana kerja dari ketentuan PDF, menentukan kolom & relasi tabel | "buatkan plannya ini sesuai seperti file pdf yang saya kirim tugasnya, jika ada yang salah pada pendeskripsiannya maka rubahlah" |
-| Membuat migration, model, controller, FormRequest, seeder | Membuat file-file scaffolding dan isi kode PHP sesuai konvensi Laravel | "tulis migration 6 tabel perpustakaan dengan foreign key dan seeder data dummy" |
-| Perbaikan bug | Menemukan ketidakcocokan nama tabel (kategoris vs kategori) dan singularize rute `{penuli}` | "no such table: kategoris — perbaiki rule exists di semua FormRequest" |
-| Testing | Membuat 6 feature test PHPUnit otomatis (51 assertion lulus) | "buat feature test untuk pagination, searching, validasi, peminjaman, dan pengembalian" |
-| Dokumentasi | Menyusun README, dokumentasi cara menjalankan, dan koleksi Postman | "buat README detail dan file koleksi Postman untuk semua endpoint" |
-
-Bagian yang tetap dikerjakan/ditinjau secara manual: keputusan struktur data (dwi-kolom `stok` vs `stok_tersedia`), aturan bisnis transaksi, pengaturan nama tabela Indonesia, dan peninjauan setiap file yang dibuat AI.
-
-## Catatan Tugas Terkait (Test Case PDF)
-
-- **Tugas B (Flutter):** API ini dirancang konsisten (`success`/`message`/`data`/`meta`) agar mudah dikonsumsi aplikasi Android.
-- **Tugas D (GitHub):** repo berisi source code + README + dokumentasi cara menjalankan ini. Lengkapi screenshot setelah selesai diuji.
-- **Batas pengumpulan:** 21 November 2026, 12.00 WIB.
+- Migration idempoten; `migrate:fresh --seed` aman di lokal.
+- Stok buku: `stok` (total), `stok_tersedia` (tersedia dipinjam) — turunan dari logika peminjaman/pengembalian.
+- Status peminjaman: `dipinjam`, `dikembalikan`.
+- Enum, JSON, FK semua standar Laravel Blueprint — kompatibel MySQL/MariaDB.
