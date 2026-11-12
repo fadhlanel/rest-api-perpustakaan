@@ -38,6 +38,8 @@ class AnggotaController extends Controller
 
     public function destroy(Anggota $anggota)
     {
+        // Hapus token API agar aplikasi siswa langsung kehilangan akses (401).
+        $anggota->forceFill(['api_token_hash' => null])->save();
         $anggota->delete();
 
         return back()->with('success', 'Anggota berhasil dihapus.');

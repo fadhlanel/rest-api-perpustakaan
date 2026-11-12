@@ -111,7 +111,7 @@
             </div>
         </main>
     </div>
-    <dialog id="confirmDialog" class="rounded-xl p-0 shadow-xl backdrop:bg-slate-900/40">
+    <dialog id="confirmDialog" class="fixed inset-0 m-auto max-w-[min(90vw,400px)] rounded-xl p-0 shadow-xl backdrop:bg-slate-900/40">
         <div class="w-[min(90vw,400px)] bg-white p-6"><h2 class="text-lg font-bold text-slate-900">Konfirmasi tindakan</h2><p id="confirmMessage" class="mt-2 text-sm text-slate-600"></p><div class="mt-6 flex justify-end gap-3"><button type="button" onclick="document.getElementById('confirmDialog').close()" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Tidak</button><button type="button" id="confirmYes" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white">Ya, lanjutkan</button></div></div>
     </dialog>
     <script>document.querySelectorAll('form[data-confirm]').forEach(function(form){form.addEventListener('submit',function(event){if(form.dataset.confirmed!=='yes'){event.preventDefault();document.getElementById('confirmMessage').textContent=form.dataset.confirm;var dialog=document.getElementById('confirmDialog');dialog.showModal();document.getElementById('confirmYes').onclick=function(){form.dataset.confirmed='yes';dialog.close();form.submit()}}})})</script>

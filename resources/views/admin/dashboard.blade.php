@@ -91,8 +91,12 @@
                     <tr class="hover:bg-slate-50 transition">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-16 bg-slate-100 rounded border border-slate-200 flex items-center justify-center text-[10px] text-slate-400 font-bold uppercase">
-                                    BUKU
+                                <div class="w-12 h-16 overflow-hidden rounded border border-slate-200 bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 font-bold uppercase">
+                                    @if($item->sampul)
+                                        <img src="{{ route('admin.buku.sampul', $item) }}" alt="{{ $item->judul }}" width="48" height="64" class="w-full h-full object-cover" onerror="this.remove()">
+                                    @else
+                                        BUKU
+                                    @endif
                                 </div>
                                 <div>
                                     <p class="text-sm font-semibold text-slate-900">{{ $item->judul }}</p>
