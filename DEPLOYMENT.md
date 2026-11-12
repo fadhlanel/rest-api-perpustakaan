@@ -40,7 +40,7 @@ Jangan menyimpan nilai tersebut di repository.
 4. Domain otomatis Back4App, contoh:
 
    ```text
-   https://restapiperpustakaan2-kpgkjk3w.back4.app
+   https://restapiperpustakaan2-bw2d4htv.back4.app
    ```
 
 ## 4. Environment variables (Back4App Settings → Environment)
@@ -50,7 +50,7 @@ Jangan menyimpan nilai tersebut di repository.
 | `APP_ENV` | `production` |
 | `APP_DEBUG` | `false` |
 | `APP_KEY` | `base64:...` (rotate di Back4App) |
-| `APP_URL` | `https://restapiperpustakaan2-kpgkjk3w.back4.app` |
+| `APP_URL` | `https://restapiperpustakaan2-bw2d4htv.back4.app` |
 | `APP_NAME` | `Perpustakaan API` |
 | `LOG_CHANNEL` | `stderr` |
 | `LOG_STACK` | `stderr` |
@@ -74,7 +74,7 @@ Jangan masukkan `db:wipe` atau `DB_RESET_ON_DEPLOY` — fitur itu sudah dihapus 
 Path: `/api`
 
 ```bash
-curl -i https://restapiperpustakaan2-kpgkjk3w.back4.app/api
+curl -i https://restapiperpustakaan2-bw2d4htv.back4.app/api
 ```
 
 Respons sehat:
@@ -100,9 +100,9 @@ Jangan menjalankan `migrate:fresh`, `migrate:refresh`, atau `db:wipe` di product
 ## 7. Uji endpoint API
 
 ```bash
-curl -i https://restapiperpustakaan2-kpgkjk3w.back4.app/api/v1/buku
-curl -i "https://restapiperpustakaan2-kpgkjk3w.back4.app/api/v1/buku?per_page=5&search=flutter"
-curl -i https://restapiperpustakaan2-kpgkjk3w.back4.app/api/v1/kategori
+curl -i https://restapiperpustakaan2-bw2d4htv.back4.app/api/v1/buku
+curl -i "https://restapiperpustakaan2-bw2d4htv.back4.app/api/v1/buku?per_page=5&search=flutter"
+curl -i https://restapiperpustakaan2-bw2d4htv.back4.app/api/v1/kategori
 ```
 
 ## 8. Hubungkan Flutter
@@ -111,7 +111,7 @@ Build APK production:
 
 ```powershell
 flutter build apk --release `
-  --dart-define="API_BASE_URL=https://restapiperpustakaan2-kpgkjk3w.back4.app/api/v1"
+  --dart-define="API_BASE_URL=https://restapiperpustakaan2-bw2d4htv.back4.app/api/v1"
 ```
 
 Development lokal tetap:
