@@ -138,7 +138,13 @@ class BukuController extends Controller
             abort(404);
         }
 
-        return Storage::disk('public')->response($buku->sampul);
+        $disk = Storage::disk('public');
+
+        return response(
+            $disk->get($buku->sampul),
+            200,
+            ['Content-Type' => $disk->mimeType($buku->sampul)]
+        );
     }
 
     public function export()

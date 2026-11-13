@@ -128,7 +128,11 @@ class BukuController extends Controller
             return $this->errorResponse('Sampul tidak ditemukan.', 404);
         }
 
-        return $disk->response($buku->sampul);
+        return response(
+            $disk->get($buku->sampul),
+            200,
+            ['Content-Type' => $disk->mimeType($buku->sampul)]
+        );
     }
 
     /**
