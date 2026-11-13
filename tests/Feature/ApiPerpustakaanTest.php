@@ -59,6 +59,19 @@ class ApiPerpustakaanTest extends TestCase
             ->assertJsonPath('meta.total', 2);
     }
 
+    public function test_daftar_buku_memfilter_relasi_dan_mempertahankan_pagination(): void
+    {
+        $buku = Buku::query()->with(['kategori', 'penulis', 'penerbit'])->firstOrFail();
+
+        $response = $this->getJson('/api/v1/buku?search='.urlencode($buku->isbn).'&kategori_id='.$buku->kategori_id.'&penulis_id='.$buku->penulis_id.'&penerbit_id='.$buku->penerbit_id.'&per_page=1');
+
+        $response->assertOk()
+            ->assertJsonPath('meta.current_page', 1)
+            ->assertJsonPath('meta.per_page', 1)
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.id', $buku->id);
+    }
+
     /**
      * CRUD master berjalan; kategori yang dipakai buku tidak boleh dihapus.
      */

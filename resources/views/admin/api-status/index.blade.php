@@ -34,12 +34,21 @@
 
         <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-200 px-5 py-4">
-                <h2 class="font-semibold text-slate-900">Log request API</h2>
-                <p class="mt-1 text-xs text-slate-500">Maksimal 20 request terbaru. Token dan kredensial tidak dicatat.</p>
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="font-semibold text-slate-900">Log request API</h2>
+                        <p class="mt-1 text-xs text-slate-500">Maksimal 20 request terbaru. Token dan kredensial tidak dicatat.</p>
+                    </div>
+                    <dl class="flex gap-4 text-xs">
+                        <div><dt class="text-slate-500">Total</dt><dd class="font-semibold text-slate-900">{{ $logStats['total'] }}</dd></div>
+                        <div><dt class="text-slate-500">Sukses</dt><dd class="font-semibold text-emerald-700">{{ $logStats['success'] }}</dd></div>
+                        <div><dt class="text-slate-500">Error</dt><dd class="font-semibold text-red-700">{{ $logStats['error'] }}</dd></div>
+                    </dl>
+                </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-left text-sm">
-                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <div class="max-h-96 overflow-auto">
+                <table class="w-full min-w-[40rem] text-left text-sm">
+                    <thead class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                         <tr><th class="px-5 py-3">Waktu</th><th class="px-5 py-3">Method</th><th class="px-5 py-3">Path</th><th class="px-5 py-3">Status</th></tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">

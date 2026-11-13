@@ -27,6 +27,16 @@ class ApiStatusController extends Controller
             'checkedAt' => now(),
             'apiUrl' => url('/api/v1'),
             'logs' => array_slice((array) cache()->store('file')->get('api_request_logs', []), 0, 20),
+            'logStats' => collect((array) cache()->store('file')->get('api_request_logs', []))->reduce(
+                static function (array $stats, array $log): array {
+                    $status = (int) ($log['status'] ?? 500);
+                    $stats['total']++;
+                    $status < 400 ? $stats['success']++ : $stats['error']++;
+
+                    return $stats;
+                },
+                ['total' => 0, 'success' => 0, 'error' => 0],
+            ),
         ]);
     }
 }
