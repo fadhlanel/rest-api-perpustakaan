@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePengembalianRequest;
 use App\Http\Resources\PeminjamanResource;
+use App\Http\Resources\PengembalianResource;
 use App\Models\Peminjaman;
 use App\Models\Pengembalian;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;

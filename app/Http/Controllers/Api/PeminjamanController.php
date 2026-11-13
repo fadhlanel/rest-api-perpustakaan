@@ -11,6 +11,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PeminjamanController extends Controller
 {
@@ -25,7 +26,7 @@ class PeminjamanController extends Controller
 
         /** @var LengthAwarePaginator<Peminjaman> $peminjamans */
         $peminjamans = Peminjaman::query()
-            ->with(['buku.kategori', 'buku.penulis', 'buku.penerbit', 'pengembalian', 'ulasan'])
+            ->with($this->relations())
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('buku_id'), fn ($query) => $query->where('buku_id', $request->integer('buku_id')))
             ->when($request->filled('search'), function ($query) use ($search) {
@@ -110,9 +111,27 @@ class PeminjamanController extends Controller
     public function show(Peminjaman $peminjaman): JsonResponse
     {
         return $this->successResponse(
-            new PeminjamanResource($peminjaman->load(['buku.kategori', 'buku.penulis', 'buku.penerbit', 'pengembalian', 'ulasan'])),
+            new PeminjamanResource($peminjaman->load($this->relations())),
             'Detail peminjaman.'
         );
+    }
+
+    /**
+     * Relasi yang dimuat bersama peminjaman. Relasi `ulasan` opsional:
+     * hanya dimuat bila tabelnya sudah ada, supaya daftar peminjaman tetap
+     * tampil saat migrasi database produksi tertinggal.
+     *
+     * @return array<int, string>
+     */
+    private function relations(): array
+    {
+        $relations = ['buku.kategori', 'buku.penulis', 'buku.penerbit', 'pengembalian'];
+
+        if (Schema::hasTable('ulasan')) {
+            $relations[] = 'ulasan';
+        }
+
+        return $relations;
     }
 
     /**

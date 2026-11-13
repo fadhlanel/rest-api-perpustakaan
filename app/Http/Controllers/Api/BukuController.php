@@ -10,6 +10,7 @@ use App\Models\Buku;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class BukuController extends Controller
@@ -28,7 +29,7 @@ class BukuController extends Controller
 
         /** @var LengthAwarePaginator<Buku> $bukus */
         $bukus = Buku::query()
-            ->with(['kategori', 'penulis', 'penerbit', 'ulasan'])
+            ->with($this->relations())
             ->when($request->filled('search'), function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('judul', 'like', '%'.$search.'%')
@@ -67,7 +68,7 @@ class BukuController extends Controller
     public function show(Buku $buku): JsonResponse
     {
         return $this->successResponse(
-            new BukuResource($buku->load(['kategori', 'penulis', 'penerbit', 'ulasan'])),
+            new BukuResource($buku->load($this->relations())),
             'Detail buku.'
         );
     }
@@ -133,6 +134,24 @@ class BukuController extends Controller
             200,
             ['Content-Type' => $disk->mimeType($buku->sampul)]
         );
+    }
+
+    /**
+     * Relasi yang dimuat bersama buku. Relasi `ulasan` opsional: hanya
+     * dimuat bila tabelnya sudah ada, supaya katalog tetap tampil saat
+     * migrasi database produksi tertinggal.
+     *
+     * @return array<int, string>
+     */
+    private function relations(): array
+    {
+        $relations = ['kategori', 'penulis', 'penerbit'];
+
+        if (Schema::hasTable('ulasan')) {
+            $relations[] = 'ulasan';
+        }
+
+        return $relations;
     }
 
     /**
