@@ -31,5 +31,31 @@
             <p class="text-sm text-slate-600">Diperiksa: {{ $checkedAt->format('d M Y, H:i:s') }}</p>
             <a href="{{ route('admin.status-api') }}" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2">Periksa ulang</a>
         </div>
+
+        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-5 py-4">
+                <h2 class="font-semibold text-slate-900">Log request API</h2>
+                <p class="mt-1 text-xs text-slate-500">Maksimal 20 request terbaru. Token dan kredensial tidak dicatat.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                        <tr><th class="px-5 py-3">Waktu</th><th class="px-5 py-3">Method</th><th class="px-5 py-3">Path</th><th class="px-5 py-3">Status</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse ($logs as $log)
+                            <tr>
+                                <td class="whitespace-nowrap px-5 py-3 text-slate-600">{{ $log['time'] ?? '-' }}</td>
+                                <td class="px-5 py-3 font-medium text-slate-800">{{ $log['method'] ?? '-' }}</td>
+                                <td class="px-5 py-3 font-mono text-xs text-slate-600">{{ $log['path'] ?? '-' }}</td>
+                                <td class="px-5 py-3 font-semibold {{ ($log['status'] ?? 500) < 400 ? 'text-emerald-700' : 'text-red-700' }}">{{ $log['status'] ?? '-' }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="px-5 py-8 text-center text-sm text-slate-500">Belum ada request API.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
 @endsection

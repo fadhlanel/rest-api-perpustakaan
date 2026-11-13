@@ -12,10 +12,8 @@ use App\Http\Controllers\Admin\PengumumanController;
 use App\Http\Controllers\Admin\PermintaanEditController;
 use App\Http\Controllers\Admin\ProfilController;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use Illuminate\View\View;
 
 Route::get('/', function () {
     return redirect()->route('admin.login');
@@ -63,39 +61,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-Route::get('/api', function (): View|JsonResponse {
-    $databaseOk = true;
-    $bukuCount = 0;
-    $checkedAt = now()->toISOString();
-
-    try {
-        DB::select('SELECT 1');
-        $bukuCount = DB::table('buku')->count();
-    } catch (Throwable) {
-        $databaseOk = false;
-    }
-
-    $payload = [
-        'app' => 'ok',
-        'status' => $databaseOk ? 'ok' : 'error',
-        'database' => $databaseOk ? 'ok' : 'unavailable',
-        'buku_count' => $bukuCount,
-        'checked_at' => $checkedAt,
-    ];
-
-    if (request()->expectsJson()) {
-        return response()->json($payload, $databaseOk ? 200 : 503);
-    }
-
-    return view('status', [
-        'databaseOk' => $databaseOk,
-        'bukuCount' => $bukuCount,
-        'checkedAt' => $checkedAt,
-        'logs' => Cache::store('file')->get('api_request_logs', []),
-    ]);
-});
-
-Route::get('/health', function (): View|JsonResponse {
+Route::get('/health', function (): JsonResponse {
     $databaseOk = true;
 
     try {
@@ -104,12 +70,8 @@ Route::get('/health', function (): View|JsonResponse {
         $databaseOk = false;
     }
 
-    if (request()->expectsJson()) {
-        return response()->json([
-            'status' => $databaseOk ? 'ok' : 'error',
-            'database' => $databaseOk ? 'ok' : 'unavailable',
-        ], $databaseOk ? 200 : 503);
-    }
-
-    return redirect('/api');
+    return response()->json([
+        'status' => $databaseOk ? 'ok' : 'error',
+        'database' => $databaseOk ? 'ok' : 'unavailable',
+    ], $databaseOk ? 200 : 503);
 });

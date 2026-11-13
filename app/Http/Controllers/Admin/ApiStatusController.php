@@ -25,7 +25,8 @@ class ApiStatusController extends Controller
             'databaseOk' => $databaseOk,
             'bookCount' => $bookCount,
             'checkedAt' => now(),
-            'apiUrl' => url('/api'),
+            'apiUrl' => url('/api/v1'),
+            'logs' => array_slice((array) cache()->store('file')->get('api_request_logs', []), 0, 20),
         ]);
     }
 }
