@@ -45,10 +45,11 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($logs as $log)
                             <tr>
-                                <td class="whitespace-nowrap px-5 py-3 text-slate-600">{{ $log['time'] ?? '-' }}</td>
-                                <td class="px-5 py-3 font-medium text-slate-800">{{ $log['method'] ?? '-' }}</td>
-                                <td class="px-5 py-3 font-mono text-xs text-slate-600">{{ $log['path'] ?? '-' }}</td>
-                                <td class="px-5 py-3 font-semibold {{ ($log['status'] ?? 500) < 400 ? 'text-emerald-700' : 'text-red-700' }}">{{ $log['status'] ?? '-' }}</td>
+                                <td class="whitespace-nowrap px-5 py-3 text-slate-600"><time>{{ $log['time'] ?? '-' }}</time></td>
+                                <td class="px-5 py-3"><span class="rounded-md bg-cyan-50 px-2 py-1 text-xs font-bold text-cyan-700">{{ $log['method'] ?? '-' }}</span></td>
+                                <td class="max-w-[28rem] truncate px-5 py-3 font-mono text-xs text-slate-600" title="{{ $log['path'] ?? '-' }}">{{ $log['path'] ?? '-' }}</td>
+                                @php($status = (int) ($log['status'] ?? 500))
+                                <td class="px-5 py-3 font-semibold {{ $status < 300 ? 'text-emerald-700' : ($status < 400 ? 'text-slate-600' : ($status < 500 ? 'text-amber-700' : 'text-red-700')) }}">{{ $status }}</td>
                             </tr>
                         @empty
                             <tr><td colspan="4" class="px-5 py-8 text-center text-sm text-slate-500">Belum ada request API.</td></tr>

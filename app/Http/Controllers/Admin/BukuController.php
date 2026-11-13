@@ -17,6 +17,12 @@ class BukuController extends Controller
     {
         $query = Buku::with(['kategori', 'penulis', 'penerbit']);
 
+        foreach (['kategori_id', 'penulis_id', 'penerbit_id'] as $field) {
+            if ($request->filled($field)) {
+                $query->where($field, $request->integer($field));
+            }
+        }
+
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();
 
@@ -35,9 +41,12 @@ class BukuController extends Controller
             });
         }
 
-        $buku = $query->latest()->paginate(10);
+        $buku = $query->latest()->paginate(10)->withQueryString();
+        $kategori = Kategori::orderBy('nama')->get(['id', 'nama']);
+        $penulis = Penulis::orderBy('nama')->get(['id', 'nama']);
+        $penerbit = Penerbit::orderBy('nama')->get(['id', 'nama']);
 
-        return view('admin.buku.index', compact('buku'));
+        return view('admin.buku.index', compact('buku', 'kategori', 'penulis', 'penerbit'));
     }
 
     public function create()
