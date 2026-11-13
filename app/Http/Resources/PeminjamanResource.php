@@ -27,6 +27,8 @@ class PeminjamanResource extends JsonResource
             'bisa_perpanjang' => $this->status === Peminjaman::STATUS_DIPINJAM && $this->jumlah_perpanjangan < 1,
             'status' => $this->status,
             'pengembalian' => $this->whenLoaded('pengembalian', fn () => new PengembalianResource($this->pengembalian)),
+            'ulasan' => $this->whenLoaded('ulasan', fn () => new UlasanResource($this->ulasan)),
+            'bisa_rating' => $this->status === Peminjaman::STATUS_DIKEMBALIKAN,
             'dibuat' => $this->created_at?->toDateTimeString(),
             'diubah' => $this->updated_at?->toDateTimeString(),
         ];

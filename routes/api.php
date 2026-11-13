@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\PenerbitController;
 use App\Http\Controllers\Api\PengembalianController;
 use App\Http\Controllers\Api\PengumumanController;
 use App\Http\Controllers\Api\PenulisController;
+use App\Http\Controllers\Api\UlasanController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -33,6 +34,11 @@ Route::prefix('v1')->group(function () {
     Route::get('peminjaman/{peminjaman}', [PeminjamanController::class, 'show']);
     Route::post('peminjaman', [PeminjamanController::class, 'store']);
     Route::post('peminjaman/{peminjaman}/perpanjang', [PeminjamanController::class, 'extend']);
+
+    // Rating buku (hanya peminjam, buku sudah dikembalikan).
+    Route::get('peminjaman/{peminjaman}/rating', [UlasanController::class, 'index']);
+    Route::post('peminjaman/{peminjaman}/rating', [UlasanController::class, 'store']);
+    Route::get('buku/{buku}/ulasan', [UlasanController::class, 'buku']);
 
     Route::get('pengumuman', [PengumumanController::class, 'index']);
     Route::get('pengumuman/{pengumuman}', [PengumumanController::class, 'show']);

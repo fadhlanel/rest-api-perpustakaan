@@ -28,7 +28,7 @@ class BukuController extends Controller
 
         /** @var LengthAwarePaginator<Buku> $bukus */
         $bukus = Buku::query()
-            ->with(['kategori', 'penulis', 'penerbit'])
+            ->with(['kategori', 'penulis', 'penerbit', 'ulasan'])
             ->when($request->filled('search'), function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('judul', 'like', '%'.$search.'%')
@@ -67,7 +67,7 @@ class BukuController extends Controller
     public function show(Buku $buku): JsonResponse
     {
         return $this->successResponse(
-            new BukuResource($buku->load(['kategori', 'penulis', 'penerbit'])),
+            new BukuResource($buku->load(['kategori', 'penulis', 'penerbit', 'ulasan'])),
             'Detail buku.'
         );
     }

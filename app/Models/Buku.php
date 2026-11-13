@@ -81,4 +81,14 @@ class Buku extends Model
     {
         return $this->hasMany(Peminjaman::class);
     }
+
+    /**
+     * Semua ulasan (rating) yang diterima buku ini.
+     *
+     * @return HasMany<Ulasan, $this>
+     */
+    public function ulasan(): HasMany
+    {
+        return $this->hasMany(Ulasan::class);
+    }
 }

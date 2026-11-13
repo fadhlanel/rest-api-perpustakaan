@@ -65,4 +65,14 @@ class Peminjaman extends Model
     {
         return $this->hasOne(Pengembalian::class);
     }
+
+    /**
+     * Ulasan (rating) dari peminjaman ini.
+     *
+     * @return HasOne<Ulasan, $this>
+     */
+    public function ulasan(): HasOne
+    {
+        return $this->hasOne(Ulasan::class);
+    }
 }

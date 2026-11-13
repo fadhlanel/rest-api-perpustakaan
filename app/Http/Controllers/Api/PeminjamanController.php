@@ -25,7 +25,7 @@ class PeminjamanController extends Controller
 
         /** @var LengthAwarePaginator<Peminjaman> $peminjamans */
         $peminjamans = Peminjaman::query()
-            ->with(['buku.kategori', 'buku.penulis', 'buku.penerbit', 'pengembalian'])
+            ->with(['buku.kategori', 'buku.penulis', 'buku.penerbit', 'pengembalian', 'ulasan'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('buku_id'), fn ($query) => $query->where('buku_id', $request->integer('buku_id')))
             ->when($request->filled('search'), function ($query) use ($search) {
@@ -110,7 +110,7 @@ class PeminjamanController extends Controller
     public function show(Peminjaman $peminjaman): JsonResponse
     {
         return $this->successResponse(
-            new PeminjamanResource($peminjaman->load(['buku.kategori', 'buku.penulis', 'buku.penerbit', 'pengembalian'])),
+            new PeminjamanResource($peminjaman->load(['buku.kategori', 'buku.penulis', 'buku.penerbit', 'pengembalian', 'ulasan'])),
             'Detail peminjaman.'
         );
     }

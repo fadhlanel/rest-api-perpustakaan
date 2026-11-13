@@ -29,6 +29,8 @@ class BukuResource extends JsonResource
             'kategori' => $this->whenLoaded('kategori', fn () => new KategoriResource($this->kategori)),
             'penulis' => $this->whenLoaded('penulis', fn () => new PenulisResource($this->penulis)),
             'penerbit' => $this->whenLoaded('penerbit', fn () => new PenerbitResource($this->penerbit)),
+            'rating' => $this->whenLoaded('ulasan', fn () => round((float) $this->ulasan->avg('rating'), 1)),
+            'ulasan_count' => $this->whenLoaded('ulasan', fn () => $this->ulasan->count()),
             'dibuat' => $this->created_at?->toDateTimeString(),
             'diubah' => $this->updated_at?->toDateTimeString(),
         ];
