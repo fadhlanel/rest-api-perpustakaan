@@ -38,6 +38,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('buku/import/process', [BukuController::class, 'importProcess'])->name('buku.import.process');
         Route::get('buku/{buku}/sampul', [BukuController::class, 'sampul'])->name('buku.sampul');
         Route::get('master/{type}', [MasterController::class, 'index'])->name('master.index');
+        Route::get('master/{type}/create', [MasterController::class, 'create'])->name('master.create');
         Route::post('master/{type}', [MasterController::class, 'store'])->name('master.store');
         Route::put('master/{type}/{id}', [MasterController::class, 'update'])->name('master.update');
         Route::delete('master/{type}/{id}', [MasterController::class, 'destroy'])->name('master.destroy');

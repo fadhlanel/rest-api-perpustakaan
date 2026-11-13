@@ -15,7 +15,23 @@ class MasterController extends Controller
         abort_unless(in_array($type, ['kategori', 'penulis', 'penerbit'], true), 404);
         $model = ['kategori' => Kategori::class, 'penulis' => Penulis::class, 'penerbit' => Penerbit::class][$type];
 
-        return view('admin.master.index', ['type' => $type, 'items' => $model::latest()->paginate(15)]);
+        $query = $model::query();
+
+        if (request()->filled('search')) {
+            $search = request()->string('search')->toString();
+            $query->where('nama', 'like', '%'.$search.'%');
+        }
+
+        $items = $query->latest()->paginate(15)->withQueryString();
+
+        return view('admin.master.index', ['type' => $type, 'items' => $items]);
+    }
+
+    public function create(string $type)
+    {
+        abort_unless(in_array($type, ['kategori', 'penulis', 'penerbit'], true), 404);
+
+        return view('admin.master.create', ['type' => $type]);
     }
 
     public function store(Request $request, string $type)
