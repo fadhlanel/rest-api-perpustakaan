@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AnggotaController;
+use App\Http\Controllers\Admin\ApiStatusController;
 use App\Http\Controllers\Admin\BukuController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LoginController;
@@ -29,6 +30,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('logout', [LoginController::class, 'logout'])->name('logout');
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('status-api', [ApiStatusController::class, 'index'])->name('status-api');
 
         Route::resource('buku', BukuController::class)->except(['show']);
         Route::get('buku/export', [BukuController::class, 'export'])->name('buku.export');
