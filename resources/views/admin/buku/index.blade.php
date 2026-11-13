@@ -24,15 +24,15 @@
             <label for="bukuSearch" class="sr-only">Cari buku</label>
             <input type="search" name="search" id="bukuSearch" value="{{ request('search') }}" placeholder="Cari judul, ISBN, penulis..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
         </div>
-        <select id="kategoriFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+        <select name="kategori_id" id="kategoriFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
             <option value="">Semua kategori</option>
             @foreach($kategori as $item)<option value="{{ $item->id }}" @selected(request('kategori_id') == $item->id)>{{ $item->nama }}</option>@endforeach
         </select>
-        <select id="penulisFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+        <select name="penulis_id" id="penulisFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
             <option value="">Semua penulis</option>
             @foreach($penulis as $item)<option value="{{ $item->id }}" @selected(request('penulis_id') == $item->id)>{{ $item->nama }}</option>@endforeach
         </select>
-        <select id="penerbitFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+        <select name="penerbit_id" id="penerbitFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
             <option value="">Semua penerbit</option>
             @foreach($penerbit as $item)<option value="{{ $item->id }}" @selected(request('penerbit_id') == $item->id)>{{ $item->nama }}</option>@endforeach
         </select>
