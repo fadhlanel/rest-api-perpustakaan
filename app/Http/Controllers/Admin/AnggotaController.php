@@ -11,7 +11,20 @@ class AnggotaController extends Controller
 {
     public function index(Request $request)
     {
-        return view('admin.anggota.index', ['anggota' => Anggota::when($request->search, fn ($q, $s) => $q->where('nama', 'like', "%$s%")->orWhere('nis', 'like', "%$s%"))->latest()->paginate(15)]);
+        $query = Anggota::query();
+
+        if ($request->filled('search')) {
+            $search = $request->string('search')->toString();
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', '%'.$search.'%')
+                    ->orWhere('nis', 'like', '%'.$search.'%')
+                    ->orWhere('kelas', 'like', '%'.$search.'%');
+            });
+        }
+
+        $anggota = $query->latest()->paginate(15)->withQueryString();
+
+        return view('admin.anggota.index', compact('anggota'));
     }
 
     public function create()

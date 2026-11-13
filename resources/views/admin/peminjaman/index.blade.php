@@ -9,6 +9,18 @@
 </div>
 
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap gap-4 items-end">
+        <div class="relative flex-1 min-w-[200px]">
+            <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="search" id="peminjamanSearch" name="search" value="{{ request('search') }}" placeholder="Cari nama, NIS, atau judul buku..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
+        </div>
+        <select id="statusFilter" name="status" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+            <option value="">Semua Status</option>
+            <option value="dipinjam" @selected(request('status') === 'dipinjam')>Dipinjam</option>
+            <option value="dikembalikan" @selected(request('status') === 'dikembalikan')>Dikembalikan</option>
+        </select>
+        <button type="button" onclick="resetPeminjamanSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
+    </div>
     <table class="w-full text-left">
         <thead>
             <tr class="bg-slate-50 border-b border-slate-100">
@@ -20,7 +32,7 @@
                 <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody id="peminjamanTableBody" class="divide-y divide-slate-50">
             @foreach($peminjaman as $item)
             <tr class="hover:bg-slate-50 transition">
                 <td class="px-6 py-4">
@@ -60,8 +72,52 @@
         </tbody>
     </table>
     
-    <div class="p-6 border-t border-slate-100">
+    <div id="peminjamanPagination" class="p-6 border-t border-slate-100">
         {{ $peminjaman->links() }}
     </div>
 </div>
-@endsection
+
+<script>
+  function peminjamanSearchUrl(search) {
+    const url = new URL(window.location.href);
+    const filters = {
+      search,
+      status: document.getElementById('statusFilter').value,
+    };
+    url.search = '';
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) url.searchParams.set(key, value);
+    });
+    return url.toString();
+  }
+
+  let peminjamanSearchDebounce;
+  document.getElementById('statusFilter').addEventListener('change', () => fetchPeminjamanResults(document.getElementById('peminjamanSearch').value));
+  document.getElementById('peminjamanSearch').addEventListener('input', function () {
+    clearTimeout(peminjamanSearchDebounce);
+    const value = this.value;
+    peminjamanSearchDebounce = setTimeout(() => fetchPeminjamanResults(value), 300);
+  });
+
+  function resetPeminjamanSearch() {
+    const input = document.getElementById('peminjamanSearch');
+    input.value = '';
+    document.getElementById('statusFilter').value = '';
+    fetchPeminjamanResults('');
+  }
+
+  async function fetchPeminjamanResults(search) {
+    try {
+      const res = await fetch(peminjamanSearchUrl(search));
+      if (!res.ok) return;
+      const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+      const tbody = doc.getElementById('peminjamanTableBody');
+      const pagination = doc.getElementById('peminjamanPagination');
+      if (tbody) document.getElementById('peminjamanTableBody').innerHTML = tbody.innerHTML;
+      if (pagination) document.getElementById('peminjamanPagination').innerHTML = pagination.innerHTML;
+      window.history.replaceState(null, '', peminjamanSearchUrl(search));
+    } catch (_) {
+      // abaikan
+    }
+  }
+</script>

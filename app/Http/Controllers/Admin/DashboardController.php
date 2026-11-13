@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Buku;
+use App\Models\Kategori;
 use App\Models\Peminjaman;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $stats = [
             'total_buku' => 0,
@@ -20,6 +22,7 @@ class DashboardController extends Controller
             'database_ok' => false,
         ];
         $buku = collect();
+        $kategori = collect();
 
         try {
             DB::connection()->getPdo();
@@ -31,10 +34,39 @@ class DashboardController extends Controller
                 'database_ok' => true,
             ];
 
-            $buku = Buku::with(['kategori', 'penulis', 'penerbit'])->latest()->take(8)->get();
+            $query = Buku::with(['kategori', 'penulis', 'penerbit']);
+
+            // Filter kategori
+            if ($request->filled('kategori_id')) {
+                $query->where('kategori_id', $request->integer('kategori_id'));
+            }
+
+            // Filter ketersediaan
+            if ($request->filled('status_ketersediaan')) {
+                $status = $request->string('status_ketersediaan')->toString();
+                if ($status === 'tersedia') {
+                    $query->where('stok_tersedia', '>', 0);
+                } elseif ($status === 'habis') {
+                    $query->where('stok_tersedia', 0);
+                }
+            }
+
+            // Search
+            if ($request->filled('search')) {
+                $search = $request->string('search')->toString();
+                $query->where(function ($q) use ($search) {
+                    $q->where('judul', 'like', '%'.$search.'%')
+                        ->orWhere('isbn', 'like', '%'.$search.'%')
+                        ->orWhereHas('penulis', fn ($q) => $q->where('nama', 'like', '%'.$search.'%'))
+                        ->orWhereHas('penerbit', fn ($q) => $q->where('nama', 'like', '%'.$search.'%'));
+                });
+            }
+
+            $buku = $query->latest()->paginate(10)->withQueryString();
+            $kategori = Kategori::orderBy('nama')->get(['id', 'nama']);
         } catch (\Throwable) {
         }
 
-        return view('admin.dashboard', compact('stats', 'buku'));
+        return view('admin.dashboard', compact('stats', 'buku', 'kategori'));
     }
 }

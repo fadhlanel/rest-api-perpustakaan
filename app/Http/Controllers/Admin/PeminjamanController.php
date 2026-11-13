@@ -12,13 +12,22 @@ class PeminjamanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Peminjaman::with('buku');
+        $query = Peminjaman::with(['buku', 'pengembalian']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        $peminjaman = $query->latest()->paginate(10);
+        if ($request->filled('search')) {
+            $search = $request->string('search')->toString();
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_peminjam', 'like', '%'.$search.'%')
+                    ->orWhere('nis', 'like', '%'.$search.'%')
+                    ->orWhereHas('buku', fn ($q) => $q->where('judul', 'like', '%'.$search.'%'));
+            });
+        }
+
+        $peminjaman = $query->latest()->paginate(10)->withQueryString();
 
         return view('admin.peminjaman.index', compact('peminjaman'));
     }

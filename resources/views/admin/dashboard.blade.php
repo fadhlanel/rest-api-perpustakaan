@@ -58,19 +58,19 @@
     <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
         <div class="relative w-full max-w-md">
             <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="search" placeholder="Cari..." class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500">
+            <input type="search" id="dashboardSearch" name="search" value="{{ request('search') }}" placeholder="Cari judul, ISBN, penulis, penerbit..." class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500">
         </div>
         <div class="flex gap-2">
-            <select class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
-                <option>Semua Kategori (14)</option>
+            <select id="kategoriFilter" name="kategori_id" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
+                <option value="">Semua Kategori</option>
+                @foreach($kategori as $item)<option value="{{ $item->id }}" @selected(request('kategori_id') == $item->id)>{{ $item->nama }}</option>@endforeach
             </select>
-            <select class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
-                <option>Status Ketersediaan</option>
+            <select id="statusFilter" name="status_ketersediaan" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
+                <option value="">Status Ketersediaan</option>
+                <option value="tersedia" @selected(request('status_ketersediaan') === 'tersedia')>Tersedia</option>
+                <option value="habis" @selected(request('status_ketersediaan') === 'habis')>Habis</option>
             </select>
-            <select class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
-                <option>Lokasi Rak Pustaka</option>
-            </select>
-            <button class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white hover:bg-slate-50 transition">
+            <button type="button" onclick="resetDashboardSearch()" class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white hover:bg-slate-50 transition">
                 Reset
             </button>
         </div>
@@ -86,7 +86,7 @@
                     <th class="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Stok Koleksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody id="dashboardTableBody" class="divide-y divide-slate-100">
                 @forelse ($buku as $item)
                     <tr class="hover:bg-slate-50 transition">
                         <td class="px-6 py-4">
@@ -128,5 +128,56 @@
             </tbody>
         </table>
     </div>
+    <div id="dashboardPagination" class="px-6 py-4 border-t border-slate-100">
+        {{ $buku->links() }}
+    </div>
 </div>
 @endsection
+
+<script>
+  function dashboardSearchUrl(search) {
+    const url = new URL(window.location.href);
+    const filters = {
+      search,
+      kategori_id: document.getElementById('kategoriFilter').value,
+      status_ketersediaan: document.getElementById('statusFilter').value,
+    };
+    url.search = '';
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) url.searchParams.set(key, value);
+    });
+    return url.toString();
+  }
+
+  let dashboardSearchDebounce;
+  ['kategoriFilter', 'statusFilter'].forEach((id) => {
+    document.getElementById(id).addEventListener('change', () => fetchDashboardResults(document.getElementById('dashboardSearch').value));
+  });
+  document.getElementById('dashboardSearch').addEventListener('input', function () {
+    clearTimeout(dashboardSearchDebounce);
+    const value = this.value;
+    dashboardSearchDebounce = setTimeout(() => fetchDashboardResults(value), 300);
+  });
+
+  function resetDashboardSearch() {
+    const input = document.getElementById('dashboardSearch');
+    input.value = '';
+    ['kategoriFilter', 'statusFilter'].forEach((id) => document.getElementById(id).value = '');
+    fetchDashboardResults('');
+  }
+
+  async function fetchDashboardResults(search) {
+    try {
+      const res = await fetch(dashboardSearchUrl(search));
+      if (!res.ok) return;
+      const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+      const tbody = doc.getElementById('dashboardTableBody');
+      const pagination = doc.getElementById('dashboardPagination');
+      if (tbody) document.getElementById('dashboardTableBody').innerHTML = tbody.innerHTML;
+      if (pagination) document.getElementById('dashboardPagination').innerHTML = pagination.innerHTML;
+      window.history.replaceState(null, '', dashboardSearchUrl(search));
+    } catch (_) {
+      // abaikan: biarkan hasil terakhir tetap tampil
+    }
+  }
+</script>
