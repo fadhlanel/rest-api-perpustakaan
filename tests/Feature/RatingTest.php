@@ -35,9 +35,9 @@ class RatingTest extends TestCase
 
     private function tokenForReturnedLoan(): array
     {
-        // From PeminjamanSeeder: returned loan nis 20240103, buku 'Bumi Manusia'
-        $token = $this->login('20240103');
-        $peminjaman = Peminjaman::where('nis', '20240103')
+        // From PeminjamanSeeder: returned loan nis 20240001, buku 'Bumi Manusia'
+        $token = $this->login('20240001');
+        $peminjaman = Peminjaman::where('nis', '20240001')
             ->where('status', Peminjaman::STATUS_DIKEMBALIKAN)
             ->firstOrFail();
 
@@ -53,9 +53,9 @@ class RatingTest extends TestCase
 
     public function test_rating_forbidden_for_non_owner(): void
     {
-        $ownerToken = $this->login('20240103');
+        $ownerToken = $this->login('20240001');
         $otherToken = $this->login('99999999');
-        $peminjaman = Peminjaman::where('nis', '20240103')
+        $peminjaman = Peminjaman::where('nis', '20240001')
             ->where('status', Peminjaman::STATUS_DIKEMBALIKAN)
             ->firstOrFail();
 
@@ -66,8 +66,8 @@ class RatingTest extends TestCase
 
     public function test_rating_rejected_before_return(): void
     {
-        $token = $this->login('20240101'); // dipinjam per seeder
-        $peminjaman = Peminjaman::where('nis', '20240101')
+        $token = $this->login('20240001'); // dipinjam per seeder
+        $peminjaman = Peminjaman::where('nis', '20240001')
             ->where('status', Peminjaman::STATUS_DIPINJAM)
             ->firstOrFail();
 
@@ -95,7 +95,7 @@ class RatingTest extends TestCase
         $this->assertDatabaseHas('ulasan', [
             'peminjaman_id' => $peminjamanId,
             'buku_id' => $resp->json('data.buku_id'),
-            'nis' => '20240103',
+            'nis' => '20240001',
             'rating' => 5,
             'komentar' => 'Buku bagus sekali!',
         ]);

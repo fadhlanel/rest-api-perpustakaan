@@ -14,10 +14,14 @@ class PeminjamanSeeder extends Seeder
      */
     public function run(): void
     {
+        // Ambil nama admin dari env (sama seperti AdminUserSeeder)
+        $adminName = env('ADMIN_NAME', 'Administrator');
+        $adminNis = '20240001'; // NIS unik untuk admin
+
         // Peminjaman masih berjalan (mengurangi stok tersedia).
         $dipinjam = [
-            ['nama_peminjam' => 'Ahmad Fauzan', 'nis' => '20240101', 'judul' => 'Laskar Pelangi', 'tanggal_pinjam' => now()->subDays(3)],
-            ['nama_peminjam' => 'Siti Nurhaliza', 'nis' => '20240102', 'judul' => 'Sang Pemimpi', 'tanggal_pinjam' => now()->subDays(1)],
+            ['judul' => 'Laskar Pelangi', 'tanggal_pinjam' => now()->subDays(3)],
+            ['judul' => 'Sang Pemimpi', 'tanggal_pinjam' => now()->subDays(1)],
         ];
 
         foreach ($dipinjam as $item) {
@@ -25,8 +29,8 @@ class PeminjamanSeeder extends Seeder
             $buku->decrement('stok_tersedia');
 
             Peminjaman::create([
-                'nama_peminjam' => $item['nama_peminjam'],
-                'nis' => $item['nis'],
+                'nama_peminjam' => $adminName,
+                'nis' => $adminNis,
                 'buku_id' => $buku->id,
                 'tanggal_pinjam' => $item['tanggal_pinjam']->toDateString(),
                 'tanggal_jatuh_tempo' => $item['tanggal_pinjam']->addDays(7)->toDateString(),
@@ -39,8 +43,8 @@ class PeminjamanSeeder extends Seeder
         $buku->decrement('stok_tersedia');
 
         $peminjaman = Peminjaman::create([
-            'nama_peminjam' => 'Rizki Wijaya',
-            'nis' => '20240103',
+            'nama_peminjam' => $adminName,
+            'nis' => $adminNis,
             'buku_id' => $buku->id,
             'tanggal_pinjam' => now()->subDays(10)->toDateString(),
             'tanggal_jatuh_tempo' => now()->subDays(3)->toDateString(),
