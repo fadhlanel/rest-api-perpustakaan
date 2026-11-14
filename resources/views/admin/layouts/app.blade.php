@@ -7,7 +7,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 text-slate-900">
-    <div class="flex min-h-screen">
+    <div class="flex flex-nowrap min-h-screen">
         <!-- Sidebar -->
         <aside class="hidden w-64 shrink-0 bg-white border-r border-slate-200 md:flex md:flex-col">
             <div class="p-6">
