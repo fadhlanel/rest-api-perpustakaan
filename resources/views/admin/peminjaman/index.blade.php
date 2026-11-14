@@ -72,7 +72,7 @@
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
                             @if($item->status == 'dipinjam')
-                                <button onclick="returnBook({{ $item->id }})" class="inline-flex items-center px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <button onclick="returnBook(this)" data-id="{{ $item->id }}" data-nama="{{ $item->nama_peminjam }}" data-nis="{{ $item->nis }}" data-judul="{{ $item->buku->judul }}" data-pinjam="{{ $item->tanggal_pinjam->format('d M Y') }}" data-tempo="{{ $item->tanggal_jatuh_tempo->format('d M Y') }}" class="inline-flex items-center px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                                     Kembalikan
                                 </button>
                             @else
@@ -87,6 +87,18 @@
     
     <div id="peminjamanPagination" class="px-6 py-4 border-t border-slate-100 bg-slate-50">
         {{ $peminjaman->links() }}
+    </div>
+</div>
+
+<div id="returnModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/50" onclick="closeReturnModal()"></div>
+    <div class="relative bg-white rounded-xl shadow-xl max-w-md w-full p-6" role="dialog" aria-modal="true">
+        <h3 class="text-lg font-bold text-slate-800">Konfirmasi Pengembalian</h3>
+        <div id="returnInfo" class="mt-3 text-sm text-slate-600 space-y-1"></div>
+        <div class="mt-6 flex justify-end gap-2">
+            <button type="button" onclick="closeReturnModal()" class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition">Tidak</button>
+            <button type="button" id="confirmReturnBtn" onclick="confirmReturn(this)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition">Ya, Kembalikan</button>
+        </div>
     </div>
 </div>
 
@@ -134,8 +146,22 @@
     }
   }
 
-  async function returnBook(id) {
-    if (!confirm('Tandai buku sebagai dikembalikan?')) return;
+  function returnBook(btn) {
+    document.getElementById('returnInfo').innerHTML = `
+      <p class="text-sm text-slate-700">Kembalikan buku <span class="font-semibold text-slate-900">${btn.dataset.judul}</span> yang dipinjam oleh <span class="font-semibold text-slate-900">${btn.dataset.nama}</span> (${btn.dataset.nis})?</p>
+      <p class="text-xs text-slate-500 mt-2">Dipinjam: ${btn.dataset.pinjam} &middot; Jatuh tempo: ${btn.dataset.tempo}</p>
+    `;
+    document.getElementById('confirmReturnBtn').dataset.id = btn.dataset.id;
+    document.getElementById('returnModal').classList.remove('hidden');
+  }
+
+  function closeReturnModal() {
+    document.getElementById('returnModal').classList.add('hidden');
+  }
+
+  async function confirmReturn(btn) {
+    const id = btn.dataset.id;
+    btn.disabled = true;
     try {
       const res = await fetch(`/admin/peminjaman/${id}/return`, {
         method: 'POST',
@@ -145,11 +171,14 @@
         },
       });
       if (!res.ok) throw new Error('Gagal mengembalikan');
+      closeReturnModal();
       // refresh hasil search tetap di posisi yg sama
       const search = document.getElementById('peminjamanSearch').value;
       await fetchPeminjamanResults(search);
     } catch (err) {
       alert(err.message);
+    } finally {
+      btn.disabled = false;
     }
   }
 </script>
