@@ -82,7 +82,7 @@ class PeminjamanController extends Controller
     }
 
     /**
-     * Memperpanjang peminjaman satu kali selama tujuh hari.
+     * Memperpanjang peminjaman dengan durasi hari yang dapat ditentukan pengguna (1 hari atau lebih).
      */
     public function extend(Peminjaman $peminjaman): JsonResponse
     {
@@ -90,13 +90,16 @@ class PeminjamanController extends Controller
             return $this->errorResponse('Peminjaman sudah dikembalikan.', 400);
         }
 
-        if ($peminjaman->jumlah_perpanjangan >= 1) {
-            return $this->errorResponse('Peminjaman hanya dapat diperpanjang satu kali.', 400);
+        $requestDays = (int) request()->input('durasi_hari', env('LOAN_EXTENSION_DAYS', 1));
+        if ($requestDays < 1) {
+            return $this->errorResponse('Durasi perpanjangan minimal 1 hari.', 400);
         }
 
         $peminjaman->update([
-            'tanggal_jatuh_tempo' => $peminjaman->tanggal_jatuh_tempo->addDays((int) env('LOAN_EXTENSION_DAYS', 1)),
+            'tanggal_jatuh_tempo' => $peminjaman->tanggal_jatuh_tempo->addDays($requestDays),
+            'durasi_pinjam' => $peminjaman->durasi_pinjam + $requestDays,
             'jumlah_perpanjangan' => $peminjaman->jumlah_perpanjangan + 1,
+            'bisa_perpanjang' => $peminjaman->status === Peminjaman::STATUS_DIPINJAM && $peminjaman->jumlah_perpanjangan < 3,
         ]);
 
         return $this->successResponse(

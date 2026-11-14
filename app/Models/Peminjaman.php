@@ -31,6 +31,7 @@ class Peminjaman extends Model
         'tanggal_pinjam',
         'tanggal_ambil',
         'tanggal_jatuh_tempo',
+        'durasi_pinjam',
         'jumlah_perpanjangan',
         'status',
     ];
@@ -44,6 +45,7 @@ class Peminjaman extends Model
         'tanggal_pinjam' => 'date:Y-m-d',
         'tanggal_ambil' => 'date:Y-m-d',
         'tanggal_jatuh_tempo' => 'date:Y-m-d',
+        'durasi_pinjam' => 'integer',
     ];
 
     /**
