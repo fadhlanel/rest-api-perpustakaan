@@ -5,71 +5,76 @@
 @section('content')
 <div class="mb-8">
     <h2 class="text-2xl font-bold text-slate-800">Sirkulasi Peminjaman Buku</h2>
-    <p class="text-slate-500 text-sm">Monitor dan kelola pengembalian buku dari siswa.</p>
+    <p class="text-slate-500 text-sm">Monitor dan kelola peminjaman buku dari siswa.</p>
 </div>
 
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap gap-4 items-end">
-        <div class="relative flex-1 min-w-[200px]">
+    <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
+        <div class="relative w-full max-w-md">
             <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="search" id="peminjamanSearch" name="search" value="{{ request('search') }}" placeholder="Cari nama, NIS, atau judul buku..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
+            <input type="search" id="peminjamanSearch" name="search" value="{{ request('search') }}" placeholder="Cari nama, NIS, atau judul buku..." class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500">
         </div>
-        <select id="statusFilter" name="status" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-            <option value="">Semua Status</option>
-            <option value="dipinjam" @selected(request('status') === 'dipinjam')>Dipinjam</option>
-            <option value="dikembalikan" @selected(request('status') === 'dikembalikan')>Dikembalikan</option>
-        </select>
-        <button type="button" onclick="resetPeminjamanSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
+        <div class="flex gap-2">
+            <select id="statusFilter" name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
+                <option value="">Semua Status</option>
+                <option value="dipinjam" @selected(request('status') === 'dipinjam')>Dipinjam</option>
+                <option value="dikembalikan" @selected(request('status') === 'dikembalikan')>Dikembalikan</option>
+            </select>
+            <button type="button" onclick="resetPeminjamanSearch()" class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white hover:bg-slate-50 transition">Reset</button>
+        </div>
     </div>
-    <table class="w-full text-left">
-        <thead>
-            <tr class="bg-slate-50 border-b border-slate-100">
-                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Informasi Peminjam</th>
-                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Buku yang Dipinjam</th>
-                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tanggal Pinjam</th>
-                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jatuh Tempo</th>
-                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Status</th>
-                <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
-            </tr>
-        </thead>
-        <tbody id="peminjamanTableBody" class="divide-y divide-slate-50">
-            @foreach($peminjaman as $item)
-            <tr class="hover:bg-slate-50 transition">
-                <td class="px-6 py-4">
-                    <p class="text-sm font-bold text-slate-800">{{ $item->nama_peminjam }}</p>
-                    <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-tighter">NIS: {{ $item->nis }}</p>
-                </td>
-                <td class="px-6 py-4">
-                    <p class="text-sm font-medium text-slate-700 leading-tight">{{ $item->buku->judul }}</p>
-                </td>
-                <td class="px-6 py-4">
-                    <p class="text-xs text-slate-600">{{ $item->tanggal_pinjam->format('d M Y') }}</p>
-                </td>
-                <td class="px-6 py-4">
-                    <p class="text-xs {{ $item->status == 'dipinjam' && $item->tanggal_jatuh_tempo->isPast() ? 'text-red-600 font-bold' : 'text-slate-600' }}">
-                        {{ $item->tanggal_jatuh_tempo->format('d M Y') }}
-                    </p>
-                </td>
-                <td class="px-6 py-4 text-center">
-                    <span class="px-2 py-1 {{ $item->status == 'dipinjam' ? 'bg-orange-50 text-orange-700' : 'bg-green-50 text-green-700' }} text-[9px] font-bold rounded uppercase">
-                        {{ $item->status }}
-                    </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                    @if($item->status == 'dipinjam')
-                        <button onclick="returnBook({{ $item->id }})" class="bg-blue-50 text-blue-700 px-3 py-1 rounded text-[10px] font-bold uppercase hover:bg-blue-100 transition">
-                            Kembalikan
-                        </button>
-                    @else
-                        <span class="text-[10px] text-slate-300 font-bold uppercase italic">Selesai</span>
-                    @endif
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                    <th class="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Informasi Peminjam</th>
+                    <th class="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Buku yang Dipinjam</th>
+                    <th class="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tanggal Pinjam</th>
+                    <th class="px-6 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jatuh Tempo</th>
+                    <th class="px-6 py-3 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-right text-[10px] font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="peminjamanTableBody" class="divide-y divide-slate-100 bg-white">
+                @foreach($peminjaman as $item)
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <p class="text-sm font-semibold text-slate-800">{{ $item->nama_peminjam }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">NIS: {{ $item->nis }}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <p class="text-sm text-slate-700">{{ $item->buku->judul }}</p>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <p class="text-sm text-slate-600">{{ $item->tanggal_pinjam->format('d M Y') }}</p>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <p class="text-sm {{ $item->status == 'dipinjam' && $item->tanggal_jatuh_tempo->isPast() ? 'text-red-600 font-semibold' : 'text-slate-600' }}">
+                            {{ $item->tanggal_jatuh_tempo->format('d M Y') }}
+                        </p>
+                    </td>
+                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $item->status == 'dipinjam' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800' }}">
+                            {{ ucfirst($item->status) }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        @if($item->status == 'dipinjam')
+                            <button onclick="returnBook({{ $item->id }})" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                                Kembalikan
+                            </button>
+                        @else
+                            <span class="text-xs text-slate-400 italic">Dikembalikan</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
     
-    <div id="peminjamanPagination" class="p-6 border-t border-slate-100">
+    <div id="peminjamanPagination" class="px-6 py-4 border-t border-slate-200">
         {{ $peminjaman->links() }}
     </div>
 </div>
