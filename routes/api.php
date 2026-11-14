@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BukuController;
 use App\Http\Controllers\Api\ConfigController;
+use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\PeminjamanController;
 use App\Http\Controllers\Api\PenerbitController;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('device-token', [DeviceTokenController::class, 'register']);
+    Route::delete('device-token', [DeviceTokenController::class, 'unregister']);
     Route::get('profile', [AuthController::class, 'profile']);
     Route::put('profile', [AuthController::class, 'update']);
     Route::get('profile/edits', [AuthController::class, 'edits']);
