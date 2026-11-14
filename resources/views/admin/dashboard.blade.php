@@ -132,7 +132,6 @@
         {{ $buku->links() }}
     </div>
 </div>
-@endsection
 
 <script>
   function dashboardSearchUrl(search) {
@@ -181,3 +180,4 @@
     }
   }
 </script>
+@endsection
