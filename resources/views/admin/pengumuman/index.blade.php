@@ -30,25 +30,32 @@
     </div>
 
     <!-- Dialog Form Tambah/Edit Pengumuman -->
-    <dialog id="pengumumanDialog" class="modal" aria-label="Form pengumuman">
-        <div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg w-full mx-auto">
-            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">Tulis Pengumuman</h3>
-            <p class="text-xs text-slate-500 mb-4">Pengumuman aktif akan disinkronkan ke aplikasi Android.</p>
+    <dialog id="pengumumanDialog" class="fixed inset-0 m-auto max-w-[min(92vw,32rem)] w-full rounded-xl p-0 shadow-xl backdrop:bg-slate-900/40" aria-label="Form pengumuman">
+        <div class="bg-white rounded-xl border border-slate-200 p-6">
+            <div class="flex items-start justify-between gap-4 mb-4">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Tulis Pengumuman</h3>
+                    <p class="text-xs text-slate-500 mt-1">Pengumuman aktif akan disinkronkan ke aplikasi Android.</p>
+                </div>
+                <button type="button" onclick="document.getElementById('pengumumanDialog').close()" class="text-slate-400 hover:text-slate-600 rounded p-1" aria-label="Tutup dialog">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
 
             <form method="POST" action="{{ route('admin.pengumuman.store') }}" id="pengumumanForm" class="space-y-4">
                 @csrf
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Judul Pengumuman <span class="text-red-500">*</span></label>
-                    <input type="text" name="judul" value="{{ old('judul') }}" required placeholder="Contoh: Jadwal Pengembalian Buku Ujian" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
+                    <label for="pengumumanJudul" class="block text-xs font-bold text-slate-600 uppercase mb-1">Judul Pengumuman <span class="text-red-500">*</span></label>
+                    <input type="text" id="pengumumanJudul" name="judul" value="{{ old('judul') }}" required placeholder="Contoh: Jadwal Pengembalian Buku Ujian" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
                     @error('judul')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Isi Pengumuman <span class="text-red-500">*</span></label>
-                    <textarea name="isi" rows="5" required placeholder="Tuliskan isi pengumuman secara rinci..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">{{ old('isi') }}</textarea>
+                    <label for="pengumumanIsi" class="block text-xs font-bold text-slate-600 uppercase mb-1">Isi Pengumuman <span class="text-red-500">*</span></label>
+                    <textarea id="pengumumanIsi" name="isi" rows="5" required placeholder="Tuliskan isi pengumuman secara rinci..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">{{ old('isi') }}</textarea>
                     @error('isi')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
@@ -61,12 +68,11 @@
                     </label>
                 </div>
 
-                <div class="pt-4">
-                    <button type="submit" class="w-full bg-cyan-700 hover:bg-cyan-800 text-white font-semibold py-2.5 px-4 rounded-lg text-sm shadow-sm transition">
+                <div class="pt-4 flex flex-col sm:flex-row gap-2">
+                    <button type="submit" class="flex-1 bg-cyan-700 hover:bg-cyan-800 text-white font-semibold py-2.5 px-4 rounded-lg text-sm shadow-sm transition">
                         Terbitkan Pengumuman
                     </button>
-                    <button type="button" onclick="document.getElementById('pengumumanDialog').close()" class="ml-3 inline-flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-slate-700 whitespace-nowrap">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <button type="button" onclick="document.getElementById('pengumumanDialog').close()" class="px-4 py-2.5 text-sm text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 whitespace-nowrap">
                         Batal
                     </button>
                 </div>
@@ -79,19 +85,6 @@
         <div class="flex items-center justify-between">
             <h3 class="text-sm font-bold text-slate-800">Daftar Pengumuman Terbit</h3>
             <span class="text-xs font-medium text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-full shadow-2xs">{{ $pengumuman->total() }} entri</span>
-        </div>
-
-        <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap gap-4 items-end">
-            <div class="relative flex-1 min-w-[200px]">
-                <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="search" id="pengumumanSearch" name="search" placeholder="Cari judul atau isi pengumuman..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
-            </div>
-            <select id="pengumumanStatusFilter" name="aktif" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                <option value="">Semua Status</option>
-                <option value="1" @selected(request('aktif') === '1')>Aktif</option>
-                <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
-            </select>
-            <button type="button" onclick="resetPengumumanSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
         </div>
 
         <div class="space-y-3" id="pengumumanList">
