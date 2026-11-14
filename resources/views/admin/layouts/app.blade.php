@@ -87,7 +87,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 min-w-0 flex flex-col">
+        <main class="flex-1 min-w-0 flex flex-col overflow-y-auto">
             <header class="min-h-16 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
                 <div class="flex items-center gap-4">
                     <a href="{{ route('admin.profil.edit') }}" class="flex items-center gap-3 group text-right">
