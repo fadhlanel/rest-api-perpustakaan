@@ -57,12 +57,9 @@
                 </td>
                 <td class="px-6 py-4 text-right">
                     @if($item->status == 'dipinjam')
-                        <form action="{{ route('admin.peminjaman.return', $item) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="bg-blue-50 text-blue-700 px-3 py-1 rounded text-[10px] font-bold uppercase hover:bg-blue-100 transition">
-                                Kembalikan
-                            </button>
-                        </form>
+                        <button onclick="returnBook({{ $item->id }})" class="bg-blue-50 text-blue-700 px-3 py-1 rounded text-[10px] font-bold uppercase hover:bg-blue-100 transition">
+                            Kembalikan
+                        </button>
                     @else
                         <span class="text-[10px] text-slate-300 font-bold uppercase italic">Selesai</span>
                     @endif
@@ -118,6 +115,25 @@
       window.history.replaceState(null, '', peminjamanSearchUrl(search));
     } catch (_) {
       // abaikan
+    }
+  }
+
+  async function returnBook(id) {
+    if (!confirm('Tandai buku sebagai dikembalikan?')) return;
+    try {
+      const res = await fetch(`/admin/peminjaman/${id}/return`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Accept': 'application/json',
+        },
+      });
+      if (!res.ok) throw new Error('Gagal mengembalikan');
+      // refresh hasil search tetap di posisi yg sama
+      const search = document.getElementById('peminjamanSearch').value;
+      await fetchPeminjamanResults(search);
+    } catch (err) {
+      alert(err.message);
     }
   }
 </script>

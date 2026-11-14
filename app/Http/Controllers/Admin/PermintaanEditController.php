@@ -12,10 +12,22 @@ class PermintaanEditController extends Controller
 {
     public function index(): View
     {
-        $permintaan = ProfileEditRequest::with(['anggota', 'reviewer'])
-            ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', [ProfileEditRequest::STATUS_PENDING])
+        $query = ProfileEditRequest::with(['anggota', 'reviewer']);
+
+        if (request()->filled('search')) {
+            $search = request()->string('search')->toString();
+            $query->whereHas('anggota', fn ($q) => $q->where('nama', 'like', '%'.$search.'%')
+                ->orWhere('nis', 'like', '%'.$search.'%'));
+        }
+
+        if (request()->filled('status')) {
+            $query->where('status', request()->status);
+        }
+
+        $permintaan = $query->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', [ProfileEditRequest::STATUS_PENDING])
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('admin.permintaan.index', compact('permintaan'));
     }

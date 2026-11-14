@@ -10,7 +10,23 @@ class PengumumanController extends Controller
 {
     public function index()
     {
-        return view('admin.pengumuman.index', ['pengumuman' => Pengumuman::latest()->paginate(15)]);
+        $query = Pengumuman::query();
+
+        if (request()->filled('search')) {
+            $search = request()->string('search')->toString();
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', '%'.$search.'%')
+                    ->orWhere('isi', 'like', '%'.$search.'%');
+            });
+        }
+
+        if (request()->filled('aktif')) {
+            $query->where('aktif', request()->boolean('aktif'));
+        }
+
+        $pengumuman = $query->latest()->paginate(15)->withQueryString();
+
+        return view('admin.pengumuman.index', compact('pengumuman'));
     }
 
     public function store(Request $request)

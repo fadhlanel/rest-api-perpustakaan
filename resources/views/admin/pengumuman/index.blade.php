@@ -63,7 +63,20 @@
             <span class="text-xs font-medium text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-full shadow-2xs">{{ $pengumuman->total() }} entri</span>
         </div>
 
-        <div class="space-y-3">
+        <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap gap-4 items-end">
+            <div class="relative flex-1 min-w-[200px]">
+                <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="search" id="pengumumanSearch" name="search" value="{{ request('search') }}" placeholder="Cari judul atau isi pengumuman..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
+            </div>
+            <select id="pengumumanStatusFilter" name="aktif" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                <option value="">Semua Status</option>
+                <option value="1" @selected(request('aktif') === '1')>Aktif</option>
+                <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
+            </select>
+            <button type="button" onclick="resetPengumumanSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
+        </div>
+
+        <div class="space-y-3" id="pengumumanList">
             @forelse($pengumuman as $item)
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:border-slate-300 transition">
                     <div class="flex items-start justify-between gap-4">
@@ -101,10 +114,55 @@
         </div>
 
         @if($pengumuman->hasPages())
-            <div class="pt-4">
+            <div class="pt-4" id="pengumumanPagination">
                 {{ $pengumuman->links() }}
             </div>
         @endif
     </div>
 </div>
+
+<script>
+  function pengumumanSearchUrl(search) {
+    const url = new URL(window.location.href);
+    const filters = {
+      search,
+      aktif: document.getElementById('pengumumanStatusFilter').value,
+    };
+    url.search = '';
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) url.searchParams.set(key, value);
+    });
+    return url.toString();
+  }
+
+  let pengumumanSearchDebounce;
+  document.getElementById('pengumumanStatusFilter').addEventListener('change', () => fetchPengumumanResults(document.getElementById('pengumumanSearch').value));
+  document.getElementById('pengumumanSearch').addEventListener('input', function () {
+    clearTimeout(pengumumanSearchDebounce);
+    const value = this.value;
+    pengumumanSearchDebounce = setTimeout(() => fetchPengumumanResults(value), 300);
+  });
+
+  function resetPengumumanSearch() {
+    const input = document.getElementById('pengumumanSearch');
+    input.value = '';
+    document.getElementById('pengumumanStatusFilter').value = '';
+    fetchPengumumanResults('');
+  }
+
+  async function fetchPengumumanResults(search) {
+    try {
+      const res = await fetch(pengumumanSearchUrl(search));
+      if (!res.ok) return;
+      const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+      const list = doc.getElementById('pengumumanList');
+      const pagination = doc.getElementById('pengumumanPagination');
+      if (list) document.getElementById('pengumumanList').innerHTML = list.innerHTML;
+      if (pagination) document.getElementById('pengumumanPagination').innerHTML = pagination.innerHTML;
+      window.history.replaceState(null, '', pengumumanSearchUrl(search));
+    } catch (_) {
+      // abaikan
+    }
+  }
+</script>
 @endsection
