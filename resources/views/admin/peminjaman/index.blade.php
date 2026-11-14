@@ -90,7 +90,7 @@
     </div>
 </div>
 
-<div id="returnModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+<div id="returnModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/50" onclick="closeReturnModal()"></div>
     <div class="relative bg-white rounded-xl shadow-xl max-w-md w-full p-6" role="dialog" aria-modal="true">
         <h3 class="text-lg font-bold text-slate-800">Konfirmasi Pengembalian</h3>
