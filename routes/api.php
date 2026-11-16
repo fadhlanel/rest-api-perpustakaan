@@ -39,6 +39,7 @@ Route::prefix('v1')->group(function () {
     Route::get('peminjaman/{peminjaman}/rating', [UlasanController::class, 'index']);
     Route::post('peminjaman/{peminjaman}/rating', [UlasanController::class, 'store']);
     Route::get('buku/{buku}/ulasan', [UlasanController::class, 'buku']);
+    Route::get('buku/{buku}/rating-stats', [UlasanController::class, 'statsPerBuku']);
 
     Route::get('pengumuman', [PengumumanController::class, 'index']);
     Route::get('pengumuman/{pengumuman}', [PengumumanController::class, 'show']);

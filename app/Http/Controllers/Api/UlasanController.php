@@ -78,6 +78,24 @@ class UlasanController extends Controller
         );
     }
 
+    /**
+     * Statistik rating buku: jumlah, rata-rata, dan list ulasan terbaru.
+     */
+    public function statsPerBuku(Buku $buku): JsonResponse
+    {
+        $ulasan = $buku->ulasan();
+        $count = $ulasan->count();
+        $average = $count > 0 ? round($ulasan->avg('rating'), 2) : 0;
+
+        return $this->successResponse([
+            'buku_id' => $buku->id,
+            'judul' => $buku->judul,
+            'total_rating' => $count,
+            'rating_rata_rata' => (float) $average,
+            'ulasan' => UlasanResource::collection($buku->ulasan()->latest()->take(5)->get()),
+        ], 'Statistik rating buku.');
+    }
+
     private function authenticatedStudent(Request $request): ?Anggota
     {
         $token = $request->bearerToken();
