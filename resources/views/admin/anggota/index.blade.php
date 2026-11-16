@@ -59,11 +59,14 @@
                                 {{ $item->telepon ?: ($item->email ?: '-') }}
                             </td>
                             <td class="py-3.5 px-6 text-right">
-                                <form method="POST" action="{{ route('admin.anggota.destroy', $item) }}" data-confirm="Hapus siswa {{ $item->nama }}? Jika siswa sedang login di aplikasi, sesinya akan langsung berakhir.">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline">Hapus</button>
-                                </form>
+                                <div class="flex justify-end items-center gap-2">
+                                    <button type="button" onclick="viewPin('{{ route('admin.anggota.showPin', $item) }}', '{{ $item->nis }}')" class="text-xs font-medium text-cyan-600 hover:text-cyan-800 hover:underline">Lihat PIN</button>
+                                    <form method="POST" action="{{ route('admin.anggota.destroy', $item) }}" data-confirm="Hapus siswa {{ $item->nama }}? Jika siswa sedang login di aplikasi, sesinya akan langsung berakhir.">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline">Hapus</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -119,6 +122,22 @@
       window.history.replaceState(null, '', anggotaSearchUrl(search));
     } catch (_) {
       // abaikan
+    }
+  }
+
+  async function viewPin(url, nis) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+      });
+      if (!res.ok) throw new Error('Gagal mengambil data.');
+      const data = await res.json();
+      alert(`NIS: ${data.nis}\nNama: ${data.nama}\nPIN (hash): ${data.pin_hash}`);
+    } catch (e) {
+      alert('Gagal memuat data PIN.');
     }
   }
 </script>

@@ -44,7 +44,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('master/{type}/{id}', [MasterController::class, 'destroy'])->name('master.destroy');
         Route::resource('anggota', AnggotaController::class)
             ->parameters(['anggota' => 'anggota'])
-            ->only(['index', 'create', 'store', 'update', 'destroy']);
+            ->only(['index', 'create', 'store', 'update', 'destroy', 'showPin']);
         Route::resource('pengumuman', PengumumanController::class)->only(['index', 'store', 'update', 'destroy']);
 
         Route::get('permintaan-profil', [PermintaanEditController::class, 'index'])->name('permintaan.index');

@@ -62,4 +62,13 @@ class AnggotaController extends Controller
 
         return back()->with('success', 'Anggota berhasil dihapus.');
     }
+
+    public function showPin(Anggota $anggota)
+    {
+        return response()->json([
+            'nis' => $anggota->nis,
+            'nama' => $anggota->nama,
+            'pin_hash' => $anggota->pin,
+        ]);
+    }
 }
