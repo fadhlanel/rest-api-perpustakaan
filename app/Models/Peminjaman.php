@@ -25,6 +25,7 @@ class Peminjaman extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'anggota_id',
         'nama_peminjam',
         'nis',
         'buku_id',
@@ -66,6 +67,16 @@ class Peminjaman extends Model
     public function pengembalian(): HasOne
     {
         return $this->hasOne(Pengembalian::class);
+    }
+
+    /**
+     * Anggota yang melakukan peminjaman.
+     *
+     * @return BelongsTo<Anggota, $this>
+     */
+    public function anggota(): BelongsTo
+    {
+        return $this->belongsTo(Anggota::class);
     }
 
     /**

@@ -29,14 +29,14 @@ class PeminjamanController extends Controller
 
         /** @var LengthAwarePaginator<Peminjaman> $peminjamans */
         $peminjamans = Peminjaman::query()
-            ->when($anggota, fn ($query) => $query->where('nis', $anggota->nis))
+            ->when($anggota, fn ($query) => $query->where('anggota_id', $anggota->id))
             ->with($this->relations())
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('buku_id'), fn ($query) => $query->where('buku_id', $request->integer('buku_id')))
             ->when($request->filled('search'), function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('nama_peminjam', 'like', '%'.$search.'%')
-                        ->orWhere('nis', 'like', '%'.$search.'%');
+                        ->orWhereHas('buku', fn ($q) => $q->where('judul', 'like', '%'.$search.'%'));
                 });
             })
             ->orderByDesc('id')
@@ -72,7 +72,10 @@ class PeminjamanController extends Controller
 
             $buku->decrement('stok_tersedia');
 
+            $anggota = $this->authenticatedStudent($request);
+
             $peminjaman = Peminjaman::create([
+                'anggota_id' => $anggota->id,
                 'nama_peminjam' => $validated['nama_peminjam'],
                 'nis' => $validated['nis'],
                 'buku_id' => $buku->id,
