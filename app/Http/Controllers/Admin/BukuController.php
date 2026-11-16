@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Buku;
+use App\Models\Peminjaman;
 use App\Models\Kategori;
 use App\Models\Penerbit;
 use App\Models\Penulis;
@@ -132,7 +133,9 @@ class BukuController extends Controller
         $buku->load(['kategori', 'penulis', 'penerbit']);
 
         $totalPinjam = $buku->peminjaman()->count();
-        $sedangDipinjam = $buku->peminjaman()->whereNull('tanggal_dikembalikan')->count();
+        $sedangDipinjam = $buku->peminjaman()
+            ->where('status', Peminjaman::STATUS_DIPINJAM)
+            ->count();
         $rataRating = $buku->ulasan()->avg('rating');
 
         $ratings = $buku->ulasan()

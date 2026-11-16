@@ -139,7 +139,7 @@
                                         {{ $p->tanggal_pinjam->format('d/m/Y') }}
                                     </td>
                                     <td class="px-4 py-3 text-sm">
-                                        @if ($p->tanggal_dikembalikan)
+                                        @if ($p->status === \App\Models\Peminjaman::STATUS_DIKEMBALIKAN)
                                             <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">Dikembalikan</span>
                                         @else
                                             <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">Dipinjam</span>
