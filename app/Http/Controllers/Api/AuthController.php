@@ -8,6 +8,7 @@ use App\Models\ProfileEditRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -57,6 +58,7 @@ class AuthController extends Controller
             'kelas' => ['sometimes', 'required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255', 'unique:anggota,email,'.$anggota->id],
             'telepon' => ['nullable', 'string', 'max:20'],
+            'pin' => ['nullable', 'string', 'min:4', 'max:6'],
         ]);
 
         $perubahan = collect($data)->filter(
@@ -143,6 +145,6 @@ class AuthController extends Controller
 
     private function profileData(Anggota $anggota): array
     {
-        return $anggota->only(['id', 'nis', 'nama', 'kelas', 'email', 'telepon']);
+        return $anggota->only(['id', 'nis', 'nama', 'kelas', 'email', 'telepon', 'pin']);
     }
 }

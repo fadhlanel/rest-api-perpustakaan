@@ -149,7 +149,7 @@
       });
       if (!res.ok) throw new Error('Gagal mengambil data.');
       const data = await res.json();
-      target.textContent = data.pin_hash;
+      target.textContent = data.pin;
       button.textContent = 'Tutup';
     } catch (e) {
       alert('Gagal memuat data PIN.');
