@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
+use App\Models\Peminjaman;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 
@@ -90,5 +91,32 @@ class AnggotaController extends Controller
         ]);
 
         return back()->with('success', 'PIN berhasil direset. Siswa harus membuat PIN baru saat login di aplikasi Android.');
+    }
+
+    public function dashboard(Anggota $anggota)
+    {
+        $peminjamanAktif = $anggota->peminjaman()
+            ->where('status', Peminjaman::STATUS_DIPINJAM)
+            ->with('buku')
+            ->get();
+
+        $peminjamanDikembalikan = $anggota->peminjaman()
+            ->where('status', Peminjaman::STATUS_DIKEMBALIKAN)
+            ->with(['buku', 'pengembalian', 'ulasan'])
+            ->get();
+
+        $totalDenda = $anggota->ulasan()
+            ->whereNotNull('denda')
+            ->sum('denda');
+
+        $ulasanTersedia = $anggota->ulasan()->whereNull('denda')->get();
+
+        return view('admin.anggota.dashboard', compact(
+            'anggota',
+            'peminjamanAktif',
+            'peminjamanDikembalikan',
+            'totalDenda',
+            'ulasanTersedia'
+        ));
     }
 }
