@@ -135,7 +135,7 @@
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                                        Rp {{ number_format($p->denda ?? 0, 0, ',', '.') }}
+                                        {{ $p->ulasan?->komentar ?? '-' }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -170,7 +170,7 @@
                                         {{ $p->pengembalian?->tanggal_kembali?->format('d/m/Y') ?? '-' }}
                                     </td>
                                     <td class="px-4 py-3 text-sm text-red-600 dark:text-red-400 font-semibold">
-                                        Rp {{ number_format($p->denda, 0, ',', '.') }}
+                                        Terlambat {{ $p->tanggal_jatuh_tempo->diffInDays(now()) }} hari
                                     </td>
                                 </tr>
                             @endforeach

@@ -96,23 +96,20 @@ class AnggotaController extends Controller
     public function show(Anggota $anggota)
     {
         $aktif = $anggota->peminjaman()
-            ->whereNull('tanggal_dikembalikan')
+            ->where('status', Peminjaman::STATUS_DIPINJAM)
             ->with('buku')
             ->latest()
             ->get();
 
         $selesai = $anggota->peminjaman()
-            ->whereNotNull('tanggal_dikembalikan')
-            ->with(['buku', 'ulasan'])
+            ->where('status', Peminjaman::STATUS_DIKEMBALIKAN)
+            ->with(['buku', 'pengembalian', 'ulasan'])
             ->latest()
             ->get();
 
-        $denda = $anggota->peminjaman()
-            ->whereNotNull('tanggal_dikembalikan')
-            ->where('denda', '>', 0)
-            ->with('buku')
-            ->latest()
-            ->get();
+        $denda = $aktif
+            ->filter(fn (Peminjaman $peminjaman): bool => $peminjaman->tanggal_jatuh_tempo->isPast())
+            ->values();
 
         $ratings = $anggota->ulasan()
             ->with('buku')

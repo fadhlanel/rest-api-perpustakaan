@@ -108,7 +108,7 @@ class BukuController extends Controller
      */
     public function destroy(Buku $buku): JsonResponse
     {
-        if ($buku->peminjamans()->exists()) {
+        if ($buku->peminjaman()->exists()) {
             return $this->errorResponse('Buku tidak dapat dihapus karena memiliki riwayat peminjaman.', 400);
         }
 
