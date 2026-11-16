@@ -33,6 +33,6 @@ class Anggota extends Model
      */
     public function ulasan(): HasMany
     {
-        return $this->hasMany(Ulasan::class);
+        return $this->hasMany(Ulasan::class, 'nis', 'nis');
     }
 }
