@@ -18,6 +18,8 @@ class BukuResource extends JsonResource
             'id' => $this->id,
             'judul' => $this->judul,
             'deskripsi' => $this->deskripsi,
+            'sinopsis' => $this->sinopsis,
+            'ringkasan' => $this->ringkasan,
             'tahun_terbit' => $this->tahun_terbit,
             'isbn' => $this->isbn,
             'sampul' => $this->sampul,
