@@ -159,7 +159,8 @@ class AuthController extends Controller
         try {
             return Crypt::decryptString($encryptedPin) === $inputPin;
         } catch (\Exception $e) {
-            return false;
+            // Fallback: cek jika masih bcrypt hash (data lama)
+            return Hash::check($inputPin, $encryptedPin);
         }
     }
 

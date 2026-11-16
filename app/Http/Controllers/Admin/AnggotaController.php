@@ -65,10 +65,20 @@ class AnggotaController extends Controller
 
     public function showPin(Anggota $anggota)
     {
+        $pin = null;
+        if ($anggota->pin) {
+            try {
+                $pin = Crypt::decryptString($anggota->pin);
+            } catch (\Exception $e) {
+                // PIN lama masih bcrypt hash, tidak bisa decrypt
+                $pin = '[Hash lama - reset PIN untuk melihat]';
+            }
+        }
+
         return response()->json([
             'nis' => $anggota->nis,
             'nama' => $anggota->nama,
-            'pin' => $anggota->pin ? Crypt::decryptString($anggota->pin) : null,
+            'pin' => $pin,
         ]);
     }
 
