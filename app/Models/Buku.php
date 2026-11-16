@@ -79,7 +79,7 @@ class Buku extends Model
     /**
      * Riwayat peminjaman terhadap buku ini.
      */
-    public function peminjamans(): HasMany
+    public function peminjaman(): HasMany
     {
         return $this->hasMany(Peminjaman::class);
     }

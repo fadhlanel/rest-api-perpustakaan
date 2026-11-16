@@ -93,30 +93,38 @@ class AnggotaController extends Controller
         return back()->with('success', 'PIN berhasil direset. Siswa harus membuat PIN baru saat login di aplikasi Android.');
     }
 
-    public function dashboard(Anggota $anggota)
+    public function show(Anggota $anggota)
     {
-        $peminjamanAktif = $anggota->peminjaman()
-            ->where('status', Peminjaman::STATUS_DIPINJAM)
+        $aktif = $anggota->peminjaman()
+            ->whereNull('tanggal_dikembalikan')
             ->with('buku')
+            ->latest()
             ->get();
 
-        $peminjamanDikembalikan = $anggota->peminjaman()
-            ->where('status', Peminjaman::STATUS_DIKEMBALIKAN)
-            ->with(['buku', 'pengembalian', 'ulasan'])
+        $selesai = $anggota->peminjaman()
+            ->whereNotNull('tanggal_dikembalikan')
+            ->with(['buku', 'ulasan'])
+            ->latest()
             ->get();
 
-        $totalDenda = $anggota->ulasan()
-            ->whereNotNull('denda')
-            ->sum('denda');
+        $denda = $anggota->peminjaman()
+            ->whereNotNull('tanggal_dikembalikan')
+            ->where('denda', '>', 0)
+            ->with('buku')
+            ->latest()
+            ->get();
 
-        $ulasanTersedia = $anggota->ulasan()->whereNull('denda')->get();
+        $ratings = $anggota->ulasan()
+            ->with('buku')
+            ->latest()
+            ->get();
 
-        return view('admin.anggota.dashboard', compact(
+        return view('admin.anggota.show', compact(
             'anggota',
-            'peminjamanAktif',
-            'peminjamanDikembalikan',
-            'totalDenda',
-            'ulasanTersedia'
+            'aktif',
+            'selesai',
+            'denda',
+            'ratings'
         ));
     }
 }

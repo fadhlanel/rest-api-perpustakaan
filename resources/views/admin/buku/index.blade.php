@@ -87,6 +87,9 @@
                 </td>
                 <td class="px-6 py-4 text-right">
                     <div class="flex justify-end gap-2">
+                        <a href="{{ route('admin.buku.show', $item) }}" class="p-1.5 text-slate-400 hover:text-cyan-600 transition">
+                            Detail
+                        </a>
                         <a href="{{ route('admin.buku.edit', $item) }}" class="p-1.5 text-slate-400 hover:text-blue-600 transition">
                             Edit
                         </a>

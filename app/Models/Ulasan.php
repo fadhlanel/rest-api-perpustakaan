@@ -45,4 +45,14 @@ class Ulasan extends Model
     {
         return $this->belongsTo(Buku::class);
     }
+
+    /**
+     * Anggota yang memberi rating.
+     *
+     * @return BelongsTo<Anggota, $this>
+     */
+    public function anggota(): BelongsTo
+    {
+        return $this->belongsTo(Anggota::class, 'nis', 'nis');
+    }
 }

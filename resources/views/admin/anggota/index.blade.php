@@ -67,6 +67,7 @@
                             </td>
                             <td class="py-3.5 px-6 text-right">
                                 <div class="flex justify-end items-center gap-2">
+                                    <a href="{{ route('admin.anggota.show', $item) }}" class="text-xs font-medium text-cyan-600 hover:text-cyan-800 hover:underline">Detail</a>
                                     <form method="POST" action="{{ route('admin.anggota.resetPin', $item) }}" data-confirm="Reset PIN untuk {{ $item->nama }}? Siswa harus membuat PIN baru saat login di aplikasi Android.">
                                         @csrf
                                         <button type="submit" class="text-xs font-medium text-amber-600 hover:text-amber-800 hover:underline">Reset PIN</button>

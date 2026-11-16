@@ -127,6 +127,35 @@ class BukuController extends Controller
         return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil diupdate.');
     }
 
+    public function show(Buku $buku)
+    {
+        $buku->load(['kategori', 'penulis', 'penerbit']);
+
+        $totalPinjam = $buku->peminjaman()->count();
+        $sedangDipinjam = $buku->peminjaman()->whereNull('tanggal_dikembalikan')->count();
+        $rataRating = $buku->ulasan()->avg('rating');
+
+        $ratings = $buku->ulasan()
+            ->with('anggota:id,nis,nama')
+            ->latest()
+            ->get();
+
+        $riwayatPeminjaman = $buku->peminjaman()
+            ->with('anggota:id,nis,nama')
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return view('admin.buku.show', compact(
+            'buku',
+            'totalPinjam',
+            'sedangDipinjam',
+            'rataRating',
+            'ratings',
+            'riwayatPeminjaman'
+        ));
+    }
+
     public function destroy(Buku $buku)
     {
         if ($buku->sampul) {

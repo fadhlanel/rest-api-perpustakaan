@@ -30,7 +30,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('status-api', [ApiStatusController::class, 'index'])->name('status-api');
 
-        Route::resource('buku', BukuController::class)->except(['show']);
+        Route::resource('buku', BukuController::class);
         Route::get('buku/export', [BukuController::class, 'export'])->name('buku.export');
         Route::get('buku/template', [BukuController::class, 'template'])->name('buku.template');
         Route::get('buku/import', [BukuController::class, 'importForm'])->name('buku.import');
@@ -44,10 +44,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('master/{type}/{id}', [MasterController::class, 'destroy'])->name('master.destroy');
         Route::get('anggota/{anggota}/pin', [AnggotaController::class, 'showPin'])->name('anggota.showPin');
         Route::post('anggota/{anggota}/reset-pin', [AnggotaController::class, 'resetPin'])->name('anggota.resetPin');
-        Route::get('anggota/{anggota}/dashboard', [AnggotaController::class, 'dashboard'])->name('anggota.dashboard');
         Route::resource('anggota', AnggotaController::class)
-            ->parameters(['anggota' => 'anggota'])
-            ->only(['index', 'create', 'store', 'update', 'destroy']);
+            ->parameters(['anggota' => 'anggota']);
         Route::resource('pengumuman', PengumumanController::class)->only(['index', 'store', 'update', 'destroy']);
 
         Route::get('permintaan-profil', [PermintaanEditController::class, 'index'])->name('permintaan.index');
