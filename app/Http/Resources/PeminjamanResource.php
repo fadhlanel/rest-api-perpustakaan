@@ -15,6 +15,14 @@ class PeminjamanResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $now = now();
+        $tanggalPinjam = $this->tanggal_pinjam;
+        $tanggalJatuhTempo = $this->tanggal_jatuh_tempo;
+
+        $hariBerjalan = $tanggalPinjam ? $tanggalPinjam->diffInDays($now, false) : 0;
+        $sisaHari = $tanggalJatuhTempo ? max(0, $now->diffInDays($tanggalJatuhTempo, false)) : 0;
+        $durasiHariTotal = $this->durasi_pinjam ?? 7;
+
         return [
             'id' => $this->id,
             'nama_peminjam' => $this->nama_peminjam,
@@ -26,6 +34,9 @@ class PeminjamanResource extends JsonResource
             'jumlah_perpanjangan' => $this->jumlah_perpanjangan,
             'bisa_perpanjang' => $this->status === Peminjaman::STATUS_DIPINJAM && $this->jumlah_perpanjangan < 1,
             'status' => $this->status,
+            'sisa_hari' => (int) $sisaHari,
+            'hari_berjalan' => (int) $hariBerjalan,
+            'durasi_hari_total' => (int) $durasiHariTotal,
             'pengembalian' => $this->whenLoaded('pengembalian', fn () => new PengembalianResource($this->pengembalian)),
             'ulasan' => $this->whenLoaded('ulasan', fn () => new UlasanResource($this->ulasan)),
             'bisa_rating' => $this->status === Peminjaman::STATUS_DIKEMBALIKAN,
