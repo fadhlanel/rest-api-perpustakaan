@@ -44,6 +44,7 @@
                         <th class="py-3 px-6">Nama Lengkap</th>
                         <th class="py-3 px-6">Kelas</th>
                         <th class="py-3 px-6">Kontak</th>
+                        <th class="py-3 px-6">PIN</th>
                         <th class="py-3 px-6 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -58,9 +59,14 @@
                             <td class="py-3.5 px-6 text-xs text-slate-500">
                                 {{ $item->telepon ?: ($item->email ?: '-') }}
                             </td>
+                            <td class="py-3.5 px-6">
+                                <div class="flex items-center gap-2">
+                                    <code id="pin-{{ $item->id }}" class="max-w-28 truncate rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">••••••••</code>
+                                    <button type="button" onclick="togglePin('{{ route('admin.anggota.showPin', $item) }}', 'pin-{{ $item->id }}', this)" class="text-xs font-medium text-cyan-600 hover:text-cyan-800 hover:underline">Lihat</button>
+                                </div>
+                            </td>
                             <td class="py-3.5 px-6 text-right">
                                 <div class="flex justify-end items-center gap-2">
-                                    <button type="button" onclick="viewPin('{{ route('admin.anggota.showPin', $item) }}', '{{ $item->nis }}')" class="text-xs font-medium text-cyan-600 hover:text-cyan-800 hover:underline">Lihat PIN</button>
                                     <form method="POST" action="{{ route('admin.anggota.destroy', $item) }}" data-confirm="Hapus siswa {{ $item->nama }}? Jika siswa sedang login di aplikasi, sesinya akan langsung berakhir.">
                                         @csrf
                                         @method('DELETE')
@@ -71,7 +77,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-12 text-center text-slate-400">
+                            <td colspan="6" class="py-12 text-center text-slate-400">
                                 <p class="text-sm font-medium">Belum ada data siswa.</p>
                                 <p class="text-xs text-slate-400 mt-1">Klik "Tambah Siswa / Anggota" agar siswa dapat masuk ke aplikasi Android.</p>
                             </td>
@@ -125,7 +131,15 @@
     }
   }
 
-  async function viewPin(url, nis) {
+  async function togglePin(url, elementId, button) {
+    const target = document.getElementById(elementId);
+    const isVisible = button.textContent.trim() === 'Tutup';
+    if (isVisible) {
+      target.textContent = '••••••••';
+      button.textContent = 'Lihat';
+      return;
+    }
+
     try {
       const res = await fetch(url, {
         headers: {
@@ -135,7 +149,8 @@
       });
       if (!res.ok) throw new Error('Gagal mengambil data.');
       const data = await res.json();
-      alert(`NIS: ${data.nis}\nNama: ${data.nama}\nPIN (hash): ${data.pin_hash}`);
+      target.textContent = data.pin_hash;
+      button.textContent = 'Tutup';
     } catch (e) {
       alert('Gagal memuat data PIN.');
     }
