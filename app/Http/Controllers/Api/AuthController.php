@@ -7,8 +7,7 @@ use App\Models\Anggota;
 use App\Models\ProfileEditRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -21,7 +20,16 @@ class AuthController extends Controller
         ]);
         $anggota = Anggota::where('nis', $data['nis'])->first();
 
-        if (! $anggota || ! Hash::check($data['pin'], $anggota->pin ?? '')) {
+        // Cek jika PIN belum di-set (reset oleh admin)
+        if ($anggota && is_null($anggota->pin)) {
+            return $this->successResponse([
+                'token' => null,
+                'siswa' => $this->profileData($anggota),
+                'pin_reset' => true,
+            ], 'PIN belum diatur. Silakan buat PIN baru.');
+        }
+
+        if (! $anggota || ! $this->verifyPin($data['pin'], $anggota->pin)) {
             return $this->errorResponse('NIS atau PIN salah.', 401);
         }
 
@@ -119,14 +127,40 @@ class AuthController extends Controller
             'pin_baru' => ['required', 'string', 'min:4', 'max:6'],
         ]);
 
-        if (! Hash::check($data['pin_lama'], $anggota->pin ?? '')) {
+        // Jika PIN lama null (reset), pin_lama bisa kosong
+        if ($anggota->pin !== null && ! $this->verifyPin($data['pin_lama'], $anggota->pin)) {
             return $this->errorResponse('PIN lama tidak sesuai.', 422);
         }
 
-        $anggota->pin = Hash::make($data['pin_baru']);
-        $anggota->save();
+        $anggota->update([
+            'pin' => Crypt::encryptString($data['pin_baru']),
+            'pin_reset_at' => null,
+        ]);
 
         return $this->successResponse(['siswa' => $this->profileData($anggota)], 'PIN berhasil diperbarui.');
+    }
+
+    public function pinResetStatus(Request $request): JsonResponse
+    {
+        $anggota = $this->authenticatedStudent($request);
+
+        if (! $anggota) {
+            return $this->errorResponse('Token tidak valid.', 401);
+        }
+
+        return $this->successResponse([
+            'pin_reset_at' => $anggota->pin_reset_at,
+            'pin_is_null' => is_null($anggota->pin),
+        ], 'Status reset PIN.');
+    }
+
+    private function verifyPin(string $inputPin, string $encryptedPin): bool
+    {
+        try {
+            return Crypt::decryptString($encryptedPin) === $inputPin;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     private function pendingCount(Anggota $anggota): int
@@ -145,6 +179,6 @@ class AuthController extends Controller
 
     private function profileData(Anggota $anggota): array
     {
-        return $anggota->only(['id', 'nis', 'nama', 'kelas', 'email', 'telepon', 'pin']);
+        return $anggota->only(['id', 'nis', 'nama', 'kelas', 'email', 'telepon', 'pin', 'pin_reset_at']);
     }
 }

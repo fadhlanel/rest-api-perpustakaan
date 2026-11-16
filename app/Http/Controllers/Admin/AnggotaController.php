@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Crypt;
 
 class AnggotaController extends Controller
 {
@@ -35,7 +35,7 @@ class AnggotaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate(['nis' => 'required|string|max:20|unique:anggota,nis', 'nama' => 'required|string|max:255', 'kelas' => 'nullable|string|max:50', 'email' => 'nullable|email', 'telepon' => 'nullable|string|max:30', 'pin' => 'required|string|min:4|max:6']);
-        $data['pin'] = Hash::make($data['pin']);
+        $data['pin'] = Crypt::encryptString($data['pin']);
         Anggota::create($data);
 
         return redirect()->route('admin.anggota.index')->with('success', 'Anggota berhasil ditambah.');
@@ -45,7 +45,7 @@ class AnggotaController extends Controller
     {
         $data = $request->validate(['nis' => 'required|string|max:20|unique:anggota,nis,'.$anggota->id, 'nama' => 'required|string|max:255', 'kelas' => 'nullable|string|max:50', 'email' => 'nullable|email', 'telepon' => 'nullable|string|max:30', 'pin' => 'nullable|string|min:4|max:6']);
         if (! empty($data['pin'])) {
-            $data['pin'] = Hash::make($data['pin']);
+            $data['pin'] = Crypt::encryptString($data['pin']);
         } else {
             unset($data['pin']);
         }
@@ -68,15 +68,17 @@ class AnggotaController extends Controller
         return response()->json([
             'nis' => $anggota->nis,
             'nama' => $anggota->nama,
-            'pin' => $anggota->pin,
+            'pin' => $anggota->pin ? Crypt::decryptString($anggota->pin) : null,
         ]);
     }
 
     public function resetPin(Request $request, Anggota $anggota)
     {
-        $data = $request->validate(['pin' => 'required|string|min:4|max:6|confirmed']);
-        $anggota->update(['pin' => Hash::make($data['pin'])]);
+        $anggota->update([
+            'pin' => null,
+            'pin_reset_at' => now(),
+        ]);
 
-        return back()->with('success', 'PIN berhasil direset.');
+        return back()->with('success', 'PIN berhasil direset. Siswa harus membuat PIN baru saat login di aplikasi Android.');
     }
 }

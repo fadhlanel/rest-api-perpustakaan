@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
+    Route::get('pin-reset-status', [AuthController::class, 'pinResetStatus']);
     Route::get('profile', [AuthController::class, 'profile']);
     Route::put('profile', [AuthController::class, 'update']);
     Route::get('profile/edits', [AuthController::class, 'edits']);
