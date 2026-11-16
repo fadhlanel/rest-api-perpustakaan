@@ -4,13 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pengumuman;
-use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
 
 class PengumumanController extends Controller
 {
-    public function __construct(private PushNotificationService $pushService) {}
-
     public function index()
     {
         $query = Pengumuman::query();
@@ -34,31 +31,14 @@ class PengumumanController extends Controller
 
     public function store(Request $request)
     {
-        $pengumuman = Pengumuman::create($request->validate(['judul' => 'required|string|max:255', 'isi' => 'required|string', 'aktif' => 'boolean', 'diterbitkan_pada' => 'nullable|date']));
-
-        if ($pengumuman->aktif) {
-            $this->pushService->sendToAll(
-                'Pengumuman Baru',
-                $pengumuman->judul,
-                ['type' => 'pengumuman', 'id' => $pengumuman->id]
-            );
-        }
+        Pengumuman::create($request->validate(['judul' => 'required|string|max:255', 'isi' => 'required|string', 'aktif' => 'boolean', 'diterbitkan_pada' => 'nullable|date']));
 
         return back()->with('success', 'Pengumuman berhasil ditambah.');
     }
 
     public function update(Request $request, Pengumuman $pengumuman)
     {
-        $wasInactive = !$pengumuman->aktif;
         $pengumuman->update($request->validate(['judul' => 'required|string|max:255', 'isi' => 'required|string', 'aktif' => 'boolean', 'diterbitkan_pada' => 'nullable|date']));
-
-        if ($wasInactive && $pengumuman->aktif) {
-            $this->pushService->sendToAll(
-                'Pengumuman Baru',
-                $pengumuman->judul,
-                ['type' => 'pengumuman', 'id' => $pengumuman->id]
-            );
-        }
 
         return back()->with('success', 'Pengumuman berhasil diupdate.');
     }
