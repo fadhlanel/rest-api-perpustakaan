@@ -39,6 +39,31 @@ class AuthController extends Controller
         return $this->successResponse(['token' => $token, 'siswa' => $this->profileData($anggota)], 'Login berhasil.');
     }
 
+    public function resetPin(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nis' => ['required', 'string', 'max:20'],
+            'pin_baru' => ['required', 'digits:6'],
+        ]);
+        $anggota = Anggota::where('nis', $data['nis'])->first();
+
+        if (! $anggota || ! is_null($anggota->pin)) {
+            return $this->errorResponse('Reset PIN tidak tersedia.', 422);
+        }
+
+        $anggota->update([
+            'pin' => Crypt::encryptString($data['pin_baru']),
+            'pin_reset_at' => null,
+        ]);
+        $token = Str::random(80);
+        $anggota->forceFill(['api_token_hash' => hash('sha256', $token)])->save();
+
+        return $this->successResponse([
+            'token' => $token,
+            'siswa' => $this->profileData($anggota),
+        ], 'PIN berhasil dibuat.');
+    }
+
     public function profile(Request $request): JsonResponse
     {
         $anggota = $this->authenticatedStudent($request);
