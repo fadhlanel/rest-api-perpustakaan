@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePeminjamanRequest;
 use App\Http\Resources\PeminjamanResource;
+use App\Models\Anggota;
 use App\Models\Buku;
 use App\Models\Peminjaman;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -22,10 +23,13 @@ class PeminjamanController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $anggota = $this->authenticatedStudent($request);
+
         $search = $request->string('search');
 
         /** @var LengthAwarePaginator<Peminjaman> $peminjamans */
         $peminjamans = Peminjaman::query()
+            ->when($anggota, fn ($query) => $query->where('nis', $anggota->nis))
             ->with($this->relations())
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('buku_id'), fn ($query) => $query->where('buku_id', $request->integer('buku_id')))
@@ -39,6 +43,13 @@ class PeminjamanController extends Controller
             ->paginate($this->perPage($request));
 
         return $this->paginatedResponse($peminjamans, PeminjamanResource::class, 'Daftar peminjaman buku.', $request);
+    }
+
+    private function authenticatedStudent(Request $request): ?Anggota
+    {
+        $token = $request->bearerToken();
+
+        return $token ? Anggota::where('api_token_hash', hash('sha256', $token))->first() : null;
     }
 
     /**
