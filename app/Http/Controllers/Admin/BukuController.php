@@ -63,6 +63,8 @@ class BukuController extends Controller
         $data = $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
+            'sinopsis' => 'nullable|string',
+            'ringkasan' => 'nullable|string',
             'tahun_terbit' => 'required|integer',
             'isbn' => 'nullable|string|max:30',
             'stok' => 'required|integer|min:0',
@@ -97,6 +99,8 @@ class BukuController extends Controller
         $data = $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
+            'sinopsis' => 'nullable|string',
+            'ringkasan' => 'nullable|string',
             'tahun_terbit' => 'required|integer',
             'isbn' => 'nullable|string|max:30',
             'stok' => 'required|integer|min:0',
@@ -114,13 +118,9 @@ class BukuController extends Controller
         }
 
         $data['stok_tersedia'] = $data['stok'] - $stokDipinjam;
-
-        if ($request->hasFile('sampul')) {
-            if ($buku->sampul) {
-                Storage::disk('public')->delete($buku->sampul);
-            }
-            $data['sampul'] = $request->file('sampul')->store('sampul', 'public');
-        }
+        $data['deskripsi'] = $data['deskripsi'] ?? $buku->deskripsi;
+        $data['sinopsis'] = $data['sinopsis'] ?? $buku->sinopsis;
+        $data['ringkasan'] = $data['ringkasan'] ?? $buku->ringkasan;
 
         $buku->update($data);
 

@@ -57,9 +57,25 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Deskripsi / Sinopsis</label>
-                    <textarea name="deskripsi" rows="5" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" placeholder="Ringkasan isi buku atau catatan katalog...">{{ old('deskripsi', $buku->deskripsi ?? '') }}</textarea>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Deskripsi</label>
+                    <textarea name="deskripsi" rows="4" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" placeholder="Deskripsi singkat buku...">{{ old('deskripsi', $buku->deskripsi ?? '') }}</textarea>
                     @error('deskripsi')
+                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Sinopsis (Detail)</label>
+                    <textarea name="sinopsis" rows="6" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" placeholder="Sinopsis lengkap isi buku...">{{ old('sinopsis', $buku->sinopsis ?? '') }}</textarea>
+                    @error('sinopsis')
+                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Ringkasan (Custom)</label>
+                    <textarea name="ringkasan" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" placeholder="Ringkasan singkat untuk tampilan kartu...">{{ old('ringkasan', $buku->ringkasan ?? '') }}</textarea>
+                    @error('ringkasan')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
