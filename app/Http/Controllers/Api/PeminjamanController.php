@@ -57,7 +57,15 @@ class PeminjamanController extends Controller
      */
     public function store(StorePeminjamanRequest $request): JsonResponse
     {
+        $anggota = $this->authenticatedStudent($request);
+        if (! $anggota) {
+            return $this->errorResponse('Sesi tidak valid. Silakan masuk kembali.', 401);
+        }
+
         $validated = $request->validated();
+        $validated['anggota_id'] = $anggota->id;
+        $validated['nis'] = $anggota->nis;
+        $validated['nama_peminjam'] = $anggota->nama;
 
         $hasil = DB::transaction(function () use ($validated) {
             $buku = Buku::whereKey($validated['buku_id'])->lockForUpdate()->first();
@@ -72,10 +80,8 @@ class PeminjamanController extends Controller
 
             $buku->decrement('stok_tersedia');
 
-            $anggota = $this->authenticatedStudent($request);
-
             $peminjaman = Peminjaman::create([
-                'anggota_id' => $anggota->id,
+                'anggota_id' => $validated['anggota_id'],
                 'nama_peminjam' => $validated['nama_peminjam'],
                 'nis' => $validated['nis'],
                 'buku_id' => $buku->id,
@@ -113,7 +119,6 @@ class PeminjamanController extends Controller
             'tanggal_jatuh_tempo' => $peminjaman->tanggal_jatuh_tempo->addDays($requestDays),
             'durasi_pinjam' => $peminjaman->durasi_pinjam + $requestDays,
             'jumlah_perpanjangan' => $peminjaman->jumlah_perpanjangan + 1,
-            'bisa_perpanjang' => $peminjaman->status === Peminjaman::STATUS_DIPINJAM && $peminjaman->jumlah_perpanjangan < 3,
         ]);
 
         return $this->successResponse(

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Anggota;
 use App\Models\Buku;
 use App\Models\Kategori;
 use App\Models\Peminjaman;
@@ -117,9 +118,13 @@ class ApiPerpustakaanTest extends TestCase
      */
     public function test_peminjaman_mengurangi_stok_dan_habisnya_ditolak(): void
     {
+        $anggota = Anggota::create(['nis' => '20249999', 'nama' => 'Budi Santoso']);
+        $token = 'test-reservation-token';
+        $anggota->forceFill(['api_token_hash' => hash('sha256', $token)])->save();
+        $headers = ['Authorization' => 'Bearer '.$token];
         $buku = Buku::where('judul', 'Perjalanan Cinta Pangeran Andika')->firstOrFail();
 
-        $pinjam = $this->postJson('/api/v1/peminjaman', [
+        $pinjam = $this->withHeaders($headers)->postJson('/api/v1/peminjaman', [
             'nama_peminjam' => 'Budi Santoso',
             'nis' => '20249999',
             'buku_id' => $buku->id,
@@ -135,7 +140,7 @@ class ApiPerpustakaanTest extends TestCase
 
         $stok = $buku->fresh()->stok_tersedia;
         for ($i = 0; $i < $stok; $i++) {
-            $this->postJson('/api/v1/peminjaman', [
+            $this->withHeaders($headers)->postJson('/api/v1/peminjaman', [
                 'nama_peminjam' => "Peminjam {$i}",
                 'nis' => '20240100',
                 'buku_id' => $buku->id,
@@ -143,11 +148,22 @@ class ApiPerpustakaanTest extends TestCase
         }
 
         // Stok sudah habis, peminjaman berikutnya harus ditolak.
-        $this->postJson('/api/v1/peminjaman', [
+        $this->withHeaders($headers)->postJson('/api/v1/peminjaman', [
             'nama_peminjam' => 'Peminjam Terakhir',
             'nis' => '20240100',
             'buku_id' => $buku->id,
         ])->assertStatus(400);
+    }
+
+    public function test_reservasi_tanpa_token_ditolak(): void
+    {
+        $buku = Buku::where('judul', 'Perjalanan Cinta Pangeran Andika')->firstOrFail();
+
+        $this->postJson('/api/v1/peminjaman', [
+            'nama_peminjam' => 'Tanpa Token',
+            'nis' => '20249998',
+            'buku_id' => $buku->id,
+        ])->assertUnauthorized();
     }
 
     /**
