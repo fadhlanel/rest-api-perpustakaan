@@ -13,7 +13,7 @@
     <p class="text-slate-500 text-sm">Konfigurasi operasional sirkulasi, identitas aplikasi, dan status layanan.</p>
 </div>
 
-<div class="max-w-3xl">
+<div>
     <form action="{{ route('admin.pengaturan.update') }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
