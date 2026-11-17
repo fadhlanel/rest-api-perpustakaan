@@ -3,13 +3,13 @@
 @section('title', 'Detail Anggota')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
+<div class="container mx-auto max-w-6xl px-4 py-8">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">
+            <h1 class="text-2xl font-bold text-gray-900">
                 {{ $anggota->nama }}
             </h1>
-            <p class="text-gray-600 mt-2">
+            <p class="text-gray-600 mt-1 text-sm">
                 NIS: {{ $anggota->nis }} | Kelas: {{ $anggota->kelas ?? '-' }}
             </p>
         </div>
@@ -19,46 +19,46 @@
     </div>
 
     <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white  rounded-lg shadow p-6">
-            <h3 class="text-sm font-medium text-gray-500">Sedang Dipinjam</h3>
-            <p class="text-3xl font-bold text-blue-600  mt-2">{{ $aktif->count() }}</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="text-xs font-medium text-gray-500">Sedang Dipinjam</h3>
+            <p class="text-2xl font-bold text-blue-600 mt-1">{{ $aktif->count() }}</p>
         </div>
-        <div class="bg-white  rounded-lg shadow p-6">
-            <h3 class="text-sm font-medium text-gray-500">Selesai</h3>
-            <p class="text-3xl font-bold text-green-600  mt-2">{{ $selesai->count() }}</p>
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="text-xs font-medium text-gray-500">Selesai</h3>
+            <p class="text-2xl font-bold text-green-600 mt-1">{{ $selesai->count() }}</p>
         </div>
-        <div class="bg-white  rounded-lg shadow p-6">
-            <h3 class="text-sm font-medium text-gray-500">Denda</h3>
-            <p class="text-3xl font-bold text-red-600  mt-2">{{ $denda->count() }}</p>
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="text-xs font-medium text-gray-500">Denda</h3>
+            <p class="text-2xl font-bold text-red-600 mt-1">{{ $denda->count() }}</p>
         </div>
-        <div class="bg-white  rounded-lg shadow p-6">
-            <h3 class="text-sm font-medium text-gray-500">Rating Diberikan</h3>
-            <p class="text-3xl font-bold text-yellow-600  mt-2">{{ $ratings->count() }}</p>
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="text-xs font-medium text-gray-500">Rating Diberikan</h3>
+            <p class="text-2xl font-bold text-yellow-600 mt-1">{{ $ratings->count() }}</p>
         </div>
     </div>
 
     <!-- Tabs -->
-    <div class="bg-white  rounded-lg shadow">
-        <div class="border-b border-gray-200 ">
-            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
-                <li class="mr-2">
-                    <button type="button" onclick="showTab('aktif')" id="tab-aktif" class="tab-button active inline-block p-4 border-b-2 border-blue-600 text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+    <div class="bg-white rounded-lg shadow">
+        <div class="border-b border-gray-200 overflow-x-auto">
+            <ul class="flex w-full -mb-px text-sm font-medium whitespace-nowrap">
+                <li class="flex-1 min-w-0">
+                    <button type="button" onclick="showTab('aktif')" id="tab-aktif" class="tab-button active w-full text-center px-3 py-3 border-b-2 border-blue-600 text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600">
                         Sedang Dipinjam ({{ $aktif->count() }})
                     </button>
                 </li>
-                <li class="mr-2">
-                    <button type="button" onclick="showTab('selesai')" id="tab-selesai" class="tab-button inline-block p-4 border-b-2 border-transparent hover:border-gray-300 text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500">
+                <li class="flex-1 min-w-0">
+                    <button type="button" onclick="showTab('selesai')" id="tab-selesai" class="tab-button w-full text-center px-3 py-3 border-b-2 border-transparent hover:border-gray-300 text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-500">
                         Selesai ({{ $selesai->count() }})
                     </button>
                 </li>
-                <li class="mr-2">
-                    <button type="button" onclick="showTab('denda')" id="tab-denda" class="tab-button inline-block p-4 border-b-2 border-transparent hover:border-gray-300 text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500">
-                        Denda & Telat ({{ $denda->count() }})
+                <li class="flex-1 min-w-0">
+                    <button type="button" onclick="showTab('denda')" id="tab-denda" class="tab-button w-full text-center px-3 py-3 border-b-2 border-transparent hover:border-gray-300 text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-500">
+                        Denda &amp; Telat ({{ $denda->count() }})
                     </button>
                 </li>
-                <li>
-                    <button type="button" onclick="showTab('rating')" id="tab-rating" class="tab-button inline-block p-4 border-b-2 border-transparent hover:border-gray-300 text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500">
+                <li class="flex-1 min-w-0">
+                    <button type="button" onclick="showTab('rating')" id="tab-rating" class="tab-button w-full text-center px-3 py-3 border-b-2 border-transparent hover:border-gray-300 text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-500">
                         Rating ({{ $ratings->count() }})
                     </button>
                 </li>
@@ -66,10 +66,10 @@
         </div>
 
         <!-- Tab Aktif -->
-        <div id="content-aktif" class="tab-content p-6">
+        <div id="content-aktif" class="tab-content p-4">
             @if ($aktif->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 ">
+                    <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Buku</th>
@@ -78,7 +78,7 @@
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Perpanjangan</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 ">
+                        <tbody class="divide-y divide-gray-200">
                             @foreach ($aktif as $p)
                                 <tr>
                                     <td class="px-4 py-3 text-sm text-gray-900">
@@ -105,19 +105,19 @@
         </div>
 
         <!-- Tab Selesai -->
-        <div id="content-selesai" class="tab-content p-6 hidden">
+        <div id="content-selesai" class="tab-content p-4 hidden">
             @if ($selesai->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 ">
+                    <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Buku</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Dikembalikan</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rating</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Denda</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ulasan</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 ">
+                        <tbody class="divide-y divide-gray-200">
                             @foreach ($selesai as $p)
                                 <tr>
                                     <td class="px-4 py-3 text-sm text-gray-900">
@@ -148,18 +148,18 @@
         </div>
 
         <!-- Tab Denda -->
-        <div id="content-denda" class="tab-content p-6 hidden">
+        <div id="content-denda" class="tab-content p-4 hidden">
             @if ($denda->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 ">
+                    <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Buku</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Dikembalikan</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Denda</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jatuh Tempo</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Terlambat</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 ">
+                        <tbody class="divide-y divide-gray-200">
                             @foreach ($denda as $p)
                                 <tr>
                                     <td class="px-4 py-3 text-sm text-gray-900">
@@ -167,10 +167,10 @@
                                         <div class="text-gray-500 text-xs">{{ $p->buku->penulis->nama ?? '-' }}</div>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-600">
-                                        {{ $p->pengembalian?->tanggal_kembali?->format('d/m/Y') ?? '-' }}
+                                        {{ $p->tanggal_jatuh_tempo->format('d/m/Y') }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-red-600  font-semibold">
-                                        Terlambat {{ $p->tanggal_jatuh_tempo->diffInDays(now()) }} hari
+                                    <td class="px-4 py-3 text-sm text-red-600 font-semibold">
+                                        Terlambat {{ (int) $p->tanggal_jatuh_tempo->diffInDays(now()) }} hari
                                     </td>
                                 </tr>
                             @endforeach
@@ -183,11 +183,11 @@
         </div>
 
         <!-- Tab Rating -->
-        <div id="content-rating" class="tab-content p-6 hidden">
+        <div id="content-rating" class="tab-content p-4 hidden">
             @if ($ratings->count() > 0)
                 <div class="space-y-4">
                     @foreach ($ratings as $r)
-                        <div class="border-b border-gray-200  pb-4 last:border-0">
+                        <div class="border-b border-gray-200 pb-4 last:border-0">
                             <div class="flex items-center justify-between mb-2">
                                 <div class="font-medium text-gray-900">
                                     {{ $r->buku->judul }}
@@ -200,7 +200,7 @@
                             @if ($r->komentar)
                                 <p class="text-gray-600 text-sm">{{ $r->komentar }}</p>
                             @endif
-                            <p class="text-gray-400  text-xs mt-1">
+                            <p class="text-gray-400 text-xs mt-1">
                                 {{ $r->created_at->format('d/m/Y H:i') }}
                             </p>
                         </div>
