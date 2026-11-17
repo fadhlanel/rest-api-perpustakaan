@@ -19,7 +19,7 @@ class Pengaturan extends Model
      */
     public const DEFAULTS = [
         'nama_perpustakaan' => 'PustakaDigital',
-        'nama_sekolah' => 'SMK / SMA',
+        'nama_sekolah' => 'SMK Negeri 6 Jember',
         'durasi_peminjaman' => '3',
         'batas_buku' => '3',
         'durasi_perpanjangan' => '1',

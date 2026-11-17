@@ -20,7 +20,7 @@
 </head>
 <body>
     <h1>Pustaka Digital — API Status</h1>
-    <p class="muted">REST API Perpustakaan SMK Negeri 1 Surabaya</p>
+    <p class="muted">REST API Perpustakaan SMK Negeri 6 Jember</p>
 
     <div class="cards">
         <div class="card">

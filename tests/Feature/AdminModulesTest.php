@@ -48,7 +48,7 @@ class AdminModulesTest extends TestCase
         $this->actingAs($admin)
             ->put(route('admin.pengaturan.update'), [
                 'nama_perpustakaan' => 'Perpustakaan SMK 1',
-                'nama_sekolah' => 'SMK Negeri 1',
+                'nama_sekolah' => 'SMK Negeri 6 Jember',
                 'durasi_peminjaman' => 5,
                 'batas_buku' => 4,
                 'durasi_perpanjangan' => 2,
