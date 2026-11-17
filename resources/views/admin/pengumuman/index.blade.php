@@ -10,25 +10,23 @@
 
 <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
     <!-- Tombol Tambah Pengumuman -->
-    <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+    <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2">
-            <button id="tambahPengumumanBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-cyan-700 hover:bg-cyan-800 text-white font-semibold px-4 py-2 rounded-lg text-sm shadow-sm transition" aria-label="Tambah pengumuman baru">
+            <button id="tambahPengumumanBtn" class="inline-flex items-center justify-center gap-2 bg-cyan-700 hover:bg-cyan-800 text-white font-semibold px-4 py-2 rounded-lg text-sm shadow-sm transition" aria-label="Tambah pengumuman baru">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 Tambah Pengumuman
             </button>
         </div>
-        <div class="flex flex-col sm:flex-row flex-1 items-stretch sm:items-center gap-3">
-            <div class="relative flex-1 min-w-[200px]">
-                <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="search" id="pengumumanSearch" name="search" value="{{ request('search') }}" placeholder="Cari judul atau isi pengumuman..." class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
-            </div>
-            <select id="pengumumanStatusFilter" name="aktif" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                <option value="">Semua Status</option>
-                <option value="1" @selected(request('aktif') === '1')>Aktif</option>
-                <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
-            </select>
-            <button type="button" onclick="resetPengumumanSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center justify-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
+        <div class="relative flex-1 min-w-[200px]">
+            <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="search" id="pengumumanSearch" name="search" value="{{ request('search') }}" placeholder="Cari judul atau isi pengumuman..." class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
         </div>
+        <select id="pengumumanStatusFilter" name="aktif" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+            <option value="">Semua Status</option>
+            <option value="1" @selected(request('aktif') === '1')>Aktif</option>
+            <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
+        </select>
+        <button type="button" onclick="resetPengumumanSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
     </div>
 
     <!-- Dialog Form Tambah/Edit Pengumuman -->

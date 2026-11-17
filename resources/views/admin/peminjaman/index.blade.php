@@ -9,13 +9,13 @@
 </div>
 
 <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-    <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div class="relative w-full sm:max-w-md">
+    <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4">
+        <div class="relative w-full max-w-md">
             <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             <input type="search" id="peminjamanSearch" name="search" value="{{ request('search') }}" placeholder="Cari nama, NIS, atau judul buku..." class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
         </div>
         <div class="flex gap-2 items-center">
-            <select id="statusFilter" name="status" class="flex-1 sm:flex-initial px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-700 hover:border-slate-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition cursor-pointer">
+            <select id="statusFilter" name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-700 hover:border-slate-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition cursor-pointer">
                 <option value="">Semua Status</option>
                 <option value="dipinjam" @selected(request('status') === 'dipinjam')>Dipinjam</option>
                 <option value="dikembalikan" @selected(request('status') === 'dikembalikan')>Dikembalikan</option>

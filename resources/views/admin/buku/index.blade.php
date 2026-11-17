@@ -8,11 +8,11 @@
         <h2 class="text-2xl font-bold text-slate-800">Master Data & Katalog Buku</h2>
         <p class="text-slate-500 text-sm">Kelola koleksi pustaka dan sinkronisasi aplikasi mobile.</p>
     </div>
-    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-        <a href="{{ route('admin.buku.export') }}" class="inline-flex items-center justify-center bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition">
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('admin.buku.export') }}" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition">
             Export CSV
         </a>
-        <a href="{{ route('admin.buku.create') }}" class="inline-flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
+        <a href="{{ route('admin.buku.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
             + Tambah Koleksi Buku
         </a>
     </div>
@@ -20,24 +20,24 @@
 
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
     <div class="p-4 border-b border-slate-100 flex flex-wrap gap-3 items-center">
-        <div class="relative flex-1 min-w-[200px] w-full sm:w-auto">
+        <div class="relative flex-1 min-w-[200px]">
             <label for="bukuSearch" class="sr-only">Cari buku</label>
             <input type="search" name="search" id="bukuSearch" value="{{ request('search') }}" placeholder="Cari judul, ISBN, penulis..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-cyan-500 focus:border-cyan-500">
         </div>
-        <select name="kategori_id" id="kategoriFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm w-full sm:w-auto">
+        <select name="kategori_id" id="kategoriFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
             <option value="">Semua kategori</option>
             @foreach($kategori as $item)<option value="{{ $item->id }}" @selected(request('kategori_id') == $item->id)>{{ $item->nama }}</option>@endforeach
         </select>
-        <select name="penulis_id" id="penulisFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm w-full sm:w-auto">
+        <select name="penulis_id" id="penulisFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
             <option value="">Semua penulis</option>
             @foreach($penulis as $item)<option value="{{ $item->id }}" @selected(request('penulis_id') == $item->id)>{{ $item->nama }}</option>@endforeach
         </select>
-        <select name="penerbit_id" id="penerbitFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm w-full sm:w-auto">
+        <select name="penerbit_id" id="penerbitFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
             <option value="">Semua penerbit</option>
             @foreach($penerbit as $item)<option value="{{ $item->id }}" @selected(request('penerbit_id') == $item->id)>{{ $item->nama }}</option>@endforeach
         </select>
-        <a href="{{ route('admin.buku.import') }}" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-700 transition whitespace-nowrap text-center">Import CSV</a>
-        <button type="button" onclick="resetBukuSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center justify-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
+        <a href="{{ route('admin.buku.import') }}" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-700 transition whitespace-nowrap">Import CSV</a>
+        <button type="button" onclick="resetBukuSearch()" class="px-4 py-2 text-sm text-slate-500 flex items-center hover:text-slate-700 hover:bg-slate-100 rounded-lg whitespace-nowrap">Reset</button>
     </div>
 
     <div class="overflow-x-auto">
