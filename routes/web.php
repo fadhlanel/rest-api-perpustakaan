@@ -30,13 +30,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('status-api', [ApiStatusController::class, 'index'])->name('status-api');
 
-        Route::resource('buku', BukuController::class);
+        // Named buku routes MUST come BEFORE Route::resource to avoid being captured by {buku}
         Route::get('buku/export', [BukuController::class, 'export'])->name('buku.export');
+        Route::get('buku/export-pdf', [BukuController::class, 'exportLabelPdf'])->name('buku.export-pdf');
         Route::get('buku/template', [BukuController::class, 'template'])->name('buku.template');
         Route::get('buku/import', [BukuController::class, 'importForm'])->name('buku.import');
         Route::post('buku/import/preview', [BukuController::class, 'importPreview'])->name('buku.import.preview');
         Route::post('buku/import/process', [BukuController::class, 'importProcess'])->name('buku.import.process');
         Route::get('buku/{buku}/sampul', [BukuController::class, 'sampul'])->name('buku.sampul');
+        Route::resource('buku', BukuController::class);
         Route::get('master/{type}', [MasterController::class, 'index'])->name('master.index');
         Route::get('master/{type}/create', [MasterController::class, 'create'])->name('master.create');
         Route::post('master/{type}', [MasterController::class, 'store'])->name('master.store');

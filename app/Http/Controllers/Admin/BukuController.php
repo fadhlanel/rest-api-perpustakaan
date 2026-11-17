@@ -192,27 +192,41 @@ class BukuController extends Controller
     {
         $buku = Buku::with(['kategori', 'penulis', 'penerbit'])->get();
         $fileName = 'buku_export_'.date('YmdHis').'.csv';
-        $handle = fopen('php://output', 'w');
 
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="'.$fileName.'"');
+        return response()->streamDownload(function () use ($buku): void {
+            $handle = fopen('php://output', 'w');
+            // UTF-8 BOM agar Excel bisa baca karakter Indonesia
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Judul', 'ISBN', 'Kategori', 'Penulis', 'Penerbit', 'Stok', 'Stok Tersedia']);
 
-        fputcsv($handle, ['Judul', 'ISBN', 'Kategori', 'Penulis', 'Penerbit', 'Stok', 'Stok Tersedia']);
+            foreach ($buku as $item) {
+                fputcsv($handle, [
+                    $item->judul,
+                    $item->isbn,
+                    $item->kategori?->nama ?? '-',
+                    $item->penulis?->nama ?? '-',
+                    $item->penerbit?->nama ?? '-',
+                    $item->stok,
+                    $item->stok_tersedia,
+                ]);
+            }
 
-        foreach ($buku as $item) {
-            fputcsv($handle, [
-                $item->judul,
-                $item->isbn,
-                $item->kategori->nama,
-                $item->penulis->nama,
-                $item->penerbit->nama,
-                $item->stok,
-                $item->stok_tersedia,
-            ]);
+            fclose($handle);
+        }, $fileName, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    public function exportLabelPdf(Request $request)
+    {
+        $query = Buku::with(['kategori', 'penulis', 'penerbit']);
+
+        if ($request->filled('kategori_id')) {
+            $query->where('kategori_id', $request->integer('kategori_id'));
         }
 
-        fclose($handle);
-        exit;
+        $buku = $query->orderBy('judul')->get();
+        $kategori = Kategori::orderBy('nama')->get();
+
+        return view('admin.buku.export-pdf', compact('buku', 'kategori'));
     }
 
     public function importForm()
