@@ -65,17 +65,43 @@
                                     <button type="button" onclick="togglePin('{{ route('admin.anggota.showPin', $item) }}', 'pin-{{ $item->id }}', this)" class="text-xs font-medium text-cyan-600 hover:text-cyan-800 hover:underline">Lihat</button>
                                 </div>
                             </td>
-                            <td class="py-3.5 px-6 text-right">
-                                <div class="flex justify-end items-center gap-2">
-                                    <a href="{{ route('admin.anggota.show', $item) }}" class="text-xs font-medium text-cyan-600 hover:text-cyan-800 hover:underline">Detail</a>
-                                    <form method="POST" action="{{ route('admin.anggota.resetPin', $item) }}" data-confirm="Reset PIN untuk {{ $item->nama }}? Siswa harus membuat PIN baru saat login di aplikasi Android.">
+                            <td class="py-3 px-6">
+                                <div class="flex justify-end items-center gap-1.5 flex-wrap">
+                                    {{-- Detail --}}
+                                    <a href="{{ route('admin.anggota.show', $item) }}"
+                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-cyan-50 text-cyan-700 border border-cyan-200 text-xs font-semibold hover:bg-cyan-100 transition whitespace-nowrap">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                        Detail
+                                    </a>
+
+                                    {{-- Reset PIN --}}
+                                    <form method="POST" action="{{ route('admin.anggota.resetPin', $item) }}"
+                                          data-confirm="Reset PIN untuk {{ $item->nama }}? Siswa harus membuat PIN baru saat login di aplikasi Android.">
                                         @csrf
-                                        <button type="submit" class="text-xs font-medium text-amber-600 hover:text-amber-800 hover:underline">Reset PIN</button>
+                                        <button type="submit"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold hover:bg-amber-100 transition whitespace-nowrap">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                            </svg>
+                                            Reset PIN
+                                        </button>
                                     </form>
-                                    <form method="POST" action="{{ route('admin.anggota.destroy', $item) }}" data-confirm="Hapus siswa {{ $item->nama }}? Jika siswa sedang login di aplikasi, sesinya akan langsung berakhir.">
+
+                                    {{-- Hapus --}}
+                                    <form method="POST" action="{{ route('admin.anggota.destroy', $item) }}"
+                                          data-confirm="Hapus siswa {{ $item->nama }}? Jika siswa sedang login di aplikasi, sesinya akan langsung berakhir.">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline">Hapus</button>
+                                        <button type="submit"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 text-xs font-semibold hover:bg-red-100 transition whitespace-nowrap">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                            Hapus
+                                        </button>
                                     </form>
                                 </div>
                             </td>

@@ -44,12 +44,18 @@
                     <tr class="hover:bg-slate-50/60 transition">
                         <td class="py-3.5 px-6 text-xs text-slate-400 font-mono">{{ $items->firstItem() + $index }}</td>
                         <td class="py-3.5 px-6 font-medium text-slate-800">{{ $item->nama }}</td>
-                        <td class="py-3.5 px-6 text-right">
-                            <div class="flex gap-3 justify-end">
+                        <td class="py-3 px-6 text-right">
+                            <div class="flex gap-2 justify-end">
                                 <form method="POST" action="{{ route('admin.master.destroy', [$type, $item->id]) }}" data-confirm="Hapus {{ $type }} ini?" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline">Hapus</button>
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 text-xs font-semibold hover:bg-red-100 transition whitespace-nowrap">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        Hapus
+                                    </button>
                                 </form>
                             </div>
                         </td>
