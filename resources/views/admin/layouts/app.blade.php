@@ -1,9 +1,13 @@
+@php
+    $namaPerpustakaan = \App\Models\Pengaturan::get('nama_perpustakaan');
+    $namaSekolah = \App\Models\Pengaturan::get('nama_sekolah');
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - PustakaDigital</title>
+    <title>@yield('title') - {{ $namaPerpustakaan }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* Standalone responsive sidebar rules - immune to build/cache discrepancies */
@@ -76,8 +80,8 @@
         <aside id="adminSidebar" class="mobile-closed bg-white border-r border-slate-200 flex flex-col min-h-screen" aria-label="Navigasi Utama">
             <div class="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                    <h1 class="text-xl font-bold text-slate-800">PustakaDigital</h1>
-                    <p class="text-xs text-slate-500 uppercase tracking-wider mt-0.5">SIPUSTAKA SMK / SMA</p>
+                    <h1 class="text-xl font-bold text-slate-800">{{ $namaPerpustakaan }}</h1>
+                    <p class="text-xs text-slate-500 uppercase tracking-wider mt-0.5">{{ $namaSekolah }}</p>
                     <div class="mt-3 px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded inline-block">UNIT PERPUSTAKAAN INDUK</div>
                 </div>
                 <button type="button" id="mobileSidebarCloseBtn" onclick="closeMobileSidebar()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition" aria-label="Tutup menu">
@@ -108,7 +112,7 @@
                     <button type="button" id="mobileMenuBtn" onclick="openMobileSidebar()" class="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-cyan-500" aria-label="Buka menu navigasi">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
-                    <span class="font-bold text-slate-800 text-base md:hidden">PustakaDigital</span>
+                    <span class="font-bold text-slate-800 text-base md:hidden">{{ $namaPerpustakaan }}</span>
                 </div>
 
                 <div class="flex items-center gap-4">

@@ -13,7 +13,9 @@ class ConfigController extends Controller
         $config = [];
         foreach (Pengaturan::DEFAULTS as $key => $default) {
             $val = Pengaturan::get($key, $default);
-            $config[$key] = is_numeric($val) ? (int) $val : $val;
+            $config[$key] = in_array($key, ['durasi_peminjaman', 'batas_buku', 'durasi_perpanjangan'], true)
+                ? (int) $val
+                : $val;
         }
 
         return $this->successResponse($config, 'Konfigurasi sistem perpustakaan.');

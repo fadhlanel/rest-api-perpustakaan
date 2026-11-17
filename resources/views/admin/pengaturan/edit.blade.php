@@ -78,6 +78,31 @@
 
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
             <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-base font-bold text-slate-800">Kontak WhatsApp Pustakawan</h3>
+                <p class="text-xs text-slate-500">Nomor WhatsApp dan template pesan bantuan yang dipanggil aplikasi Android.</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Nomor WhatsApp</label>
+                <input type="text" name="whatsapp_nomor" value="{{ old('whatsapp_nomor', $settings['whatsapp_nomor']) }}" placeholder="08xxxxxxxxxx atau 628xxxxxxxxxx" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500">
+                <p class="text-[11px] text-slate-400 mt-1">Gunakan nomor aktif WhatsApp (format lokal 08xxx atau internasional 628xxx).</p>
+                @error('whatsapp_nomor')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Template Pesan WhatsApp</label>
+                <textarea name="whatsapp_template" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" placeholder="Halo Pustakawan, saya {nama} (NIS: {nis})...">{{ old('whatsapp_template', $settings['whatsapp_template']) }}</textarea>
+                <p class="text-[11px] text-slate-400 mt-1">Variabel otomatis: <code class="bg-slate-100 px-1 py-0.5 rounded text-cyan-800">{nama}</code>, <code class="bg-slate-100 px-1 py-0.5 rounded text-cyan-800">{nis}</code>, <code class="bg-slate-100 px-1 py-0.5 rounded text-cyan-800">{kelas}</code>.</p>
+                @error('whatsapp_template')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
+            <div class="border-b border-slate-100 pb-4">
                 <h3 class="text-base font-bold text-slate-800">Status Operasional Layanan</h3>
                 <p class="text-xs text-slate-500">Status publik perpustakaan yang dapat dibaca oleh client.</p>
             </div>

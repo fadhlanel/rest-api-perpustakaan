@@ -24,6 +24,8 @@ class Pengaturan extends Model
         'batas_buku' => '3',
         'durasi_perpanjangan' => '1',
         'status_layanan' => 'aktif',
+        'whatsapp_nomor' => '081234567890',
+        'whatsapp_template' => 'Halo Pustakawan, saya {nama} (NIS: {nis}) ingin bertanya perihal layanan perpustakaan.',
     ];
 
     public static function get(string $kunci, ?string $default = null): string

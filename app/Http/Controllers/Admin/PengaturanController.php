@@ -29,6 +29,8 @@ class PengaturanController extends Controller
             'batas_buku' => ['required', 'integer', 'min:1', 'max:10'],
             'durasi_perpanjangan' => ['required', 'integer', 'min:1', 'max:14'],
             'status_layanan' => ['required', 'in:aktif,pemeliharaan,tutup'],
+            'whatsapp_nomor' => ['nullable', 'string', 'max:30'],
+            'whatsapp_template' => ['nullable', 'string', 'max:500'],
         ]);
 
         foreach ($data as $key => $value) {

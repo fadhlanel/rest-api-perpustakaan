@@ -32,7 +32,8 @@ class AdminModulesTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.nama_perpustakaan', 'PustakaDigital')
-            ->assertJsonPath('data.status_layanan', 'aktif');
+            ->assertJsonPath('data.status_layanan', 'aktif')
+            ->assertJsonPath('data.whatsapp_nomor', '081234567890');
     }
 
     public function test_admin_can_access_and_update_settings(): void
@@ -52,6 +53,8 @@ class AdminModulesTest extends TestCase
                 'batas_buku' => 4,
                 'durasi_perpanjangan' => 2,
                 'status_layanan' => 'aktif',
+                'whatsapp_nomor' => '628123456789',
+                'whatsapp_template' => 'Halo {nama} {nis} {kelas}',
             ])
             ->assertRedirect();
 
