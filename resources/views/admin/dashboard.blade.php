@@ -55,17 +55,17 @@
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
-        <div class="relative w-full max-w-md">
+    <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div class="relative w-full md:max-w-md">
             <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             <input type="search" id="dashboardSearch" name="search" value="{{ request('search') }}" placeholder="Cari judul, ISBN, penulis, penerbit..." class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500">
         </div>
-        <div class="flex gap-2">
-            <select id="kategoriFilter" name="kategori_id" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
+        <div class="flex flex-wrap gap-2 items-center">
+            <select id="kategoriFilter" name="kategori_id" class="flex-1 sm:flex-initial px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
                 <option value="">Semua Kategori</option>
                 @foreach($kategori as $item)<option value="{{ $item->id }}" @selected(request('kategori_id') == $item->id)>{{ $item->nama }}</option>@endforeach
             </select>
-            <select id="statusFilter" name="status_ketersediaan" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
+            <select id="statusFilter" name="status_ketersediaan" class="flex-1 sm:flex-initial px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-sky-500">
                 <option value="">Status Ketersediaan</option>
                 <option value="tersedia" @selected(request('status_ketersediaan') === 'tersedia')>Tersedia</option>
                 <option value="habis" @selected(request('status_ketersediaan') === 'habis')>Habis</option>
