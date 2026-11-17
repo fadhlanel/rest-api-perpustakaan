@@ -3,62 +3,62 @@
 @section('title', 'Detail Anggota')
 
 @section('content')
-<div class="container mx-auto max-w-7xl px-3 sm:px-4 py-6 sm:py-8">
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+<div class="container mx-auto max-w-6xl px-4 py-8">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
         <div>
-            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">
+            <h1 class="text-2xl font-bold text-gray-900">
                 {{ $anggota->nama }}
             </h1>
-            <p class="text-gray-600 mt-1 text-sm sm:text-base">
+            <p class="text-gray-600 mt-1 text-sm">
                 NIS: {{ $anggota->nis }} | Kelas: {{ $anggota->kelas ?? '-' }}
             </p>
         </div>
-        <a href="{{ route('admin.anggota.index') }}" class="btn btn-secondary w-full sm:w-auto">
+        <a href="{{ route('admin.anggota.index') }}" class="btn btn-secondary">
             ← Kembali
         </a>
     </div>
 
     <!-- Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
-        <div class="bg-white rounded-lg shadow p-3 sm:p-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white rounded-lg shadow p-4">
             <h3 class="text-xs font-medium text-gray-500">Sedang Dipinjam</h3>
-            <p class="text-xl sm:text-2xl font-bold text-blue-600 mt-1">{{ $aktif->count() }}</p>
+            <p class="text-2xl font-bold text-blue-600 mt-1">{{ $aktif->count() }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-3 sm:p-4">
+        <div class="bg-white rounded-lg shadow p-4">
             <h3 class="text-xs font-medium text-gray-500">Selesai</h3>
-            <p class="text-xl sm:text-2xl font-bold text-green-600 mt-1">{{ $selesai->count() }}</p>
+            <p class="text-2xl font-bold text-green-600 mt-1">{{ $selesai->count() }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-3 sm:p-4">
+        <div class="bg-white rounded-lg shadow p-4">
             <h3 class="text-xs font-medium text-gray-500">Denda</h3>
-            <p class="text-xl sm:text-2xl font-bold text-red-600 mt-1">{{ $denda->count() }}</p>
+            <p class="text-2xl font-bold text-red-600 mt-1">{{ $denda->count() }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow p-3 sm:p-4">
+        <div class="bg-white rounded-lg shadow p-4">
             <h3 class="text-xs font-medium text-gray-500">Rating Diberikan</h3>
-            <p class="text-xl sm:text-2xl font-bold text-yellow-600 mt-1">{{ $ratings->count() }}</p>
+            <p class="text-2xl font-bold text-yellow-600 mt-1">{{ $ratings->count() }}</p>
         </div>
     </div>
 
     <!-- Tabs -->
     <div class="bg-white rounded-lg shadow">
         <div class="border-b border-gray-200 overflow-x-auto">
-            <ul class="flex flex-nowrap w-full -mb-px text-xs sm:text-sm font-medium">
+            <ul class="flex w-full -mb-px text-sm font-medium whitespace-nowrap">
                 <li class="flex-1 min-w-0">
-                    <button type="button" onclick="showTab('aktif')" id="tab-aktif" class="tab-button active w-full text-center px-2 sm:px-3 py-2 sm:py-3 border-b-2 border-blue-600 text-blue-600 whitespace-nowrap truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600">
-                        Dipinjam ({{ $aktif->count() }})
+                    <button type="button" onclick="showTab('aktif')" id="tab-aktif" class="tab-button active w-full text-center px-3 py-3 border-b-2 border-blue-600 text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600">
+                        Sedang Dipinjam ({{ $aktif->count() }})
                     </button>
                 </li>
                 <li class="flex-1 min-w-0">
-                    <button type="button" onclick="showTab('selesai')" id="tab-selesai" class="tab-button w-full text-center px-2 sm:px-3 py-2 sm:py-3 border-b-2 border-transparent hover:border-gray-300 text-gray-500 whitespace-nowrap truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-500">
+                    <button type="button" onclick="showTab('selesai')" id="tab-selesai" class="tab-button w-full text-center px-3 py-3 border-b-2 border-transparent hover:border-gray-300 text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-500">
                         Selesai ({{ $selesai->count() }})
                     </button>
                 </li>
                 <li class="flex-1 min-w-0">
-                    <button type="button" onclick="showTab('denda')" id="tab-denda" class="tab-button w-full text-center px-2 sm:px-3 py-2 sm:py-3 border-b-2 border-transparent hover:border-gray-300 text-gray-500 whitespace-nowrap truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-500">
+                    <button type="button" onclick="showTab('denda')" id="tab-denda" class="tab-button w-full text-center px-3 py-3 border-b-2 border-transparent hover:border-gray-300 text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-500">
                         Denda &amp; Telat ({{ $denda->count() }})
                     </button>
                 </li>
                 <li class="flex-1 min-w-0">
-                    <button type="button" onclick="showTab('rating')" id="tab-rating" class="tab-button w-full text-center px-2 sm:px-3 py-2 sm:py-3 border-b-2 border-transparent hover:border-gray-300 text-gray-500 whitespace-nowrap truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-500">
+                    <button type="button" onclick="showTab('rating')" id="tab-rating" class="tab-button w-full text-center px-3 py-3 border-b-2 border-transparent hover:border-gray-300 text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-500">
                         Rating ({{ $ratings->count() }})
                     </button>
                 </li>
@@ -69,29 +69,29 @@
         <div id="content-aktif" class="tab-content p-4">
             @if ($aktif->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="w-full divide-y divide-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Buku</th>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Pinjam</th>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Jatuh Tempo</th>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Perpanjangan</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Buku</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pinjam</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jatuh Tempo</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Perpanjangan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($aktif as $p)
                                 <tr>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">
+                                    <td class="px-4 py-3 text-sm text-gray-900">
                                         <div class="font-medium">{{ $p->buku->judul }}</div>
                                         <div class="text-gray-500 text-xs">{{ $p->buku->penulis->nama ?? '-' }}</div>
                                     </td>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-600">
+                                    <td class="px-4 py-3 text-sm text-gray-600">
                                         {{ $p->tanggal_pinjam->format('d/m/Y') }}
                                     </td>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-600">
+                                    <td class="px-4 py-3 text-sm text-gray-600">
                                         {{ $p->tanggal_jatuh_tempo->format('d/m/Y') }}
                                     </td>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-600">
+                                    <td class="px-4 py-3 text-sm text-gray-600">
                                         {{ $p->jumlah_perpanjangan }}x
                                     </td>
                                 </tr>
@@ -100,7 +100,7 @@
                     </table>
                 </div>
             @else
-                <div class="text-center py-6 sm:py-8 text-gray-500">Tidak ada buku yang sedang dipinjam.</div>
+                <div class="text-center py-8 text-gray-500">Tidak ada buku yang sedang dipinjam.</div>
             @endif
         </div>
 
@@ -108,33 +108,33 @@
         <div id="content-selesai" class="tab-content p-4 hidden">
             @if ($selesai->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="w-full divide-y divide-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Buku</th>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Dikembalikan</th>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Rating</th>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Ulasan</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Buku</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Dikembalikan</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Rating</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ulasan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($selesai as $p)
                                 <tr>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">
+                                    <td class="px-4 py-3 text-sm text-gray-900">
                                         <div class="font-medium">{{ $p->buku->judul }}</div>
                                         <div class="text-gray-500 text-xs">{{ $p->buku->penulis->nama ?? '-' }}</div>
                                     </td>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-600">
+                                    <td class="px-4 py-3 text-sm text-gray-600">
                                         {{ $p->pengembalian?->tanggal_kembali?->format('d/m/Y') ?? '-' }}
                                     </td>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-600">
+                                    <td class="px-4 py-3 text-sm text-gray-600">
                                         @if ($p->ulasan)
                                             <span class="text-yellow-500">⭐</span> {{ $p->ulasan->rating }}/5
                                         @else
                                             -
                                         @endif
                                     </td>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-600">
+                                    <td class="px-4 py-3 text-sm text-gray-600">
                                         {{ $p->ulasan?->komentar ?? '-' }}
                                     </td>
                                 </tr>
@@ -143,7 +143,7 @@
                     </table>
                 </div>
             @else
-                <div class="text-center py-6 sm:py-8 text-gray-500">Tidak ada riwayat selesai.</div>
+                <div class="text-center py-8 text-gray-500">Tidak ada riwayat selesai.</div>
             @endif
         </div>
 
@@ -151,25 +151,25 @@
         <div id="content-denda" class="tab-content p-4 hidden">
             @if ($denda->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="w-full divide-y divide-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Buku</th>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Jatuh Tempo</th>
-                                <th class="px-2 sm:px-4 py-2 text-left text-[11px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Terlambat</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Buku</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jatuh Tempo</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Terlambat</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($denda as $p)
                                 <tr>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">
+                                    <td class="px-4 py-3 text-sm text-gray-900">
                                         <div class="font-medium">{{ $p->buku->judul }}</div>
                                         <div class="text-gray-500 text-xs">{{ $p->buku->penulis->nama ?? '-' }}</div>
                                     </td>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-600">
+                                    <td class="px-4 py-3 text-sm text-gray-600">
                                         {{ $p->tanggal_jatuh_tempo->format('d/m/Y') }}
                                     </td>
-                                    <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-600 font-semibold">
+                                    <td class="px-4 py-3 text-sm text-red-600 font-semibold">
                                         Terlambat {{ (int) $p->tanggal_jatuh_tempo->diffInDays(now()) }} hari
                                     </td>
                                 </tr>
@@ -178,7 +178,7 @@
                     </table>
                 </div>
             @else
-                <div class="text-center py-6 sm:py-8 text-gray-500">Tidak ada denda.</div>
+                <div class="text-center py-8 text-gray-500">Tidak ada denda.</div>
             @endif
         </div>
 
@@ -207,7 +207,7 @@
                     @endforeach
                 </div>
             @else
-                <div class="text-center py-6 sm:py-8 text-gray-500">Belum ada rating.</div>
+                <div class="text-center py-8 text-gray-500">Belum ada rating.</div>
             @endif
         </div>
     </div>
