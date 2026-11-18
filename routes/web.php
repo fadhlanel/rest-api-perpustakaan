@@ -44,6 +44,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('master/{type}', [MasterController::class, 'store'])->name('master.store');
         Route::put('master/{type}/{id}', [MasterController::class, 'update'])->name('master.update');
         Route::delete('master/{type}/{id}', [MasterController::class, 'destroy'])->name('master.destroy');
+        Route::get('master/{type}/reassign', [MasterController::class, 'reassign'])->name('master.reassign');
+        Route::post('master/{type}/reassign/bulk', [MasterController::class, 'reassignBulk'])->name('master.reassign.bulk');
+        Route::post('master/{type}/reassign/item', [MasterController::class, 'reassignItem'])->name('master.reassign.item');
         Route::get('anggota/{anggota}/pin', [AnggotaController::class, 'showPin'])->name('anggota.showPin');
         Route::post('anggota/{anggota}/reset-pin', [AnggotaController::class, 'resetPin'])->name('anggota.resetPin');
         Route::resource('anggota', AnggotaController::class)
