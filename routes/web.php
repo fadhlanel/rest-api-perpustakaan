@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AnggotaController;
 use App\Http\Controllers\Admin\ApiStatusController;
 use App\Http\Controllers\Admin\BukuController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DebugController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\PeminjamanController;
@@ -29,6 +30,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [LoginController::class, 'logout'])->name('logout');
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('status-api', [ApiStatusController::class, 'index'])->name('status-api');
+        Route::get('debug-check', [DebugController::class, 'check'])->name('debug.check');
 
         // Named buku routes MUST come BEFORE Route::resource to avoid being captured by {buku}
         Route::get('buku/export', [BukuController::class, 'export'])->name('buku.export');
