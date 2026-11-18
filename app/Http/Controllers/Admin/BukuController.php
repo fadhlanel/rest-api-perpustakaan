@@ -9,11 +9,22 @@ use App\Models\Peminjaman;
 use App\Models\Penerbit;
 use App\Models\Penulis;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Format;
+use Intervention\Image\ImageManager;
 
 class BukuController extends Controller
 {
+    protected ImageManager $imageManager;
+
+    public function __construct()
+    {
+        $this->imageManager = new ImageManager(new Driver);
+    }
+
     public function index(Request $request)
     {
         $query = Buku::with(['kategori', 'penulis', 'penerbit']);
@@ -78,7 +89,7 @@ class BukuController extends Controller
         $data['stok_tersedia'] = $data['stok'];
 
         if ($request->hasFile('sampul')) {
-            $data['sampul'] = $request->file('sampul')->store('sampul', 'public');
+            $data['sampul'] = $this->processSampul($request->file('sampul'));
         }
 
         Buku::create($data);
@@ -128,7 +139,7 @@ class BukuController extends Controller
             if ($buku->sampul) {
                 Storage::disk('public')->delete($buku->sampul);
             }
-            $data['sampul'] = $request->file('sampul')->store('sampul', 'public');
+            $data['sampul'] = $this->processSampul($request->file('sampul'));
         }
 
         $buku->update($data);
@@ -307,5 +318,35 @@ class BukuController extends Controller
             fputcsv($handle, ['Contoh Judul Buku', '9780000000000', 'Teknologi', 'Nama Penulis', 'Nama Penerbit', '5']);
             fclose($handle);
         }, 'template_buku.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * Proses sampul menjadi portrait 2:3 ratio (300x450px).
+     *
+     * @param  UploadedFile  $file
+     * @return string Path relatif di disk public
+     */
+    protected function processSampul($file): string
+    {
+        $img = $this->imageManager->decode($file);
+
+        // Cover: crop ke 2:3 portrait, center focus
+        $img->cover(300, 450);
+
+        $filename = uniqid('sampul_', true).'.jpg';
+        $path = 'sampul/'.$filename;
+        $fullPath = Storage::disk('public')->path($path);
+
+        // Pastikan direktori ada
+        $dir = dirname($fullPath);
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        // Simpan sebagai JPEG quality 80
+        $encoded = $img->encodeUsingFormat(Format::JPEG, 80);
+        file_put_contents($fullPath, (string) $encoded);
+
+        return $path;
     }
 }
