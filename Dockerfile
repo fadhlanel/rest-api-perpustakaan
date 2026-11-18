@@ -15,8 +15,9 @@ FROM php:8.3-cli
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libicu-dev libzip-dev unzip \
-    && docker-php-ext-install pdo_mysql intl bcmath opcache \
+    && apt-get install -y --no-install-recommends libicu-dev libzip-dev unzip libpng-dev libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql intl bcmath opcache gd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
