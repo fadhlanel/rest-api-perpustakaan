@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Buku;
-use App\Models\Peminjaman;
 use App\Models\Kategori;
+use App\Models\Peminjaman;
 use App\Models\Penerbit;
 use App\Models\Penulis;
 use Illuminate\Http\Request;
@@ -258,10 +258,15 @@ class BukuController extends Controller
 
     public function importProcess(Request $request)
     {
+        $selected = $request->input('selected', []);
         $rows = $request->input('rows', []);
         $berhasil = 0;
-        foreach ($rows as $row) {
-            $data = array_pad($row, 6, '');
+
+        foreach ($selected as $index) {
+            if (! isset($rows[$index])) {
+                continue;
+            }
+            $data = array_pad($rows[$index], 6, '');
             if (blank($data[0])) {
                 continue;
             }
