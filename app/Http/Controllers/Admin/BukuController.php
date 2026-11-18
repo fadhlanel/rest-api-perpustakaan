@@ -123,6 +123,14 @@ class BukuController extends Controller
         $data['sinopsis'] = $data['sinopsis'] ?? $buku->sinopsis;
         $data['ringkasan'] = $data['ringkasan'] ?? $buku->ringkasan;
 
+        if ($request->hasFile('sampul')) {
+            // Hapus sampul lama jika ada
+            if ($buku->sampul) {
+                Storage::disk('public')->delete($buku->sampul);
+            }
+            $data['sampul'] = $request->file('sampul')->store('sampul', 'public');
+        }
+
         $buku->update($data);
 
         return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil diupdate.');
