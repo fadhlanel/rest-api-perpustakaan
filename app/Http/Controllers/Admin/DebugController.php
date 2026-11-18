@@ -47,6 +47,23 @@ class DebugController extends Controller
         // 6. Loaded extensions
         $checks['loaded_extensions'] = implode(', ', ['gd' => extension_loaded('gd') ? 'YES' : 'NO']);
 
+        // 7. Test BukuController index logic
+        try {
+            $query = Buku::with(['kategori', 'penulis', 'penerbit']);
+            $items = $query->latest()->paginate(10)->onEachSide(0);
+            $checks['buku_index_query'] = 'OK - '.$items->total().' books loaded';
+        } catch (\Throwable $e) {
+            $checks['buku_index_query'] = 'ERROR: '.$e->getMessage().' | '.$e->getFile().':'.$e->getLine();
+        }
+
+        // 8. Test reassign view data
+        try {
+            $bukus = Buku::whereNull('kategori_id')->with(['kategori', 'penulis', 'penerbit'])->paginate(10)->onEachSide(0);
+            $checks['reassign_query'] = 'OK - '.$bukus->total().' orphan books';
+        } catch (\Throwable $e) {
+            $checks['reassign_query'] = 'ERROR: '.$e->getMessage().' | '.$e->getFile().':'.$e->getLine();
+        }
+
         return response()->json($checks, 200, [], JSON_PRETTY_PRINT);
     }
 }
