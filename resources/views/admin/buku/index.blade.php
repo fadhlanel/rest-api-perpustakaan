@@ -78,12 +78,12 @@
                     </td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-1 bg-cyan-50 text-cyan-700 text-[10px] font-bold rounded uppercase">
-                            {{ $item->kategori->nama }}
+                            {{ $item->kategori?->nama ?? 'Tanpa Kategori' }}
                         </span>
                     </td>
                     <td class="px-6 py-4">
-                        <p class="text-xs font-bold text-slate-700">{{ $item->penulis->nama }}</p>
-                        <p class="text-[10px] text-slate-500 mt-0.5">{{ $item->penerbit->nama }}</p>
+                        <p class="text-xs font-bold text-slate-700">{{ $item->penulis?->nama ?? 'Tanpa Penulis' }}</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">{{ $item->penerbit?->nama ?? 'Tanpa Penerbit' }}</p>
                     </td>
                     <td class="px-6 py-4 text-center">
                         <div class="inline-block text-right">
