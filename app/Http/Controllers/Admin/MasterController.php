@@ -22,7 +22,7 @@ class MasterController extends Controller
             $query->where('nama', 'like', '%'.$search.'%');
         }
 
-        $items = $query->latest()->paginate(15)->withQueryString();
+        $items = $query->latest()->paginate(10)->onEachSide(1)->withQueryString();
 
         return view('admin.master.index', ['type' => $type, 'items' => $items]);
     }
