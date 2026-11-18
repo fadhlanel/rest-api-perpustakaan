@@ -39,28 +39,26 @@
         <h3 class="text-lg font-semibold text-slate-800 mb-4">Pindah Semua ({{ $bukus->total() }} buku)</h3>
         <p class="text-slate-600 mb-6">Pindahkan semua buku ke satu {{ $type }}.</p>
 
-        <form action="{{ route('master.reassign.bulk', $type) }}" method="POST">
-            @csrf
-            <div class="flex flex-col sm:flex-row gap-4">
-                <div class="flex-1">
-                    <label for="new_id_bulk" class="block text-sm font-medium text-slate-700 mb-2">Pilih {{ ucfirst($type) }} baru</label>
-                    <select id="new_id_bulk" name="new_id" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none">
-                        <option value="">— Pilih {{ ucfirst($type) }} —</option>
-                        @foreach ($options as $opt)
-                            <option value="{{ $opt->id }}">{{ $opt->nama }}</option>
-                        @endforeach
-                    </select>
-                    @error('new_id')
-                        <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div class="self-end">
-                    <button type="submit" class="inline-flex items-center justify-center gap-2 bg-cyan-700 hover:bg-cyan-800 text-white font-semibold px-6 py-2.5 rounded-lg text-sm shadow-sm transition">
-                        Pindahkan Semua ({{ $bukus->total() }} buku)
-                    </button>
-                </div>
-            </div>
-        </form>
+                    <form action="{{ route('admin.master.reassign.bulk', $type) }}" method="POST" class="flex flex-col sm:flex-row gap-4">
+                        @csrf
+                        <div class="flex-1">
+                            <label for="new_id_bulk" class="block text-sm font-medium text-slate-700 mb-2">Pilih {{ ucfirst($type) }} baru</label>
+                            <select id="new_id_bulk" name="new_id" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none">
+                                <option value="">— Pilih {{ ucfirst($type) }} —</option>
+                                @foreach ($options as $opt)
+                                    <option value="{{ $opt->id }}">{{ $opt->nama }}</option>
+                                @endforeach
+                            </select>
+                            @error('new_id')
+                                <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="self-end">
+                            <button type="submit" class="inline-flex items-center justify-center gap-2 bg-cyan-700 hover:bg-cyan-800 text-white font-semibold px-6 py-2.5 rounded-lg text-sm shadow-sm transition">
+                                Pindahkan Semua ({{ $bukus->total() }} buku)
+                            </button>
+                        </div>
+                    </form>
     </div>
 
     <!-- Per‑item Table -->
@@ -93,7 +91,7 @@
                                 <td class="px-6 py-4 text-sm text-slate-900">{{ $buku->penerbit?->nama ?? '–' }}</td>
                                 <td class="px-6 py-4 text-sm text-slate-900">{{ $buku->kategori?->nama ?? '–' }}</td>
                                 <td class="px-6 py-4">
-                                    <form action="{{ route('master.reassign.item', $type) }}" method="POST" class="flex gap-2">
+                                    <form action="{{ route('admin.master.reassign.item', $type) }}" method="POST" class="flex gap-2">
                                         @csrf
                                         <input type="hidden" name="buku_id" value="{{ $buku->id }}">
                                         <select name="new_id" class="px-3 py-1.5 border border-slate-300 rounded text-sm outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500">
@@ -114,7 +112,7 @@
             </div>
 
             <div class="px-6 py-4 border-t border-slate-200">
-                {{ $bukus->links('pagination.custom') }}
+                {{ $bukus->links() }}
             </div>
         @endif
     </div>
