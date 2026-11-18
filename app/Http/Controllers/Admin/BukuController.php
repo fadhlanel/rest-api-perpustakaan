@@ -274,7 +274,16 @@ class BukuController extends Controller
             $kategori = Kategori::firstOrCreate(['nama' => trim($data[2])]);
             $penulis = Penulis::firstOrCreate(['nama' => trim($data[3])]);
             $penerbit = Penerbit::firstOrCreate(['nama' => trim($data[4])]);
-            Buku::create(['judul' => trim($data[0]), 'isbn' => trim($data[1]), 'stok' => $stok, 'stok_tersedia' => $stok, 'kategori_id' => $kategori->id, 'penulis_id' => $penulis->id, 'penerbit_id' => $penerbit->id]);
+            Buku::create([
+                'judul' => trim($data[0]),
+                'isbn' => trim($data[1]),
+                'tahun_terbit' => 2020,
+                'stok' => $stok,
+                'stok_tersedia' => $stok,
+                'kategori_id' => $kategori->id,
+                'penulis_id' => $penulis->id,
+                'penerbit_id' => $penerbit->id,
+            ]);
             $berhasil++;
         }
         session()->forget('buku_import_rows');
