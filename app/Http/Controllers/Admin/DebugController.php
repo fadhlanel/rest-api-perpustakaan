@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Buku;
+use App\Models\Kategori;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -62,6 +63,28 @@ class DebugController extends Controller
             $checks['reassign_query'] = 'OK - '.$bukus->total().' orphan books';
         } catch (\Throwable $e) {
             $checks['reassign_query'] = 'ERROR: '.$e->getMessage().' | '.$e->getFile().':'.$e->getLine();
+        }
+
+        // 9. Test BukuController view render
+        try {
+            $query = Buku::with(['kategori', 'penulis', 'penerbit']);
+            $bukus = $query->latest()->paginate(10)->onEachSide(0)->withQueryString();
+            $view = view('admin.buku.index', compact('bukus'))->render();
+            $checks['buku_view_render'] = 'OK - View rendered ('.strlen($view).' bytes)';
+        } catch (\Throwable $e) {
+            $checks['buku_view_render'] = 'ERROR: '.$e->getMessage().' | '.$e->getFile().':'.$e->getLine();
+        }
+
+        // 10. Test reassign view render
+        try {
+            $type = 'kategori';
+            $bukus = Buku::whereNull('kategori_id')->with(['kategori', 'penulis', 'penerbit'])->paginate(10)->onEachSide(0)->withQueryString();
+            $options = Kategori::orderBy('nama')->get();
+            $field = 'kategori_id';
+            $view = view('admin.master.reassign', compact('type', 'bukus', 'options', 'field'))->render();
+            $checks['reassign_view_render'] = 'OK - View rendered ('.strlen($view).' bytes)';
+        } catch (\Throwable $e) {
+            $checks['reassign_view_render'] = 'ERROR: '.$e->getMessage().' | '.$e->getFile().':'.$e->getLine();
         }
 
         return response()->json($checks, 200, [], JSON_PRETTY_PRINT);
