@@ -23,7 +23,7 @@ class AnggotaController extends Controller
             });
         }
 
-        $anggota = $query->latest()->paginate(10)->onEachSide(1)->withQueryString();
+        $anggota = $query->latest()->paginate(10)->onEachSide(0)->withQueryString();
 
         return view('admin.anggota.index', compact('anggota'));
     }

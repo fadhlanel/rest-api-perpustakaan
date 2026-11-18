@@ -79,30 +79,22 @@
                         </a>
                     @endif
 
-                    {{-- Pagination Elements --}}
-                    @foreach ($elements as $element)
-                        {{-- "Three Dots" Separator --}}
-                        @if (is_string($element))
-                            <span aria-disabled="true">
-                                <span class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-slate-400 bg-white border border-slate-200 cursor-default leading-5">{{ $element }}</span>
-                            </span>
-                        @endif
+                    @php
+                        $firstPage = min($paginator->currentPage(), max(1, $paginator->lastPage() - 1));
+                        $lastPage = min($firstPage + 1, $paginator->lastPage());
+                    @endphp
 
-                        {{-- Array Of Links --}}
-                        @if (is_array($element))
-                            @foreach ($element as $page => $url)
-                                @if ($page == $paginator->currentPage())
-                                    <span aria-current="page">
-                                        <span class="inline-flex items-center px-4 py-2 -ml-px text-sm font-bold text-blue-600 bg-blue-50 border border-blue-200 cursor-default leading-5">{{ $page }}</span>
-                                    </span>
-                                @else
-                                    <a href="{{ $url }}" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-slate-700 bg-white border border-slate-200 leading-5 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer" aria-label="Buka halaman {{ $page }}">
-                                        {{ $page }}
-                                    </a>
-                                @endif
-                            @endforeach
+                    @for ($page = $firstPage; $page <= $lastPage; $page++)
+                        @if ($page === $paginator->currentPage())
+                            <span aria-current="page">
+                                <span class="inline-flex items-center px-4 py-2 -ml-px text-sm font-bold text-blue-600 bg-blue-50 border border-blue-200 cursor-default leading-5">{{ $page }}</span>
+                            </span>
+                        @else
+                            <a href="{{ $paginator->url($page) }}" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-slate-700 bg-white border border-slate-200 leading-5 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer" aria-label="Buka halaman {{ $page }}">
+                                {{ $page }}
+                            </a>
                         @endif
-                    @endforeach
+                    @endfor
 
                     {{-- Next Page Link --}}
                     @if ($paginator->hasMorePages())

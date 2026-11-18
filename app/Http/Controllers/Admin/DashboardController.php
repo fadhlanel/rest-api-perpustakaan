@@ -62,7 +62,7 @@ class DashboardController extends Controller
                 });
             }
 
-            $buku = $query->latest()->paginate(10)->onEachSide(1)->withQueryString();
+            $buku = $query->latest()->paginate(10)->onEachSide(0)->withQueryString();
             $kategori = Kategori::orderBy('nama')->get(['id', 'nama']);
         } catch (\Throwable) {
         }

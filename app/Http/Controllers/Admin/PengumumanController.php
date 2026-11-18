@@ -24,7 +24,7 @@ class PengumumanController extends Controller
             $query->where('aktif', request()->boolean('aktif'));
         }
 
-        $pengumuman = $query->latest()->paginate(10)->onEachSide(1)->withQueryString();
+        $pengumuman = $query->latest()->paginate(10)->onEachSide(0)->withQueryString();
 
         return view('admin.pengumuman.index', compact('pengumuman'));
     }
