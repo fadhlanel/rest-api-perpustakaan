@@ -15,18 +15,18 @@ FROM php:8.3-cli
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev libicu-dev libzip-dev unzip \
-    && docker-php-ext-install pdo_pgsql intl bcmath opcache \
+    && apt-get install -y --no-install-recommends libicu-dev libzip-dev unzip \
+    && docker-php-ext-install pdo_mysql intl bcmath opcache \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Back4App free tier hanya 256 MB RAM, jadi opcache dan memory_limit dibatasi.
+# Railway: opcache & memory_limit disesuaikan untuk container standar.
 RUN { \
         echo 'opcache.enable=1'; \
         echo 'opcache.memory_consumption=64'; \
         echo 'opcache.max_accelerated_files=10000'; \
         echo 'opcache.validate_timestamps=0'; \
-        echo 'memory_limit=192M'; \
+        echo 'memory_limit=256M'; \
         echo 'expose_php=Off'; \
     } > /usr/local/etc/php/conf.d/zz-app.ini
 
@@ -38,11 +38,10 @@ RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framewor
     && chmod -R ug+rwX storage bootstrap/cache \
     && php artisan package:discover --ansi
 
-# Back4App mengirim PORT (default 10000). Worker dibatasi agar hemat RAM.
+# Railway inject PORT env var. Worker dibatasi 2 proses.
 ENV PHP_CLI_SERVER_WORKERS=2
 ENV PORT=8080
 EXPOSE 8080
 
-# Entrypoint menjalankan migration (Back4App tidak punya job terpisah),
-# lalu menyalakan server pada 0.0.0.0:$PORT.
+# Entrypoint menjalankan migration, storage:link, seed admin, lalu server.
 CMD ["sh", "docker-entrypoint.sh"]
