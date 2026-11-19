@@ -68,6 +68,9 @@ class MasterControllerTest extends TestCase
         $index->assertSee('3 Buku data kategorinya kosong, perbaiki datanya segera!');
         $index->assertSee('Perbaiki sekarang');
         $index->assertSee(route('admin.master.reassign', 'kategori'), false);
+        $index->assertSee('data-auto-dismiss="15000"', false);
+        $index->assertSee('aria-label="Tutup peringatan"', false);
+        $index->assertSee('master-issue-banner', false);
     }
 
     public function test_delete_penulis_with_books_shows_persistent_warning_banner(): void
@@ -146,6 +149,8 @@ class MasterControllerTest extends TestCase
         $response->assertSee(route('admin.master.reassign', 'kategori'), false);
         $response->assertSee(route('admin.master.reassign', 'penulis'), false);
         $response->assertSee(route('admin.master.reassign', 'penerbit'), false);
+        $response->assertSee('bg-red-600', false);
+        $response->assertDontSee('bg-amber-500', false);
     }
 
     public function test_warning_banner_persists_across_admin_pages(): void
@@ -165,6 +170,9 @@ class MasterControllerTest extends TestCase
             $response->assertSee('3 Buku data kategorinya kosong, perbaiki datanya segera!');
             $response->assertSee('Perbaiki sekarang');
             $response->assertSee(route('admin.master.reassign', 'kategori'), false);
+            $response->assertSee('class="master-issue-banner mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert" data-auto-dismiss="15000"', false);
+            $response->assertSee('aria-label="Tutup peringatan"', false);
+            $response->assertDontSee('border-amber-200 bg-amber-50', false);
         }
     }
 

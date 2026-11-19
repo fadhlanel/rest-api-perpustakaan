@@ -74,6 +74,18 @@
                 display: inline-flex !important;
             }
         }
+        .master-issue-banner {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .master-issue-banner.is-dismissing {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .master-issue-banner {
+                transition: none;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
@@ -122,7 +134,7 @@
                         <button type="button" id="notificationBtn" onclick="toggleNotifications()" aria-expanded="false" aria-controls="notificationPanel" aria-label="Notifikasi data master" class="relative p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                             @if ($masterDataIssueTotal > 0)
-                                <span class="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-amber-500 text-white text-[10px] font-bold leading-none" aria-label="{{ $masterDataIssueTotal }} buku perlu diperbaiki">{{ $masterDataIssueTotal }}</span>
+                                <span class="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none" aria-label="{{ $masterDataIssueTotal }} buku perlu diperbaiki">{{ $masterDataIssueTotal }}</span>
                             @endif
                         </button>
                         <div id="notificationPanel" class="hidden absolute right-0 mt-2 w-80 max-w-[85vw] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg z-30">
@@ -136,8 +148,8 @@
                                 <ul class="divide-y divide-slate-100">
                                     @foreach ($masterDataIssues as $issue)
                                         <li>
-                                            <a href="{{ $issue['url'] }}" class="flex items-start gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-amber-50 transition">
-                                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                            <a href="{{ $issue['url'] }}" class="flex items-start gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-red-50 transition">
+                                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                                                 <span>{{ $issue['message'] }}</span>
                                             </a>
                                         </li>
@@ -172,13 +184,18 @@
                 @endif
 
                 @foreach ($masterDataIssues as $issue)
-                    <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800" role="alert">
+                    <div class="master-issue-banner mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert" data-auto-dismiss="15000">
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <p class="font-medium">{{ $issue['message'] }}</p>
-                            <a href="{{ $issue['url'] }}" class="inline-flex items-center gap-1 font-semibold text-amber-900 underline hover:no-underline whitespace-nowrap">
-                                Perbaiki sekarang
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </a>
+                            <div class="flex items-center gap-3">
+                                <a href="{{ $issue['url'] }}" class="inline-flex items-center gap-1 font-semibold text-red-900 underline hover:no-underline whitespace-nowrap">
+                                    Perbaiki sekarang
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </a>
+                                <button type="button" data-dismiss-banner class="rounded-md p-1 text-red-600 transition hover:bg-red-100 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500" aria-label="Tutup peringatan">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -274,6 +291,26 @@
                     };
                 }
             });
+        });
+
+        document.querySelectorAll('[data-auto-dismiss]').forEach(function(banner){
+            var delay = parseInt(banner.getAttribute('data-auto-dismiss'), 10) || 15000;
+            var timeoutId = setTimeout(dismissBanner, delay);
+            var closeButton = banner.querySelector('[data-dismiss-banner]');
+
+            if(closeButton){
+                closeButton.addEventListener('click', function(){
+                    clearTimeout(timeoutId);
+                    dismissBanner();
+                });
+            }
+
+            function dismissBanner(){
+                banner.classList.add('is-dismissing');
+                setTimeout(function(){
+                    banner.remove();
+                }, 300);
+            }
         });
     </script>
 </body>
