@@ -89,7 +89,7 @@ ADMIN_EMAIL=<admin-email>
 ADMIN_PASSWORD=<admin-password>
 ```
 
-Health check production: `GET https://rest-api-perpustakaan-production.up.railway.app/api`
+Health check production: `GET https://rest-api-perpustakaan-production.up.railway.app/up`
 
 ### 7. Jalankan Test Otomatis
 ```bash
