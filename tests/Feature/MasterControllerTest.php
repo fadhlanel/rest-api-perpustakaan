@@ -170,7 +170,10 @@ class MasterControllerTest extends TestCase
             $response->assertSee('3 Buku data kategorinya kosong, perbaiki datanya segera!');
             $response->assertSee('Perbaiki sekarang');
             $response->assertSee(route('admin.master.reassign', 'kategori'), false);
-            $response->assertSee('class="master-issue-banner mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert" data-auto-dismiss="15000"', false);
+            $response->assertSee('class="master-issue-banner mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert"', false);
+            $response->assertSee('id="masterDataIssues" data-auto-dismiss="15000"', false);
+            $response->assertSee('window.masterDataIssuesConfig', false);
+            $response->assertSee('masterDataIssuesState:', false);
             $response->assertSee('aria-label="Tutup peringatan"', false);
             $response->assertDontSee('border-amber-200 bg-amber-50', false);
         }

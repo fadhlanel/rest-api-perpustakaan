@@ -195,10 +195,10 @@ Base URL: `http://127.0.0.1:8000/api/v1` (lokal) atau `https://rest-api-perpusta
 2. Kolom FK pada buku terkait jadi `NULL` (constraint `nullOnDelete`)
 3. Jika ada buku lainnya (FK = NULL):
    - Banner peringatan **merah** tampil di semua halaman admin: "X Buku data {type}nya kosong, perbaiki datanya segera!"
-   - Banner otomatis hilang setelah 15 detik atau bisa ditutup manual lewat tombol X
-   - Banner muncul kembali setiap halaman dimuat ulang selama data belum diperbaiki
+   - Countdown auto-hide 15 detik disimpan di `sessionStorage`, jadi **tidak ter-reset** saat pindah halaman/refresh dalam tab yang sama
+   - Setelah countdown habis atau tombol X diklik, banner tidak muncul lagi di tab tersebut sampai jenis masalah berubah atau tab ditutup
    - Tombol **Perbaiki sekarang** menuju `/admin/master/{type}/reassign`
-   - Ikon lonceng di header menampilkan jumlah buku yang perlu diperbaiki (badge merah); klik item notifikasi langsung ke halaman reassign
+   - Ikon lonceng di header tetap menampilkan jumlah buku yang perlu diperbaiki (badge merah); klik item notifikasi langsung ke halaman reassign
 4. Admin memilih 2 opsi:
    - **Bulk:** Pilih 1 master baru, pindahkan semua buku lainnya
    - **Per-item:** Pindahkan tiap buku satu per satu

@@ -3,6 +3,7 @@
     $namaSekolah = \App\Models\Pengaturan::get('nama_sekolah');
     $masterDataIssues = \App\Support\MasterDataIssues::all();
     $masterDataIssueTotal = $masterDataIssues->sum('count');
+    $masterDataIssueFingerprint = $masterDataIssues->pluck('type')->implode('|');
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -86,7 +87,48 @@
                 transition: none;
             }
         }
+        .master-issues-hidden #masterDataIssues {
+            display: none;
+        }
     </style>
+    <script>
+        window.masterDataIssuesConfig = {
+            storageKey: @json('masterDataIssuesState:'.Auth::id()),
+            hasIssues: @json($masterDataIssues->isNotEmpty()),
+            fingerprint: @json($masterDataIssueFingerprint),
+            timeout: 15000
+        };
+    </script>
+    <script>
+        (function () {
+            var config = window.masterDataIssuesConfig;
+
+            if (!config.hasIssues) {
+                try {
+                    sessionStorage.removeItem(config.storageKey);
+                } catch (e) {}
+                return;
+            }
+
+            var state = null;
+            try {
+                state = JSON.parse(sessionStorage.getItem(config.storageKey) || 'null');
+            } catch (e) {}
+
+            if (!state || state.fingerprint !== config.fingerprint) {
+                state = { fingerprint: config.fingerprint, startedAt: Date.now(), dismissed: false };
+                try {
+                    sessionStorage.setItem(config.storageKey, JSON.stringify(state));
+                } catch (e) {}
+            }
+
+            window.masterDataIssuesState = state;
+
+            if (state.dismissed || Date.now() - state.startedAt >= config.timeout) {
+                document.documentElement.classList.add('master-issues-hidden');
+            }
+        })();
+    </script>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
     <div class="flex flex-nowrap min-h-screen">
@@ -183,22 +225,24 @@
                     </div>
                 @endif
 
-                @foreach ($masterDataIssues as $issue)
-                    <div class="master-issue-banner mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert" data-auto-dismiss="15000">
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <p class="font-medium">{{ $issue['message'] }}</p>
-                            <div class="flex items-center gap-3">
-                                <a href="{{ $issue['url'] }}" class="inline-flex items-center gap-1 font-semibold text-red-900 underline hover:no-underline whitespace-nowrap">
-                                    Perbaiki sekarang
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                </a>
-                                <button type="button" data-dismiss-banner class="rounded-md p-1 text-red-600 transition hover:bg-red-100 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500" aria-label="Tutup peringatan">
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                </button>
+                <div id="masterDataIssues" data-auto-dismiss="15000">
+                    @foreach ($masterDataIssues as $issue)
+                        <div class="master-issue-banner mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <p class="font-medium">{{ $issue['message'] }}</p>
+                                <div class="flex items-center gap-3">
+                                    <a href="{{ $issue['url'] }}" class="inline-flex items-center gap-1 font-semibold text-red-900 underline hover:no-underline whitespace-nowrap">
+                                        Perbaiki sekarang
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    </a>
+                                    <button type="button" data-dismiss-banner class="rounded-md p-1 text-red-600 transition hover:bg-red-100 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500" aria-label="Tutup peringatan">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
 
                 @yield('content')
             </div>
@@ -293,25 +337,44 @@
             });
         });
 
-        document.querySelectorAll('[data-auto-dismiss]').forEach(function(banner){
-            var delay = parseInt(banner.getAttribute('data-auto-dismiss'), 10) || 15000;
-            var timeoutId = setTimeout(dismissBanner, delay);
-            var closeButton = banner.querySelector('[data-dismiss-banner]');
+        (function(){
+            var wrapper = document.getElementById('masterDataIssues');
+            var config = window.masterDataIssuesConfig;
+            var state = window.masterDataIssuesState;
 
-            if(closeButton){
-                closeButton.addEventListener('click', function(){
-                    clearTimeout(timeoutId);
-                    dismissBanner();
-                });
+            if(!wrapper || !config || !state || state.dismissed){
+                return;
             }
 
-            function dismissBanner(){
-                banner.classList.add('is-dismissing');
+            var remaining = config.timeout - (Date.now() - state.startedAt);
+            if(remaining <= 0){
+                return;
+            }
+
+            var timeoutId = setTimeout(dismissBanners, remaining);
+
+            wrapper.querySelectorAll('[data-dismiss-banner]').forEach(function(button){
+                button.addEventListener('click', function(){
+                    clearTimeout(timeoutId);
+                    dismissBanners();
+                });
+            });
+
+            function dismissBanners(){
+                state.dismissed = true;
+                try {
+                    sessionStorage.setItem(config.storageKey, JSON.stringify(state));
+                } catch (e) {}
+
+                wrapper.querySelectorAll('.master-issue-banner').forEach(function(banner){
+                    banner.classList.add('is-dismissing');
+                });
+
                 setTimeout(function(){
-                    banner.remove();
+                    wrapper.classList.add('hidden');
                 }, 300);
             }
-        });
+        })();
     </script>
 </body>
 </html>
