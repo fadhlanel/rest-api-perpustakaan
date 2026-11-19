@@ -12,7 +12,7 @@ class KategoriFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama' => $this->faker->word(),
+            'nama' => $this->faker->unique()->word(),
         ];
     }
 }

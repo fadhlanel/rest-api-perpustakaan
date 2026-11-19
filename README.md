@@ -95,7 +95,7 @@ Health check production: `GET https://rest-api-perpustakaan-production.up.railwa
 ```bash
 php artisan test
 ```
-Feature test mencakup: health check, pagination, searching, CRUD master data, validasi, stok management, dan orphan book reassignment.
+Feature test mencakup: health check, pagination, searching, CRUD master data, validasi, stok management, dan reassignment buku lainnya.
 
 ---
 
@@ -121,24 +121,24 @@ Base URL: `http://127.0.0.1:8000/api/v1` (lokal) atau `https://rest-api-perpusta
 | POST | `/kategori` | Tambah kategori |
 | GET | `/kategori/{id}` | Detail kategori |
 | PUT | `/kategori/{id}` | Ubah kategori |
-| DELETE | `/kategori/{id}` | Hapus kategori (orphan buku jadi null FK, redirect reassign) |
+| DELETE | `/kategori/{id}` | Hapus kategori (buku lainnya jadi null FK, redirect reassign) |
 | GET | `/penulis` | Daftar penulis |
 | POST | `/penulis` | Tambah penulis |
 | GET | `/penulis/{id}` | Detail penulis |
 | PUT | `/penulis/{id}` | Ubah penulis |
-| DELETE | `/penulis/{id}` | Hapus penulis (orphan buku jadi null FK, redirect reassign) |
+| DELETE | `/penulis/{id}` | Hapus penulis (buku lainnya jadi null FK, redirect reassign) |
 | GET | `/penerbit` | Daftar penerbit |
 | POST | `/penerbit` | Tambah penerbit |
 | GET | `/penerbit/{id}` | Detail penerbit |
 | PUT | `/penerbit/{id}` | Ubah penerbit |
-| DELETE | `/penerbit/{id}` | Hapus penerbit (orphan buku jadi null FK, redirect reassign) |
+| DELETE | `/penerbit/{id}` | Hapus penerbit (buku lainnya jadi null FK, redirect reassign) |
 
-### Reassign Orphan Books (Admin Panel Only)
+### Reassign Buku Lainnya (Admin Panel Only)
 
 | Method | Endpoint | Fungsi |
 |--------|---------|--------|
-| GET | `/admin/master/{type}/reassign` | Tampilkan buku-buku yatim (null FK) untuk reassign |
-| POST | `/admin/master/{type}/reassign/bulk` | Pindahkan semua buku yatim ke master baru (bulk) |
+| GET | `/admin/master/{type}/reassign` | Tampilkan buku-buku lainnya (null FK) untuk reassign |
+| POST | `/admin/master/{type}/reassign/bulk` | Pindahkan semua buku lainnya ke master baru (bulk) |
 | POST | `/admin/master/{type}/reassign/item` | Pindahkan buku individual ke master baru |
 
 ### Peminjaman & Pengembalian
@@ -189,15 +189,16 @@ Base URL: `http://127.0.0.1:8000/api/v1` (lokal) atau `https://rest-api-perpusta
 - `POST /buku/import/process`: Process selected rows ke database
 - Output: Laporan success/failed count
 
-### 3. Master Data Delete & Orphan Reassign
+### 3. Master Data Delete & Reassign Buku Lainnya
 **Alur saat menghapus Kategori/Penulis/Penerbit:**
 1. Master data langsung dihapus dari DB
 2. Kolom FK pada buku terkait jadi `NULL` (constraint `nullOnDelete`)
-3. Jika ada buku yatim (FK = NULL):
-   - Controller redirect ke `/admin/master/{type}/reassign`
-   - Session: banner warning "X buku tidak memiliki {type} setelah '{nama}' dihapus"
+3. Jika ada buku lainnya (FK = NULL):
+   - Controller kembali ke index master dengan banner warning "X Buku data {type}nya kosong, perbaiki datanya segera!"
+   - Banner bisa diklik menuju `/admin/master/{type}/reassign`
+   - Ikon lonceng di header menampilkan jumlah buku yang perlu diperbaiki; klik item notifikasi langsung ke halaman reassign
 4. Admin memilih 2 opsi:
-   - **Bulk:** Pilih 1 master baru, pindahkan semua buku yatim
+   - **Bulk:** Pilih 1 master baru, pindahkan semua buku lainnya
    - **Per-item:** Pindahkan tiap buku satu per satu
 5. Setelah reassign selesai, redirect kembali ke index master
 
@@ -233,7 +234,7 @@ Base URL: `http://127.0.0.1:8000/api/v1` (lokal) atau `https://rest-api-perpusta
 | `profile_edit_requests` | Permintaan edit profil siswa (pending approval dari admin) |
 `users.role` | Role akses admin website
 
-### Nullable Foreign Keys (Orphan Safety)
+### Nullable Foreign Keys (Null Safety)
 ```sql
 ALTER TABLE buku 
   MODIFY kategori_id BIGINT UNSIGNED NULL,

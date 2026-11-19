@@ -1,6 +1,8 @@
 @php
     $namaPerpustakaan = \App\Models\Pengaturan::get('nama_perpustakaan');
     $namaSekolah = \App\Models\Pengaturan::get('nama_sekolah');
+    $masterDataIssues = \App\Support\MasterDataIssues::all();
+    $masterDataIssueTotal = $masterDataIssues->sum('count');
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -116,6 +118,34 @@
                 </div>
 
                 <div class="flex items-center gap-4">
+                    <div class="relative" id="notificationWrapper">
+                        <button type="button" id="notificationBtn" onclick="toggleNotifications()" aria-expanded="false" aria-controls="notificationPanel" aria-label="Notifikasi data master" class="relative p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                            @if ($masterDataIssueTotal > 0)
+                                <span class="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-amber-500 text-white text-[10px] font-bold leading-none" aria-label="{{ $masterDataIssueTotal }} buku perlu diperbaiki">{{ $masterDataIssueTotal }}</span>
+                            @endif
+                        </button>
+                        <div id="notificationPanel" class="hidden absolute right-0 mt-2 w-80 max-w-[85vw] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg z-30">
+                            <div class="border-b border-slate-100 px-4 py-3">
+                                <p class="text-sm font-semibold text-slate-800">Notifikasi</p>
+                                <p class="text-xs text-slate-500">Data master yang perlu diperbaiki.</p>
+                            </div>
+                            @if ($masterDataIssues->isEmpty())
+                                <p class="px-4 py-6 text-center text-sm text-slate-500">Tidak ada peringatan.</p>
+                            @else
+                                <ul class="divide-y divide-slate-100">
+                                    @foreach ($masterDataIssues as $issue)
+                                        <li>
+                                            <a href="{{ $issue['url'] }}" class="flex items-start gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-amber-50 transition">
+                                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                                <span>{{ $issue['message'] }}</span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    </div>
                     <a href="{{ route('admin.profil.edit') }}" class="flex items-center gap-3 group text-right">
                         <div class="hidden sm:block">
                             <p class="text-sm font-semibold text-slate-800 group-hover:text-cyan-700 transition">{{ Auth::user()->name }}</p>
@@ -129,13 +159,31 @@
             </header>
 
             <div class="p-4 sm:p-6 lg:p-8 flex-1">
-                @foreach(['success' => 'green', 'error' => 'red'] as $type => $color)
-                    @if(session($type))
-                        <div class="mb-4 p-4 bg-{{ $color }}-50 text-{{ $color }}-700 rounded-lg text-sm border border-{{ $color }}-100" role="alert">
-                            {{ session($type) }}
+                @if(session('success'))
+                    <div class="mb-4 p-4 bg-green-50 text-green-700 rounded-lg text-sm border border-green-100" role="alert">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="mb-4 p-4 bg-red-50 text-red-700 rounded-lg text-sm border border-red-100" role="alert">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if(session('warning'))
+                    <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800" role="alert">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <p class="font-medium">{{ session('warning') }}</p>
+                            @if(session('warning_url'))
+                                <a href="{{ session('warning_url') }}" class="inline-flex items-center gap-1 font-semibold text-amber-900 underline hover:no-underline whitespace-nowrap">
+                                    Perbaiki sekarang
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </a>
+                            @endif
                         </div>
-                    @endif
-                @endforeach
+                    </div>
+                @endif
 
                 @yield('content')
             </div>
@@ -183,9 +231,34 @@
             document.body.classList.remove('overflow-hidden');
         }
 
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationPanel');
+            const btn = document.getElementById('notificationBtn');
+            if (!panel || !btn) return;
+            const willOpen = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', !willOpen);
+            btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        }
+
+        function closeNotifications() {
+            const panel = document.getElementById('notificationPanel');
+            const btn = document.getElementById('notificationBtn');
+            if (!panel || !btn) return;
+            panel.classList.add('hidden');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('notificationWrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                closeNotifications();
+            }
+        });
+
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeMobileSidebar();
+                closeNotifications();
             }
         });
 

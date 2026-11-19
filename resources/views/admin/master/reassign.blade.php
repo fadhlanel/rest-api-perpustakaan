@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Pindah ' . ucfirst($type) . ' Buku Yatim')
+@section('title', 'Pindah Buku Lainnya — ' . ucfirst($type))
 
 @section('content')
 <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -12,9 +12,9 @@
             <span>/</span>
             <span class="text-slate-800 font-medium capitalize">Pindah {{ $type }}</span>
         </div>
-        <h2 class="text-2xl font-bold text-slate-800 capitalize">Pindah Buku Tanpa {{ ucfirst($type) }}</h2>
+        <h2 class="text-2xl font-bold text-slate-800 capitalize">Pindah Buku Lainnya Tanpa {{ ucfirst($type) }}</h2>
         <p class="text-slate-500 text-sm">
-            Buku tanpa {{ $type }} setelah hapus. Pilih {{ $type }} baru untuk buku yatim.
+            Buku lainnya yang tidak memiliki {{ $type }} setelah penghapusan. Pilih {{ $type }} baru untuk memperbaiki datanya.
         </p>
     </div>
     <a href="{{ route('admin.master.index', $type) }}" class="inline-flex items-center justify-center gap-2 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold px-5 py-2.5 rounded-lg text-sm shadow-sm transition">
@@ -28,7 +28,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <h3 class="text-lg font-semibold text-green-800 mb-2">Semua buku sudah memiliki {{ $type }}</h3>
-        <p class="text-green-700">Tidak ada buku yatim yang perlu dipindah.</p>
+        <p class="text-green-700">Tidak ada buku lainnya yang perlu dipindah.</p>
         <a href="{{ route('admin.master.index', $type) }}" class="mt-4 inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm shadow-sm transition">
             Lanjut ke Master {{ ucfirst($type) }}
         </a>

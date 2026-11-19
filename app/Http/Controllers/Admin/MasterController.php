@@ -74,14 +74,14 @@ class MasterController extends Controller
 
         $field = $type.'_id';
         $bukuTerdampak = Buku::where($field, $id)->count();
-        $nama = $item->nama;
 
         $item->delete();
 
         if ($bukuTerdampak > 0) {
             return redirect()
-                ->route('admin.master.reassign', $type)
-                ->with('warning', "{$bukuTerdampak} buku tidak memiliki {$type} setelah '{$nama}' dihapus. Silakan pilih {$type} pengganti.");
+                ->route('admin.master.index', $type)
+                ->with('warning', "{$bukuTerdampak} Buku data {$type}nya kosong, perbaiki datanya segera!")
+                ->with('warning_url', route('admin.master.reassign', $type));
         }
 
         return back()->with('success', ucfirst($type).' berhasil dihapus.');

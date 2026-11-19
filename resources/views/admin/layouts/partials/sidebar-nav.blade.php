@@ -1,4 +1,5 @@
 <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+    @php($issueCounts = $masterDataIssues->pluck('count', 'type'))
     <div class="py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Ringkasan</div>
     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.dashboard') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-600 hover:bg-slate-50' }}">
         <svg class="w-4 h-4 text-cyan-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -13,14 +14,23 @@
     <a href="{{ route('admin.master.index', 'kategori') }}" class="flex items-center gap-3 px-3 py-1.5 text-xs font-medium rounded-md {{ request()->is('admin/master/kategori*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-500 hover:bg-slate-50' }}">
         <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
         <span>Kategori</span>
+        @if (($issueCounts['kategori'] ?? 0) > 0)
+            <span class="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold leading-none" aria-label="{{ $issueCounts['kategori'] }} buku tanpa kategori">{{ $issueCounts['kategori'] }}</span>
+        @endif
     </a>
     <a href="{{ route('admin.master.index', 'penulis') }}" class="flex items-center gap-3 px-3 py-1.5 text-xs font-medium rounded-md {{ request()->is('admin/master/penulis*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-500 hover:bg-slate-50' }}">
         <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
         <span>Penulis</span>
+        @if (($issueCounts['penulis'] ?? 0) > 0)
+            <span class="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold leading-none" aria-label="{{ $issueCounts['penulis'] }} buku tanpa penulis">{{ $issueCounts['penulis'] }}</span>
+        @endif
     </a>
     <a href="{{ route('admin.master.index', 'penerbit') }}" class="flex items-center gap-3 px-3 py-1.5 text-xs font-medium rounded-md {{ request()->is('admin/master/penerbit*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-500 hover:bg-slate-50' }}">
         <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
         <span>Penerbit</span>
+        @if (($issueCounts['penerbit'] ?? 0) > 0)
+            <span class="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold leading-none" aria-label="{{ $issueCounts['penerbit'] }} buku tanpa penerbit">{{ $issueCounts['penerbit'] }}</span>
+        @endif
     </a>
 
     <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Sirkulasi / Transaksi</div>
