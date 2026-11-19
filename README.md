@@ -194,8 +194,9 @@ Base URL: `http://127.0.0.1:8000/api/v1` (lokal) atau `https://rest-api-perpusta
 1. Master data langsung dihapus dari DB
 2. Kolom FK pada buku terkait jadi `NULL` (constraint `nullOnDelete`)
 3. Jika ada buku lainnya (FK = NULL):
-   - Controller kembali ke index master dengan banner warning "X Buku data {type}nya kosong, perbaiki datanya segera!"
-   - Banner bisa diklik menuju `/admin/master/{type}/reassign`
+   - Banner peringatan **permanen** tampil di semua halaman admin: "X Buku data {type}nya kosong, perbaiki datanya segera!"
+   - Banner tidak bisa ditutup dan baru hilang setelah semua buku diperbaiki
+   - Tombol **Perbaiki sekarang** menuju `/admin/master/{type}/reassign`
    - Ikon lonceng di header menampilkan jumlah buku yang perlu diperbaiki; klik item notifikasi langsung ke halaman reassign
 4. Admin memilih 2 opsi:
    - **Bulk:** Pilih 1 master baru, pindahkan semua buku lainnya

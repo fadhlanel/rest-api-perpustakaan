@@ -50,7 +50,7 @@ class MasterControllerTest extends TestCase
         $this->assertDatabaseMissing('penerbit', ['id' => $penerbit->id]);
     }
 
-    public function test_delete_kategori_with_books_returns_warning_and_reassign_link(): void
+    public function test_delete_kategori_with_books_shows_persistent_warning_banner(): void
     {
         $kategori = Kategori::factory()->create();
         Buku::factory()->count(3)->create(['kategori_id' => $kategori->id]);
@@ -59,13 +59,18 @@ class MasterControllerTest extends TestCase
             ->delete(route('admin.master.destroy', ['type' => 'kategori', 'id' => $kategori->id]));
 
         $response->assertRedirect(route('admin.master.index', 'kategori'));
-        $response->assertSessionHas('warning', '3 Buku data kategorinya kosong, perbaiki datanya segera!');
-        $response->assertSessionHas('warning_url', route('admin.master.reassign', 'kategori'));
+        $response->assertSessionHas('success', 'Kategori berhasil dihapus.');
         $this->assertDatabaseMissing('kategori', ['id' => $kategori->id]);
         $this->assertEquals(3, Buku::whereNull('kategori_id')->count());
+
+        $index = $this->get(route('admin.master.index', 'kategori'));
+        $index->assertOk();
+        $index->assertSee('3 Buku data kategorinya kosong, perbaiki datanya segera!');
+        $index->assertSee('Perbaiki sekarang');
+        $index->assertSee(route('admin.master.reassign', 'kategori'), false);
     }
 
-    public function test_delete_penulis_with_books_returns_warning_and_reassign_link(): void
+    public function test_delete_penulis_with_books_shows_persistent_warning_banner(): void
     {
         $penulis = Penulis::factory()->create();
         Buku::factory()->count(2)->create(['penulis_id' => $penulis->id]);
@@ -74,9 +79,13 @@ class MasterControllerTest extends TestCase
             ->delete(route('admin.master.destroy', ['type' => 'penulis', 'id' => $penulis->id]));
 
         $response->assertRedirect(route('admin.master.index', 'penulis'));
-        $response->assertSessionHas('warning', '2 Buku data penulisnya kosong, perbaiki datanya segera!');
-        $response->assertSessionHas('warning_url', route('admin.master.reassign', 'penulis'));
+        $response->assertSessionHas('success', 'Penulis berhasil dihapus.');
         $this->assertEquals(2, Buku::whereNull('penulis_id')->count());
+
+        $index = $this->get(route('admin.master.index', 'penulis'));
+        $index->assertOk();
+        $index->assertSee('2 Buku data penulisnya kosong, perbaiki datanya segera!');
+        $index->assertSee(route('admin.master.reassign', 'penulis'), false);
     }
 
     public function test_reassign_page_loads_buku_without_kategori(): void
@@ -139,19 +148,38 @@ class MasterControllerTest extends TestCase
         $response->assertSee(route('admin.master.reassign', 'penerbit'), false);
     }
 
-    public function test_master_index_renders_clickable_warning(): void
+    public function test_warning_banner_persists_across_admin_pages(): void
     {
-        $response = $this->actingAs($this->createAdmin())
-            ->withSession([
-                'warning' => '13 Buku data kategorinya kosong, perbaiki datanya segera!',
-                'warning_url' => route('admin.master.reassign', 'kategori'),
-            ])
-            ->get(route('admin.master.index', 'kategori'));
+        Buku::factory()->count(3)->create(['kategori_id' => null]);
+
+        $admin = $this->createAdmin();
+
+        foreach ([
+            route('admin.dashboard'),
+            route('admin.master.index', 'kategori'),
+            route('admin.master.index', 'penulis'),
+        ] as $url) {
+            $response = $this->actingAs($admin)->get($url);
+
+            $response->assertOk();
+            $response->assertSee('3 Buku data kategorinya kosong, perbaiki datanya segera!');
+            $response->assertSee('Perbaiki sekarang');
+            $response->assertSee(route('admin.master.reassign', 'kategori'), false);
+        }
+    }
+
+    public function test_warning_banner_disappears_after_buku_reassigned(): void
+    {
+        $kategori = Kategori::factory()->create();
+        Buku::factory()->count(3)->create(['kategori_id' => null]);
+
+        $this->actingAs($this->createAdmin())
+            ->post(route('admin.master.reassign.bulk', 'kategori'), ['new_id' => $kategori->id]);
+
+        $response = $this->get(route('admin.dashboard'));
 
         $response->assertOk();
-        $response->assertSee('13 Buku data kategorinya kosong, perbaiki datanya segera!');
-        $response->assertSee('Perbaiki sekarang');
-        $response->assertSee(route('admin.master.reassign', 'kategori'), false);
+        $response->assertDontSee('3 Buku data kategorinya kosong');
     }
 
     public function test_bell_hidden_when_no_master_data_issues(): void

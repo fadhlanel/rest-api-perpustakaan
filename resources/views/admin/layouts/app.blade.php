@@ -171,19 +171,17 @@
                     </div>
                 @endif
 
-                @if(session('warning'))
+                @foreach ($masterDataIssues as $issue)
                     <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800" role="alert">
                         <div class="flex flex-wrap items-center justify-between gap-3">
-                            <p class="font-medium">{{ session('warning') }}</p>
-                            @if(session('warning_url'))
-                                <a href="{{ session('warning_url') }}" class="inline-flex items-center gap-1 font-semibold text-amber-900 underline hover:no-underline whitespace-nowrap">
-                                    Perbaiki sekarang
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                </a>
-                            @endif
+                            <p class="font-medium">{{ $issue['message'] }}</p>
+                            <a href="{{ $issue['url'] }}" class="inline-flex items-center gap-1 font-semibold text-amber-900 underline hover:no-underline whitespace-nowrap">
+                                Perbaiki sekarang
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </a>
                         </div>
                     </div>
-                @endif
+                @endforeach
 
                 @yield('content')
             </div>
