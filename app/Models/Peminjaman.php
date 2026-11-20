@@ -134,10 +134,12 @@ class Peminjaman extends Model
 
     /**
      * Indikator status apakah hampir tenggat (kurang dari atau sama dengan 5 jam).
+     * PENTING: Buku yang masih berstatus reservasi (booking) belum diambil oleh siswa,
+     * sehingga TIDAK boleh dianggap hampir tenggat waktu pengembalian.
      */
     public function getIsHampirTenggatAttribute(): bool
     {
-        if ($this->status !== self::STATUS_DIPINJAM) {
+        if ($this->status !== self::STATUS_DIPINJAM || $this->is_booking) {
             return false;
         }
 

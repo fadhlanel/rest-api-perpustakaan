@@ -129,4 +129,30 @@ class UploadBuktiReservationTest extends TestCase
         // Stok tidak dikurangi saat reservasi.
         $this->assertSame($stokAwal, $buku->fresh()->stok_tersedia);
     }
+
+    /**
+     * REGRESI: Peminjaman dengan status booking TIDAK boleh dianggap hampir tenggat
+     * (is_hampir_tenggat = false), meskipun tanggal jatuh tempo dekat,
+     * karena buku belum diambil oleh peminjam.
+     */
+    public function test_booking_tidak_pernah_hampir_tenggat(): void
+    {
+        [$anggota] = $this->anggotaWithToken();
+        $buku = Buku::firstOrFail();
+
+        $booking = Peminjaman::create([
+            'anggota_id' => $anggota->id,
+            'nama_peminjam' => $anggota->nama,
+            'nis' => $anggota->nis,
+            'buku_id' => $buku->id,
+            'tanggal_pinjam' => now()->toDateString(),
+            'tanggal_ambil' => now()->toDateString(),
+            'tanggal_jatuh_tempo' => now()->toDateString(), // hari ini
+            'status' => Peminjaman::STATUS_DIPINJAM,
+            'status_reservasi' => Peminjaman::STATUS_RESERVASI_BOOKING,
+        ]);
+
+        $this->assertTrue($booking->is_booking);
+        $this->assertFalse($booking->is_hampir_tenggat);
+    }
 }
