@@ -26,6 +26,20 @@ class AdminDashboardTest extends TestCase
             ->assertSee('Total Judul Terdaftar');
     }
 
+    public function test_admin_can_login_and_reach_dashboard(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->post('/admin/login', [
+            'email' => $admin->email,
+            'password' => 'password',
+        ])->assertRedirect(route('admin.dashboard'));
+
+        $this->get('/admin/dashboard')
+            ->assertOk()
+            ->assertSee('Total Judul Terdaftar');
+    }
+
     public function test_authenticated_admin_visiting_login_is_sent_to_dashboard(): void
     {
         $user = User::factory()->create(['role' => 'admin']);
