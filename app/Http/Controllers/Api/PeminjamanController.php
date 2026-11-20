@@ -106,7 +106,7 @@ class PeminjamanController extends Controller
                     'nama_peminjam' => $validated['nama_peminjam'],
                     'nis' => $validated['nis'],
                     'buku_id' => $buku->id,
-                    'tanggal_pinjam' => now()->toDateString(),
+                    'tanggal_pinjam' => $tanggalAmbil,
                     'tanggal_ambil' => $tanggalAmbil,
                     'tanggal_jatuh_tempo' => $tanggalJatuhTempo,
                     'durasi_pinjam' => $durasiDipilih,
@@ -195,6 +195,7 @@ class PeminjamanController extends Controller
     /**
      * Upload bukti foto pengembalian oleh siswa (Android).
      * Status peminjaman TIDAK berubah, menunggu konfirmasi admin.
+     * Menerima multipart file 'foto_bukti' ATAU JSON base64 string 'foto_bukti' (data URI: data:image/...;base64,...).
      */
     public function uploadBuktiKembali(Request $request, Peminjaman $peminjaman): JsonResponse
     {
@@ -212,19 +213,65 @@ class PeminjamanController extends Controller
             return $this->errorResponse('Buku sudah dikembalikan dan dikonfirmasi.', 400);
         }
 
+        // Validasi fleksibel: multipart file atau JSON base64
+        $fotoBuktiBase64 = $request->input('foto_bukti');
+        $hasFile = $request->hasFile('foto_bukti');
+        $hasBase64 = $fotoBuktiBase64 !== null && is_string($fotoBuktiBase64) && strlen($fotoBuktiBase64) > 0;
+
+        if (! $hasFile && ! $hasBase64) {
+            return $this->errorResponse('Foto bukti wajib diunggah (file atau base64).', 422);
+        }
+
         $validated = $request->validate([
-            'foto_bukti' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:5120'], // 5MB max
             'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
-        // Hapus foto lama jika ada
-        $pengembalian = $peminjaman->pengembalian;
-        if ($pengembalian && $pengembalian->foto_bukti) {
-            Storage::disk('public')->delete($pengembalian->foto_bukti);
+        // Proses foto: prioritas multipart file, fallback base64
+        $path = null;
+        if ($hasFile) {
+            $file = $request->file('foto_bukti');
+            $validatedFile = $request->validate([
+                'foto_bukti' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:5120'],
+            ]);
+            // Hapus foto lama jika ada
+            $pengembalian = $peminjaman->pengembalian;
+            if ($pengembalian && $pengembalian->foto_bukti) {
+                Storage::disk('public')->delete($pengembalian->foto_bukti);
+            }
+            $path = $file->store('bukti-kembali', 'public');
+        } elseif ($hasBase64) {
+            // Decode base64 data URI
+            if (! preg_match('/^data:image\/(jpeg|png|jpg);base64,/', $fotoBuktiBase64)) {
+                return $this->errorResponse('Format base64 tidak valid. Gunakan data:image/jpeg;base64,... atau data:image/png;base64,...', 422);
+            }
+            $base64Data = substr($fotoBuktiBase64, strpos($fotoBuktiBase64, ',') + 1);
+            $decoded = base64_decode($base64Data, true);
+            if ($decoded === false) {
+                return $this->errorResponse('Data base64 tidak valid.', 422);
+            }
+            // Validasi ukuran (5MB max)
+            if (strlen($decoded) > 5 * 1024 * 1024) {
+                return $this->errorResponse('Ukuran foto melebihi 5MB.', 422);
+            }
+            // Validasi magic bytes (JPEG/PNG)
+            $isJpeg = substr($decoded, 0, 3) === "\xFF\xD8\xFF";
+            $isPng = substr($decoded, 0, 8) === "\x89PNG\r\n\x1a\n";
+            if (! $isJpeg && ! $isPng) {
+                return $this->errorResponse('Format gambar tidak didukung. Hanya JPEG/PNG.', 422);
+            }
+            // Simpan ke disk
+            $pengembalian = $peminjaman->pengembalian;
+            if ($pengembalian && $pengembalian->foto_bukti) {
+                Storage::disk('public')->delete($pengembalian->foto_bukti);
+            }
+            $ext = $isJpeg ? 'jpg' : 'png';
+            $filename = 'bukti_'.$peminjaman->id.'_'.time().'.'.$ext;
+            $path = 'bukti-kembali/'.$filename;
+            Storage::disk('public')->put($path, $decoded);
         }
 
-        $path = $request->file('foto_bukti')->store('bukti-kembali', 'public');
-
+        // Update atau create pengembalian
+        $pengembalian = $peminjaman->pengembalian;
         if (! $pengembalian) {
             $pengembalian = Pengembalian::create([
                 'peminjaman_id' => $peminjaman->id,
