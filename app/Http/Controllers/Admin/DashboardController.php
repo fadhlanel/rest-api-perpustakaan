@@ -8,6 +8,7 @@ use App\Models\Kategori;
 use App\Models\Peminjaman;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -21,7 +22,7 @@ class DashboardController extends Controller
             'dipinjam' => 0,
             'database_ok' => false,
         ];
-        $buku = collect();
+        $buku = new LengthAwarePaginator([], 0, 10, 1);
         $kategori = collect();
 
         try {
@@ -64,7 +65,8 @@ class DashboardController extends Controller
 
             $buku = $query->latest()->paginate(10)->onEachSide(0)->withQueryString();
             $kategori = Kategori::orderBy('nama')->get(['id', 'nama']);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         return view('admin.dashboard', compact('stats', 'buku', 'kategori'));
