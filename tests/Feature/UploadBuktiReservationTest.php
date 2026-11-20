@@ -101,8 +101,8 @@ class UploadBuktiReservationTest extends TestCase
     }
 
     /**
-     * REGRESI: mode booking tanggal_pinjam = tanggal_ambil (bukan hari ini),
-     * tanggal_jatuh_tempo = tanggal_ambil + durasi, stok TIDAK dikurangi.
+     * REGRESI: mode booking tanggal_pinjam = tanggal_ambil,
+     * tanggal_jatuh_tempo = tanggal_ambil + durasi, stok DIKUNCI (berkurang 1).
      */
     public function test_booking_tanggal_pinjam_sama_dengan_tanggal_ambil(): void
     {
@@ -127,8 +127,8 @@ class UploadBuktiReservationTest extends TestCase
             ->assertJsonPath('data.is_booking', true)
             ->assertJsonPath('data.status_reservasi', Peminjaman::STATUS_RESERVASI_BOOKING);
 
-        // Stok tidak dikurangi saat reservasi.
-        $this->assertSame($stokAwal, $buku->fresh()->stok_tersedia);
+        // Stok langsung dialokasikan/dikurangi saat reservasi.
+        $this->assertSame($stokAwal - 1, $buku->fresh()->stok_tersedia);
     }
 
     /**
@@ -159,37 +159,134 @@ class UploadBuktiReservationTest extends TestCase
 
     /**
      * Admin menyerahkan buku booking fisik ke siswa:
-     * status_reservasi berubah menjadi dipinjam, stok buku berkurang 1.
+     * status_reservasi berubah menjadi dipinjam, stok TIDAK dipotong lagi
+     * karena sudah dikunci sejak reservasi dibuat.
      */
     public function test_admin_bisa_menyerahkan_buku_booking(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        [$anggota] = $this->anggotaWithToken();
+        [$anggota, $headers] = $this->anggotaWithToken();
         $buku = Buku::firstOrFail();
         $stokAwal = $buku->stok_tersedia;
+
+        $bookingResponse = $this->withHeaders($headers)->postJson('/api/v1/peminjaman', [
+            'nama_peminjam' => $anggota->nama,
+            'nis' => $anggota->nis,
+            'buku_id' => $buku->id,
+            'mode' => 'booking',
+            'tanggal_ambil' => now()->toDateString(),
+            'durasi_hari' => 2,
+        ]);
+        $bookingResponse->assertCreated();
+        $bookingId = $bookingResponse->json('data.id');
+        $stokSetelahBooking = $buku->fresh()->stok_tersedia;
+        $this->assertSame($stokAwal - 1, $stokSetelahBooking);
+
+        $response = $this->actingAs($admin)->post(
+            route('admin.peminjaman.serahkan-buku', $bookingId)
+        );
+
+        $response->assertRedirect();
+        $booking = Peminjaman::findOrFail($bookingId);
+
+        $this->assertSame(Peminjaman::STATUS_RESERVASI_DIPINJAM, $booking->status_reservasi);
+        $this->assertFalse($booking->is_booking);
+        $this->assertSame($stokSetelahBooking, $buku->fresh()->stok_tersedia);
+    }
+
+    /**
+     * Booking kedua ditolak saat stok sudah dikunci booking pertama.
+     */
+    public function test_booking_melebihi_stok_ditolak(): void
+    {
+        [$anggotaA, $headersA] = $this->anggotaWithToken();
+        $buku = Buku::firstOrFail();
+        $buku->update(['stok_tersedia' => 1]);
+
+        $this->withHeaders($headersA)->postJson('/api/v1/peminjaman', [
+            'nama_peminjam' => $anggotaA->nama,
+            'nis' => $anggotaA->nis,
+            'buku_id' => $buku->id,
+            'mode' => 'booking',
+            'tanggal_ambil' => now()->toDateString(),
+        ])->assertCreated();
+
+        $anggotaB = Anggota::create(['nis' => '20247778', 'nama' => 'Siswa Uji Dua']);
+        $tokenB = 'booking-token-b';
+        $anggotaB->forceFill(['api_token_hash' => hash('sha256', $tokenB)])->save();
+
+        $this->withHeaders(['Authorization' => 'Bearer '.$tokenB])->postJson('/api/v1/peminjaman', [
+            'nama_peminjam' => $anggotaB->nama,
+            'nis' => $anggotaB->nis,
+            'buku_id' => $buku->id,
+            'mode' => 'booking',
+            'tanggal_ambil' => now()->toDateString(),
+        ])->assertStatus(400)
+            ->assertJsonPath('success', false);
+
+        $this->assertSame(0, $buku->fresh()->stok_tersedia);
+        $this->assertSame(1, Peminjaman::where('buku_id', $buku->id)
+            ->where('status_reservasi', Peminjaman::STATUS_RESERVASI_BOOKING)
+            ->count());
+    }
+
+    /**
+     * Booking yang terlewat tanggal ambil otomatis expired dan stok dikembalikan.
+     */
+    public function test_booking_terlewat_tanggal_ambil_expired_dan_stok_kembali(): void
+    {
+        [$anggota] = $this->anggotaWithToken();
+        $buku = Buku::firstOrFail();
+        $buku->update(['stok_tersedia' => 1]);
 
         $booking = Peminjaman::create([
             'anggota_id' => $anggota->id,
             'nama_peminjam' => $anggota->nama,
             'nis' => $anggota->nis,
             'buku_id' => $buku->id,
-            'tanggal_pinjam' => now()->toDateString(),
-            'tanggal_ambil' => now()->toDateString(),
-            'tanggal_jatuh_tempo' => now()->addDays(2)->toDateString(),
-            'durasi_pinjam' => 2,
+            'tanggal_pinjam' => now()->subDays(3)->toDateString(),
+            'tanggal_ambil' => now()->subDay()->toDateString(),
+            'tanggal_jatuh_tempo' => now()->subDay()->toDateString(),
+            'durasi_pinjam' => 3,
             'status' => Peminjaman::STATUS_DIPINJAM,
             'status_reservasi' => Peminjaman::STATUS_RESERVASI_BOOKING,
         ]);
+        $buku->decrement('stok_tersedia');
 
-        $response = $this->actingAs($admin)->post(
-            route('admin.peminjaman.serahkan-buku', $booking->id)
-        );
+        $this->artisan('app:expire-book-reservations')->assertExitCode(0);
 
-        $response->assertRedirect();
-        $booking->refresh();
+        $this->assertSame(Peminjaman::STATUS_RESERVASI_EXPIRED, $booking->fresh()->status_reservasi);
+        $this->assertSame(1, $buku->fresh()->stok_tersedia);
+    }
 
-        $this->assertSame(Peminjaman::STATUS_RESERVASI_DIPINJAM, $booking->status_reservasi);
-        $this->assertFalse($booking->is_booking);
-        $this->assertSame($stokAwal - 1, $buku->fresh()->stok_tersedia);
+    /**
+     * Siswa bisa membatalkan reservasi; stok kembali dan status menjadi dibatalkan.
+     */
+    public function test_siswa_bisa_membatalkan_reservasi(): void
+    {
+        [$anggota, $headers] = $this->anggotaWithToken();
+        $buku = Buku::firstOrFail();
+        $buku->update(['stok_tersedia' => 1]);
+
+        $response = $this->withHeaders($headers)->postJson('/api/v1/peminjaman', [
+            'nama_peminjam' => $anggota->nama,
+            'nis' => $anggota->nis,
+            'buku_id' => $buku->id,
+            'mode' => 'booking',
+            'tanggal_ambil' => now()->addDay()->toDateString(),
+        ]);
+        $response->assertCreated();
+        $bookingId = $response->json('data.id');
+
+        $this->withHeaders($headers)->postJson("/api/v1/peminjaman/{$bookingId}/batalkan-reservasi")
+            ->assertOk()
+            ->assertJsonPath('data.status_reservasi', Peminjaman::STATUS_RESERVASI_DIBATALKAN);
+
+        $this->assertSame(1, $buku->fresh()->stok_tersedia);
+
+        // Pembatalan kedua tidak mengembalikan stok dua kali.
+        $this->withHeaders($headers)->postJson("/api/v1/peminjaman/{$bookingId}/batalkan-reservasi")
+            ->assertStatus(400);
+        $this->assertSame(1, $buku->fresh()->stok_tersedia);
     }
 }

@@ -38,6 +38,7 @@ Route::prefix('v1')->group(function () {
     Route::post('peminjaman/{peminjaman}/perpanjang', [PeminjamanController::class, 'extend']);
     Route::post('peminjaman/{peminjaman}/upload-bukti', [PeminjamanController::class, 'uploadBuktiKembali']);
     Route::post('peminjaman/{peminjaman}/batalkan-bukti', [PeminjamanController::class, 'batalkanBuktiKembali']);
+    Route::post('peminjaman/{peminjaman}/batalkan-reservasi', [PeminjamanController::class, 'batalkanReservasi']);
     Route::get('peminjaman/bukti-pending', [PeminjamanController::class, 'buktiPendingKonfirmasi']);
 
     // Rating buku (hanya peminjam, buku sudah dikembalikan).

@@ -28,6 +28,10 @@ class PeminjamanController extends Controller
                 ->where('tanggal_jatuh_tempo', '>=', $today);
         } elseif ($status === 'booking') {
             $query->where('status_reservasi', Peminjaman::STATUS_RESERVASI_BOOKING);
+        } elseif ($status === 'expired') {
+            $query->where('status_reservasi', Peminjaman::STATUS_RESERVASI_EXPIRED);
+        } elseif ($status === 'dibatalkan') {
+            $query->where('status_reservasi', Peminjaman::STATUS_RESERVASI_DIBATALKAN);
         } elseif ($status === 'bukti_pending') {
             $query->buktiPendingKonfirmasi();
         } elseif ($status === 'kembali_mandiri') {
@@ -93,8 +97,7 @@ class PeminjamanController extends Controller
 
     /**
      * Konfirmasi penyerahan buku booking/reservasi fisik kepada siswa.
-     * Mengubah status_reservasi menjadi 'dipinjam', memotong stok buku,
-     * dan mengaktifkan masa peminjaman aktif.
+     * Stok sudah dikunci sejak reservasi, jadi tidak dipotong lagi di sini.
      */
     public function serahkanBuku(Peminjaman $peminjaman)
     {
@@ -102,16 +105,15 @@ class PeminjamanController extends Controller
             return back()->with('error', 'Peminjaman ini bukan reservasi atau buku sudah diserahkan.');
         }
 
+        if (! $peminjaman->booking_belum_expired) {
+            return back()->with('error', 'Reservasi sudah melewati batas pengambilan. Siswa harus membuat reservasi baru.');
+        }
+
         if ($peminjaman->status === 'dikembalikan') {
             return back()->with('error', 'Peminjaman ini sudah selesai/dikembalikan.');
         }
 
-        $buku = $peminjaman->buku;
-        if ($buku->stok_tersedia < 1) {
-            return back()->with('error', 'Stok buku ini sedang habis di perpustakaan.');
-        }
-
-        DB::transaction(function () use ($peminjaman, $buku) {
+        DB::transaction(function () use ($peminjaman) {
             $today = now();
             $durasi = $peminjaman->durasi_pinjam ?: 3;
 
@@ -122,11 +124,9 @@ class PeminjamanController extends Controller
                 'tanggal_jatuh_tempo' => $today->copy()->addDays($durasi)->toDateString(),
                 'waktu_jatuh_tempo' => '23:59',
             ]);
-
-            $buku->decrement('stok_tersedia');
         });
 
-        return back()->with('success', "Buku {$buku->judul} berhasil diserahkan kepada {$peminjaman->nama_peminjam}. Status kini aktif dipinjam.");
+        return back()->with('success', "Buku {$peminjaman->buku->judul} berhasil diserahkan kepada {$peminjaman->nama_peminjam}. Status kini aktif dipinjam.");
     }
 
     public function return(Peminjaman $peminjaman)

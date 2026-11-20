@@ -58,7 +58,7 @@ class PeminjamanController extends Controller
 
     /**
      * Mencatat peminjaman buku oleh siswa.
-     * Mode 'booking': reservasi (status_reservasi = booking, status = dipinjam, stok belum dikurangi)
+     * Mode 'booking': reservasi (stok dikunci/dikurangi, status_reservasi = booking)
      * Mode 'pinjam': langsung pinjam (stok dikurangi, status_reservasi = dipinjam)
      */
     public function store(StorePeminjamanRequest $request): JsonResponse
@@ -82,6 +82,11 @@ class PeminjamanController extends Controller
                 return ['error' => $this->errorResponse('Buku tidak ditemukan.', 404)];
             }
 
+            if ($mode === 'booking') {
+                $this->expireOverdueBookings($buku->id);
+                $buku->refresh();
+            }
+
             $maxDurasi = (int) (Pengaturan::get('durasi_peminjaman', 3));
             if ($maxDurasi < 1) {
                 $maxDurasi = 3;
@@ -96,10 +101,11 @@ class PeminjamanController extends Controller
             $tanggalJatuhTempo = Carbon::parse($tanggalAmbil)->addDays($durasiDipilih)->toDateString();
 
             if ($mode === 'booking') {
-                // Mode reservasi: stok TIDAK dikurangi, status_reservasi = booking
                 if ($buku->stok_tersedia < 1) {
-                    return ['error' => $this->errorResponse('Stok buku ini sedang habis, tidak dapat direservasi.', 400)];
+                    return ['error' => $this->errorResponse('Stok buku ini sedang habis atau sudah direservasi siswa lain.', 400)];
                 }
+
+                $buku->decrement('stok_tersedia');
 
                 $peminjaman = Peminjaman::create([
                     'anggota_id' => $validated['anggota_id'],
@@ -153,6 +159,37 @@ class PeminjamanController extends Controller
             : 'Peminjaman buku berhasil dicatat.';
 
         return $this->successResponse($hasil['data'], $message, 201);
+    }
+
+    /**
+     * Siswa membatalkan reservasi booking yang belum diserahkan petugas.
+     * Stok yang sempat dikunci dikembalikan tepat satu kali.
+     */
+    public function batalkanReservasi(Request $request, Peminjaman $peminjaman): JsonResponse
+    {
+        $anggota = $this->authenticatedStudent($request);
+        if (! $anggota || $peminjaman->anggota_id !== $anggota->id) {
+            return $this->errorResponse('Reservasi tidak ditemukan.', 404);
+        }
+
+        if (! $peminjaman->bisa_batalkan_reservasi) {
+            return $this->errorResponse('Reservasi ini tidak bisa dibatalkan.', 400);
+        }
+
+        DB::transaction(function () use ($peminjaman): void {
+            $locked = Peminjaman::whereKey($peminjaman->id)->lockForUpdate()->first();
+            if (! $locked || ! $locked->bisa_batalkan_reservasi) {
+                return;
+            }
+
+            $locked->update(['status_reservasi' => Peminjaman::STATUS_RESERVASI_DIBATALKAN]);
+            $locked->buku()->lockForUpdate()->first()?->increment('stok_tersedia');
+        });
+
+        return $this->successResponse(
+            new PeminjamanResource($peminjaman->fresh()->load('buku')),
+            'Reservasi dibatalkan. Stok buku kembali tersedia.'
+        );
     }
 
     /**
@@ -369,6 +406,31 @@ class PeminjamanController extends Controller
         }
 
         return $relations;
+    }
+
+    /**
+     * Mengembalikan stok dari reservasi booking yang sudah lewat tanggal ambil.
+     * Dipanggil secara internal dari store() agar stok tidak diblokir oleh booking kedaluwarsa.
+     */
+    private function expireOverdueBookings(int $bukuId): void
+    {
+        Peminjaman::query()
+            ->where('buku_id', $bukuId)
+            ->where('status_reservasi', Peminjaman::STATUS_RESERVASI_BOOKING)
+            ->whereDate('tanggal_ambil', '<', today())
+            ->chunkById(100, function ($bookings) {
+                foreach ($bookings as $booking) {
+                    DB::transaction(function () use ($booking): void {
+                        $locked = Peminjaman::whereKey($booking->id)->lockForUpdate()->first();
+                        if (! $locked || ! $locked->is_booking) {
+                            return;
+                        }
+
+                        $locked->update(['status_reservasi' => Peminjaman::STATUS_RESERVASI_EXPIRED]);
+                        $locked->buku()->lockForUpdate()->first()?->increment('stok_tersedia');
+                    });
+                }
+            });
     }
 
     /**

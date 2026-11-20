@@ -82,6 +82,8 @@
                 <option value="">Semua Status</option>
                 <option value="bukti_pending" @selected(request('status') === 'bukti_pending')>🟣 Cek Bukti (Prioritas Cek)</option>
                 <option value="booking" @selected(request('status') === 'booking')>🟢 Booking (Menunggu Diambil)</option>
+                <option value="expired" @selected(request('status') === 'expired')>⚫ Booking Kedaluwarsa</option>
+                <option value="dibatalkan" @selected(request('status') === 'dibatalkan')>⚪ Reservasi Dibatalkan</option>
                 <option value="hampir_tenggat" @selected(request('status') === 'hampir_tenggat')>🟠 Hampir Tenggat (&le; 5-24 Jam)</option>
                 <option value="kembali_mandiri" @selected(request('status') === 'kembali_mandiri')>🔵 Kembali Mandiri (Dikonfirmasi)</option>
                 <option value="dipinjam" @selected(request('status') === 'dipinjam')>⚪ Sedang Dipinjam</option>
@@ -120,6 +122,14 @@
                             $badgeClass = 'bg-cyan-100 text-cyan-800 border-cyan-200';
                             $badgeLabel = 'Kembali Mandiri (Foto)';
                             $badgeDot = 'bg-cyan-500';
+                        } elseif ($item->status_reservasi === 'expired') {
+                            $badgeClass = 'bg-slate-100 text-slate-700 border-slate-300';
+                            $badgeLabel = 'Booking Kedaluwarsa';
+                            $badgeDot = 'bg-slate-500';
+                        } elseif ($item->status_reservasi === 'dibatalkan') {
+                            $badgeClass = 'bg-slate-100 text-slate-600 border-slate-200';
+                            $badgeLabel = 'Reservasi Dibatalkan';
+                            $badgeDot = 'bg-slate-400';
                         } elseif ($item->is_booking) {
                             $badgeClass = 'bg-teal-50 text-teal-800 border-teal-200';
                             $badgeLabel = 'Booking (Menunggu Serah)';
@@ -199,7 +209,7 @@
                                 @endif
 
                                 @if($item->is_booking)
-                                    <button type="button" onclick="openSerahkanModal(this)" data-id="{{ $item->id }}" data-nama="{{ $item->nama_peminjam }}" data-nis="{{ $item->nis }}" data-judul="{{ $item->buku->judul }}" data-durasi="{{ $item->durasi_pinjam ?? 3 }}" data-stok="{{ $item->buku->stok_tersedia }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                                    <button type="button" onclick="openSerahkanModal(this)" data-id="{{ $item->id }}" data-nama="{{ $item->nama_peminjam }}" data-nis="{{ $item->nis }}" data-judul="{{ $item->buku->judul }}" data-durasi="{{ $item->durasi_pinjam ?? 3 }}" data-ambil="{{ $item->tanggal_ambil?->toDateString() ?? $item->tanggal_pinjam?->toDateString() }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                         Serahkan Buku
                                     </button>
@@ -248,10 +258,10 @@
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div class="rounded-xl border border-slate-200 p-3"><p class="text-xs text-slate-500">Durasi pinjam</p><p id="handoverDuration" class="mt-1 font-bold text-slate-900"></p></div>
-                <div class="rounded-xl border border-slate-200 p-3"><p class="text-xs text-slate-500">Stok tersedia</p><p id="handoverStock" class="mt-1 font-bold text-slate-900"></p></div>
+                <div class="rounded-xl border border-slate-200 p-3"><p class="text-xs text-slate-500">Batas ambil</p><p id="handoverPickup" class="mt-1 font-bold text-slate-900"></p></div>
             </div>
             <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-                Setelah dikonfirmasi, stok berkurang 1 dan masa pinjam mulai dihitung hari ini. Tindakan ini tidak dapat dibatalkan dari halaman ini.
+                Stok buku sudah dikunci sejak reservasi dibuat. Setelah dikonfirmasi, masa pinjam mulai dihitung hari ini. Tindakan ini tidak dapat dibatalkan dari halaman ini.
             </div>
         </div>
         <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
@@ -356,7 +366,7 @@
     document.getElementById('handoverBook').textContent = btn.dataset.judul;
     document.getElementById('handoverStudent').textContent = `${btn.dataset.nama} · NIS ${btn.dataset.nis}`;
     document.getElementById('handoverDuration').textContent = `${btn.dataset.durasi} hari`;
-    document.getElementById('handoverStock').textContent = `${btn.dataset.stok} buku`;
+    document.getElementById('handoverPickup').textContent = btn.dataset.ambil;
     document.getElementById('handoverForm').action = `/admin/peminjaman/${btn.dataset.id}/serahkan-buku`;
     document.getElementById('handoverModal').classList.remove('hidden');
     document.getElementById('handoverModal').setAttribute('aria-hidden', 'false');

@@ -26,6 +26,8 @@ class Peminjaman extends Model
 
     public const STATUS_RESERVASI_DIBATALKAN = 'dibatalkan';
 
+    public const STATUS_RESERVASI_EXPIRED = 'expired';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -199,5 +201,15 @@ class Peminjaman extends Model
     {
         return $this->status_reservasi === self::STATUS_RESERVASI_BOOKING
             && $this->status === self::STATUS_DIPINJAM;
+    }
+
+    /**
+     * Cek apakah booking belum melewati tanggal pengambilan.
+     */
+    public function getBookingBelumExpiredAttribute(): bool
+    {
+        return $this->is_booking && now()
+            ->startOfDay()
+            ->lessThanOrEqualTo($this->tanggal_ambil ?? $this->tanggal_pinjam);
     }
 }
