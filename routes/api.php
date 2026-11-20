@@ -34,11 +34,11 @@ Route::prefix('v1')->group(function () {
     // Modul Transaksi
     Route::get('peminjaman', [PeminjamanController::class, 'index']);
     Route::get('peminjaman/{peminjaman}', [PeminjamanController::class, 'show']);
-    Route::post('peminjaman', [PeminjamanController::class, 'store']);
-    Route::post('peminjaman/{peminjaman}/perpanjang', [PeminjamanController::class, 'extend']);
-    Route::post('peminjaman/{peminjaman}/upload-bukti', [PeminjamanController::class, 'uploadBuktiKembali']);
-    Route::post('peminjaman/{peminjaman}/batalkan-bukti', [PeminjamanController::class, 'batalkanBuktiKembali']);
-    Route::post('peminjaman/{peminjaman}/batalkan-reservasi', [PeminjamanController::class, 'batalkanReservasi']);
+    Route::post('peminjaman', [PeminjamanController::class, 'store'])->middleware('operational');
+    Route::post('peminjaman/{peminjaman}/perpanjang', [PeminjamanController::class, 'extend'])->middleware('operational');
+    Route::post('peminjaman/{peminjaman}/upload-bukti', [PeminjamanController::class, 'uploadBuktiKembali'])->middleware('operational');
+    Route::post('peminjaman/{peminjaman}/batalkan-bukti', [PeminjamanController::class, 'batalkanBuktiKembali'])->middleware('operational');
+    Route::post('peminjaman/{peminjaman}/batalkan-reservasi', [PeminjamanController::class, 'batalkanReservasi'])->middleware('operational');
     Route::get('peminjaman/bukti-pending', [PeminjamanController::class, 'buktiPendingKonfirmasi']);
 
     // Rating buku (hanya peminjam, buku sudah dikembalikan).

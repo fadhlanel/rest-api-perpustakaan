@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Buku;
 use App\Models\Kategori;
 use App\Models\Peminjaman;
+use App\Models\Pengaturan;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -21,6 +22,7 @@ class DashboardController extends Controller
             'tersedia' => 0,
             'dipinjam' => 0,
             'database_ok' => false,
+            'status_layanan' => Pengaturan::get('status_layanan', 'aktif'),
         ];
         $buku = new LengthAwarePaginator([], 0, 10, 1);
         $kategori = collect();
