@@ -199,13 +199,10 @@
                                 @endif
 
                                 @if($item->is_booking)
-                                    <form method="POST" action="{{ route('admin.peminjaman.serahkan-buku', $item->id) }}" onsubmit="return confirm('Serahkan buku fisik kepada {{ addslashes($item->nama_peminjam) }}? Stok akan berkurang 1 dan masa pinjam mulai berjalan.');" class="inline">
-                                        @csrf
-                                        <button type="submit" class="inline-flex items-center gap-1 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                            Serahkan Buku
-                                        </button>
-                                    </form>
+                                    <button type="button" onclick="openSerahkanModal(this)" data-id="{{ $item->id }}" data-nama="{{ $item->nama_peminjam }}" data-nis="{{ $item->nis }}" data-judul="{{ $item->buku->judul }}" data-durasi="{{ $item->durasi_pinjam ?? 3 }}" data-stok="{{ $item->buku->stok_tersedia }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        Serahkan Buku
+                                    </button>
                                 @elseif($item->status === 'dipinjam' && !$isBuktiPending)
                                     <button onclick="returnBook(this)" data-id="{{ $item->id }}" data-nama="{{ $item->nama_peminjam }}" data-nis="{{ $item->nis }}" data-judul="{{ $item->buku->judul }}" data-pinjam="{{ $item->tanggal_pinjam?->format('d M Y') }}" data-tempo="{{ $item->tanggal_jatuh_tempo?->format('d M Y') }}" class="inline-flex items-center px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
                                         Kembalikan
@@ -229,6 +226,41 @@
     
     <div id="peminjamanPagination" class="px-6 py-4 border-t border-slate-100 bg-slate-50">
         {{ $peminjaman->links() }}
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Penyerahan Buku -->
+<div id="handoverModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" aria-hidden="true">
+    <div class="absolute inset-0 bg-slate-950/60" onclick="closeHandoverModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="handoverTitle">
+        <div class="px-6 py-5 border-b border-slate-100 flex items-start justify-between">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">Serah Terima Buku</p>
+                <h3 id="handoverTitle" class="mt-1 text-xl font-bold text-slate-900">Konfirmasi buku diserahkan</h3>
+                <p class="mt-1 text-sm text-slate-500">Pastikan buku benar-benar sudah diberikan kepada siswa.</p>
+            </div>
+            <button type="button" onclick="closeHandoverModal()" aria-label="Tutup dialog" class="w-9 h-9 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 text-xl">&times;</button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <div class="rounded-xl bg-slate-50 border border-slate-200 p-4">
+                <p id="handoverBook" class="font-semibold text-slate-900"></p>
+                <p id="handoverStudent" class="mt-1 text-sm text-slate-600"></p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-xl border border-slate-200 p-3"><p class="text-xs text-slate-500">Durasi pinjam</p><p id="handoverDuration" class="mt-1 font-bold text-slate-900"></p></div>
+                <div class="rounded-xl border border-slate-200 p-3"><p class="text-xs text-slate-500">Stok tersedia</p><p id="handoverStock" class="mt-1 font-bold text-slate-900"></p></div>
+            </div>
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                Setelah dikonfirmasi, stok berkurang 1 dan masa pinjam mulai dihitung hari ini. Tindakan ini tidak dapat dibatalkan dari halaman ini.
+            </div>
+        </div>
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+            <button type="button" onclick="closeHandoverModal()" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-100">Batal</button>
+            <form id="handoverForm" method="POST" action="">
+                @csrf
+                <button type="submit" class="px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">Ya, Serahkan Buku</button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -318,6 +350,21 @@
     } catch (_) {
       // abaikan
     }
+  }
+
+  function openSerahkanModal(btn) {
+    document.getElementById('handoverBook').textContent = btn.dataset.judul;
+    document.getElementById('handoverStudent').textContent = `${btn.dataset.nama} · NIS ${btn.dataset.nis}`;
+    document.getElementById('handoverDuration').textContent = `${btn.dataset.durasi} hari`;
+    document.getElementById('handoverStock').textContent = `${btn.dataset.stok} buku`;
+    document.getElementById('handoverForm').action = `/admin/peminjaman/${btn.dataset.id}/serahkan-buku`;
+    document.getElementById('handoverModal').classList.remove('hidden');
+    document.getElementById('handoverModal').setAttribute('aria-hidden', 'false');
+  }
+
+  function closeHandoverModal() {
+    document.getElementById('handoverModal').classList.add('hidden');
+    document.getElementById('handoverModal').setAttribute('aria-hidden', 'true');
   }
 
   function returnBook(btn) {
