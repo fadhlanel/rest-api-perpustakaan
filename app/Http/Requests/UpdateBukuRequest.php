@@ -25,6 +25,8 @@ class UpdateBukuRequest extends FormRequest
         return [
             'judul' => ['sometimes', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
+            'sinopsis' => ['nullable', 'string'],
+            'ringkasan' => ['nullable', 'string'],
             'tahun_terbit' => ['sometimes', 'integer', 'min:1900', 'max:'.now()->year],
             'isbn' => ['nullable', 'string', 'max:30'],
             'sampul' => ['nullable', 'string', 'max:255'],
@@ -32,6 +34,8 @@ class UpdateBukuRequest extends FormRequest
             'kategori_id' => ['sometimes', 'integer', 'exists:kategori,id'],
             'penulis_id' => ['sometimes', 'integer', 'exists:penulis,id'],
             'penerbit_id' => ['sometimes', 'integer', 'exists:penerbit,id'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['integer', 'exists:tags,id'],
         ];
     }
 }

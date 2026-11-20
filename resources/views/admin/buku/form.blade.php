@@ -57,25 +57,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Deskripsi</label>
-                    <textarea name="deskripsi" rows="4" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" placeholder="Deskripsi singkat buku...">{{ old('deskripsi', $buku->deskripsi ?? '') }}</textarea>
-                    @error('deskripsi')
-                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Sinopsis (Detail)</label>
-                    <textarea name="sinopsis" rows="6" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" placeholder="Sinopsis lengkap isi buku...">{{ old('sinopsis', $buku->sinopsis ?? '') }}</textarea>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Sinopsis</label>
+                    <textarea name="sinopsis" rows="5" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" placeholder="Sinopsis buku (opsional)...">{{ old('sinopsis', $buku->sinopsis ?? '') }}</textarea>
                     @error('sinopsis')
-                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Ringkasan (Custom)</label>
-                    <textarea name="ringkasan" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" placeholder="Ringkasan singkat untuk tampilan kartu...">{{ old('ringkasan', $buku->ringkasan ?? '') }}</textarea>
-                    @error('ringkasan')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -136,6 +120,30 @@
                         @endforeach
                     </select>
                     @error('penerbit_id')
+                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Tag -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-bold text-slate-600 uppercase">Tag</label>
+                        <button type="button" onclick="openInlineModal('tag', 'Tag')" class="text-xs font-semibold text-cyan-700 hover:text-cyan-800 hover:underline inline-flex items-center gap-1">
+                            <span>+ Tambah Baru</span>
+                        </button>
+                    </div>
+                    <div class="space-y-2 max-h-48 overflow-y-auto p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        @foreach($tags as $tag)
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="tags[]" value="{{ $tag->id }}" {{ in_array($tag->id, old('tags', $buku->tags->pluck('id')->toArray() ?? [])) ? 'checked' : '' }} class="w-4 h-4 text-cyan-600 border-slate-300 rounded focus:ring-cyan-500 focus:ring-2">
+                                <span class="text-sm text-slate-700">{{ $tag->nama }}</span>
+                            </label>
+                        @endforeach
+                        @if($tags->isEmpty())
+                            <p class="text-xs text-slate-500 text-center py-4">Belum ada tag. Buat tag baru di samping.</p>
+                        @endif
+                    </div>
+                    @error('tags')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
                 </div>

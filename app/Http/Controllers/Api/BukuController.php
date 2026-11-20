@@ -53,11 +53,15 @@ class BukuController extends Controller
     public function store(StoreBukuRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
 
         // Stok tersedia awal = stok total karena belum ada yang meminjam.
         $data['stok_tersedia'] = $data['stok'];
 
-        $buku = Buku::create($data)->load(['kategori', 'penulis', 'penerbit']);
+        $buku = Buku::create($data);
+        $buku->tags()->sync($tags);
+        $buku->load(['kategori', 'penulis', 'penerbit', 'tags']);
 
         return $this->successResponse(new BukuResource($buku), 'Buku berhasil ditambahkan.', 201);
     }
@@ -79,6 +83,8 @@ class BukuController extends Controller
     public function update(UpdateBukuRequest $request, Buku $buku): JsonResponse
     {
         $data = $request->validated();
+        $tags = $data['tags'] ?? null;
+        unset($data['tags']);
 
         // Jika stok diubah, sesuaikan stok_tersedia selisihnya (total koleksi berubah, buku dipinjam tetap).
         if (array_key_exists('stok', $data) && $data['stok'] !== $buku->stok) {
@@ -97,8 +103,12 @@ class BukuController extends Controller
 
         $buku->update($data);
 
+        if ($tags !== null) {
+            $buku->tags()->sync($tags);
+        }
+
         return $this->successResponse(
-            new BukuResource($buku->fresh()->load(['kategori', 'penulis', 'penerbit'])),
+            new BukuResource($buku->fresh()->load(['kategori', 'penulis', 'penerbit', 'tags'])),
             'Buku berhasil diperbarui.'
         );
     }
@@ -145,7 +155,7 @@ class BukuController extends Controller
      */
     private function relations(): array
     {
-        $relations = ['kategori', 'penulis', 'penerbit'];
+        $relations = ['kategori', 'penulis', 'penerbit', 'tags'];
 
         if (Schema::hasTable('ulasan')) {
             $relations[] = 'ulasan';

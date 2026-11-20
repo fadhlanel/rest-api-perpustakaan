@@ -26,6 +26,7 @@ class BukuResource extends JsonResource
             'sampul_url' => $this->sampul
                 ? route('v1.buku.sampul', ['buku' => $this->id], true)
                 : null,
+            'tags' => $this->whenLoaded('tags', fn () => $this->tags->pluck('nama')->values()),
             'stok' => $this->stok,
             'stok_tersedia' => $this->stok_tersedia,
             'kategori' => $this->whenLoaded('kategori', fn () => new KategoriResource($this->kategori)),

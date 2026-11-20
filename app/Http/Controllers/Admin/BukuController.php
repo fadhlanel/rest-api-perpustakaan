@@ -8,6 +8,7 @@ use App\Models\Kategori;
 use App\Models\Peminjaman;
 use App\Models\Penerbit;
 use App\Models\Penulis;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -66,17 +67,16 @@ class BukuController extends Controller
         $kategori = Kategori::all();
         $penulis = Penulis::all();
         $penerbit = Penerbit::all();
+        $tags = Tag::orderBy('nama')->get();
 
-        return view('admin.buku.form', compact('kategori', 'penulis', 'penerbit'));
+        return view('admin.buku.form', compact('kategori', 'penulis', 'penerbit', 'tags'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
             'sinopsis' => 'nullable|string',
-            'ringkasan' => 'nullable|string',
             'tahun_terbit' => 'required|integer',
             'isbn' => 'nullable|string|max:30',
             'stok' => 'required|integer|min:0',
@@ -84,15 +84,20 @@ class BukuController extends Controller
             'penulis_id' => 'required|exists:penulis,id',
             'penerbit_id' => 'required|exists:penerbit,id',
             'sampul' => 'nullable|image|max:2048',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id',
         ]);
 
         $data['stok_tersedia'] = $data['stok'];
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
 
         if ($request->hasFile('sampul')) {
             $data['sampul'] = $this->processSampul($request->file('sampul'));
         }
 
-        Buku::create($data);
+        $buku = Buku::create($data);
+        $buku->tags()->sync($tags);
 
         return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil ditambah.');
     }
@@ -102,17 +107,16 @@ class BukuController extends Controller
         $kategori = Kategori::all();
         $penulis = Penulis::all();
         $penerbit = Penerbit::all();
+        $tags = Tag::orderBy('nama')->get();
 
-        return view('admin.buku.form', compact('buku', 'kategori', 'penulis', 'penerbit'));
+        return view('admin.buku.form', compact('buku', 'kategori', 'penulis', 'penerbit', 'tags'));
     }
 
     public function update(Request $request, Buku $buku)
     {
         $data = $request->validate([
             'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
             'sinopsis' => 'nullable|string',
-            'ringkasan' => 'nullable|string',
             'tahun_terbit' => 'required|integer',
             'isbn' => 'nullable|string|max:30',
             'stok' => 'required|integer|min:0',
@@ -120,6 +124,8 @@ class BukuController extends Controller
             'penulis_id' => 'required|exists:penulis,id',
             'penerbit_id' => 'required|exists:penerbit,id',
             'sampul' => 'nullable|image|max:2048',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id',
         ]);
 
         $stokDipinjam = $buku->stok - $buku->stok_tersedia;
@@ -130,9 +136,8 @@ class BukuController extends Controller
         }
 
         $data['stok_tersedia'] = $data['stok'] - $stokDipinjam;
-        $data['deskripsi'] = $data['deskripsi'] ?? $buku->deskripsi;
-        $data['sinopsis'] = $data['sinopsis'] ?? $buku->sinopsis;
-        $data['ringkasan'] = $data['ringkasan'] ?? $buku->ringkasan;
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
 
         if ($request->hasFile('sampul')) {
             // Hapus sampul lama jika ada
@@ -143,6 +148,7 @@ class BukuController extends Controller
         }
 
         $buku->update($data);
+        $buku->tags()->sync($tags);
 
         return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil diupdate.');
     }

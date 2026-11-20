@@ -7,14 +7,15 @@ use App\Models\Buku;
 use App\Models\Kategori;
 use App\Models\Penerbit;
 use App\Models\Penulis;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class MasterController extends Controller
 {
     public function index(string $type)
     {
-        abort_unless(in_array($type, ['kategori', 'penulis', 'penerbit'], true), 404);
-        $model = ['kategori' => Kategori::class, 'penulis' => Penulis::class, 'penerbit' => Penerbit::class][$type];
+        abort_unless(in_array($type, ['kategori', 'penulis', 'penerbit', 'tag'], true), 404);
+        $model = ['kategori' => Kategori::class, 'penulis' => Penulis::class, 'penerbit' => Penerbit::class, 'tag' => Tag::class][$type];
 
         $query = $model::query();
 
@@ -94,6 +95,7 @@ class MasterController extends Controller
 
     public function reassignBulk(Request $request, string $type)
     {
+        abort_if($type === 'tag', 404);
         $request->validate(['new_id' => 'required|integer|exists:'.$type.',id']);
 
         $field = $type.'_id';
@@ -106,6 +108,7 @@ class MasterController extends Controller
 
     public function reassignItem(Request $request, string $type)
     {
+        abort_if($type === 'tag', 404);
         $request->validate([
             'buku_id' => 'required|integer|exists:buku,id',
             'new_id' => 'required|integer|exists:'.$type.',id',
@@ -119,6 +122,6 @@ class MasterController extends Controller
 
     private function model(string $type): string
     {
-        return ['kategori' => Kategori::class, 'penulis' => Penulis::class, 'penerbit' => Penerbit::class][$type] ?? abort(404);
+        return ['kategori' => Kategori::class, 'penulis' => Penulis::class, 'penerbit' => Penerbit::class, 'tag' => Tag::class][$type] ?? abort(404);
     }
 }

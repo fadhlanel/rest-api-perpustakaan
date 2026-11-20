@@ -24,6 +24,8 @@ class StoreBukuRequest extends FormRequest
         return [
             'judul' => ['required', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
+            'sinopsis' => ['nullable', 'string'],
+            'ringkasan' => ['nullable', 'string'],
             'tahun_terbit' => ['required', 'integer', 'min:1900', 'max:'.now()->year],
             'isbn' => ['nullable', 'string', 'max:30'],
             'sampul' => ['nullable', 'string', 'max:255'],
@@ -31,6 +33,8 @@ class StoreBukuRequest extends FormRequest
             'kategori_id' => ['required', 'integer', 'exists:kategori,id'],
             'penulis_id' => ['required', 'integer', 'exists:penulis,id'],
             'penerbit_id' => ['required', 'integer', 'exists:penerbit,id'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['integer', 'exists:tags,id'],
         ];
     }
 
