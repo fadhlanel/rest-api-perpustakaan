@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('pengembalian', function (Blueprint $table) {
             if (! Schema::hasColumn('pengembalian', 'dikonfirmasi')) {
-                $table->boolean('dikonfirmasi')->default(false)->after('catatan');
+                $table->boolean('dikonfirmasi')->default(false);
             }
             if (! Schema::hasColumn('pengembalian', 'tanggal_konfirmasi')) {
-                $table->timestamp('tanggal_konfirmasi')->nullable()->after('dikonfirmasi');
+                $table->timestamp('tanggal_konfirmasi')->nullable();
             }
         });
     }
