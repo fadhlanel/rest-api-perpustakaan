@@ -23,8 +23,11 @@ class PeminjamanController extends Controller
         $status = $request->string('status')->toString();
         if ($status === 'hampir_tenggat') {
             $query->where('status', 'dipinjam')
+                ->where('status_reservasi', '!=', Peminjaman::STATUS_RESERVASI_BOOKING)
                 ->where('tanggal_jatuh_tempo', '<=', now()->addDay()->toDateString())
                 ->where('tanggal_jatuh_tempo', '>=', $today);
+        } elseif ($status === 'booking') {
+            $query->where('status_reservasi', Peminjaman::STATUS_RESERVASI_BOOKING);
         } elseif ($status === 'bukti_pending') {
             $query->buktiPendingKonfirmasi();
         } elseif ($status === 'kembali_mandiri') {
@@ -68,9 +71,11 @@ class PeminjamanController extends Controller
         // Hitung notifikasi & statistik status
         $stats = [
             'hampir_tenggat' => Peminjaman::where('status', 'dipinjam')
+                ->where('status_reservasi', '!=', Peminjaman::STATUS_RESERVASI_BOOKING)
                 ->where('tanggal_jatuh_tempo', '<=', now()->addDay()->toDateString())
                 ->where('tanggal_jatuh_tempo', '>=', $today)
                 ->count(),
+            'booking' => Peminjaman::where('status_reservasi', Peminjaman::STATUS_RESERVASI_BOOKING)->count(),
             'kembali_mandiri' => Peminjaman::where('status', 'dikembalikan')
                 ->whereHas('pengembalian', function ($q) {
                     $q->whereNotNull('foto_bukti')->orWhere('tipe_kembali', 'mandiri');
@@ -84,6 +89,44 @@ class PeminjamanController extends Controller
         ];
 
         return view('admin.peminjaman.index', compact('peminjaman', 'stats'));
+    }
+
+    /**
+     * Konfirmasi penyerahan buku booking/reservasi fisik kepada siswa.
+     * Mengubah status_reservasi menjadi 'dipinjam', memotong stok buku,
+     * dan mengaktifkan masa peminjaman aktif.
+     */
+    public function serahkanBuku(Peminjaman $peminjaman)
+    {
+        if (! $peminjaman->is_booking) {
+            return back()->with('error', 'Peminjaman ini bukan reservasi atau buku sudah diserahkan.');
+        }
+
+        if ($peminjaman->status === 'dikembalikan') {
+            return back()->with('error', 'Peminjaman ini sudah selesai/dikembalikan.');
+        }
+
+        $buku = $peminjaman->buku;
+        if ($buku->stok_tersedia < 1) {
+            return back()->with('error', 'Stok buku ini sedang habis di perpustakaan.');
+        }
+
+        DB::transaction(function () use ($peminjaman, $buku) {
+            $today = now();
+            $durasi = $peminjaman->durasi_pinjam ?: 3;
+
+            $peminjaman->update([
+                'status_reservasi' => Peminjaman::STATUS_RESERVASI_DIPINJAM,
+                'tanggal_pinjam' => $today->toDateString(),
+                'jam_pinjam' => $today->format('H:i'),
+                'tanggal_jatuh_tempo' => $today->copy()->addDays($durasi)->toDateString(),
+                'waktu_jatuh_tempo' => '23:59',
+            ]);
+
+            $buku->decrement('stok_tersedia');
+        });
+
+        return back()->with('success', "Buku {$buku->judul} berhasil diserahkan kepada {$peminjaman->nama_peminjam}. Status kini aktif dipinjam.");
     }
 
     public function return(Peminjaman $peminjaman)

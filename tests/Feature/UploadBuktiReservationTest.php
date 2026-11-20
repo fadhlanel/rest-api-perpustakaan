@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Anggota;
 use App\Models\Buku;
 use App\Models\Peminjaman;
+use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -154,5 +155,41 @@ class UploadBuktiReservationTest extends TestCase
 
         $this->assertTrue($booking->is_booking);
         $this->assertFalse($booking->is_hampir_tenggat);
+    }
+
+    /**
+     * Admin menyerahkan buku booking fisik ke siswa:
+     * status_reservasi berubah menjadi dipinjam, stok buku berkurang 1.
+     */
+    public function test_admin_bisa_menyerahkan_buku_booking(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        [$anggota] = $this->anggotaWithToken();
+        $buku = Buku::firstOrFail();
+        $stokAwal = $buku->stok_tersedia;
+
+        $booking = Peminjaman::create([
+            'anggota_id' => $anggota->id,
+            'nama_peminjam' => $anggota->nama,
+            'nis' => $anggota->nis,
+            'buku_id' => $buku->id,
+            'tanggal_pinjam' => now()->toDateString(),
+            'tanggal_ambil' => now()->toDateString(),
+            'tanggal_jatuh_tempo' => now()->addDays(2)->toDateString(),
+            'durasi_pinjam' => 2,
+            'status' => Peminjaman::STATUS_DIPINJAM,
+            'status_reservasi' => Peminjaman::STATUS_RESERVASI_BOOKING,
+        ]);
+
+        $response = $this->actingAs($admin)->post(
+            route('admin.peminjaman.serahkan-buku', $booking->id)
+        );
+
+        $response->assertRedirect();
+        $booking->refresh();
+
+        $this->assertSame(Peminjaman::STATUS_RESERVASI_DIPINJAM, $booking->status_reservasi);
+        $this->assertFalse($booking->is_booking);
+        $this->assertSame($stokAwal - 1, $buku->fresh()->stok_tersedia);
     }
 }

@@ -81,6 +81,7 @@
             <select id="statusFilter" name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-700 hover:border-slate-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition cursor-pointer">
                 <option value="">Semua Status</option>
                 <option value="bukti_pending" @selected(request('status') === 'bukti_pending')>🟣 Cek Bukti (Prioritas Cek)</option>
+                <option value="booking" @selected(request('status') === 'booking')>🟢 Booking (Menunggu Diambil)</option>
                 <option value="hampir_tenggat" @selected(request('status') === 'hampir_tenggat')>🟠 Hampir Tenggat (&le; 5-24 Jam)</option>
                 <option value="kembali_mandiri" @selected(request('status') === 'kembali_mandiri')>🔵 Kembali Mandiri (Dikonfirmasi)</option>
                 <option value="dipinjam" @selected(request('status') === 'dipinjam')>⚪ Sedang Dipinjam</option>
@@ -119,6 +120,10 @@
                             $badgeClass = 'bg-cyan-100 text-cyan-800 border-cyan-200';
                             $badgeLabel = 'Kembali Mandiri (Foto)';
                             $badgeDot = 'bg-cyan-500';
+                        } elseif ($item->is_booking) {
+                            $badgeClass = 'bg-teal-50 text-teal-800 border-teal-200';
+                            $badgeLabel = 'Booking (Menunggu Serah)';
+                            $badgeDot = 'bg-teal-500';
                         } elseif ($item->status === 'dikembalikan') {
                             $badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-200';
                             $badgeLabel = 'Sudah Dikembalikan';
@@ -193,12 +198,20 @@
                                     </button>
                                 @endif
 
-                                @if($item->status === 'dipinjam' && !$isBuktiPending)
-                                    <button onclick="returnBook(this)" data-id="{{ $item->id }}" data-nama="{{ $item->nama_peminjam }}" data-nis="{{ $item->nis }}" data-judul="{{ $item->buku->judul }}" data-pinjam="{{ $item->tanggal_pinjam?->format('d M Y') }}" data-tempo="{{ $item->tanggal_jatuh_tempo?->format('d M Y') }}" class="inline-flex items-center px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                @if($item->is_booking)
+                                    <form method="POST" action="{{ route('admin.peminjaman.serahkan-buku', $item->id) }}" onsubmit="return confirm('Serahkan buku fisik kepada {{ addslashes($item->nama_peminjam) }}? Stok akan berkurang 1 dan masa pinjam mulai berjalan.');" class="inline">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center gap-1 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            Serahkan Buku
+                                        </button>
+                                    </form>
+                                @elseif($item->status === 'dipinjam' && !$isBuktiPending)
+                                    <button onclick="returnBook(this)" data-id="{{ $item->id }}" data-nama="{{ $item->nama_peminjam }}" data-nis="{{ $item->nis }}" data-judul="{{ $item->buku->judul }}" data-pinjam="{{ $item->tanggal_pinjam?->format('d M Y') }}" data-tempo="{{ $item->tanggal_jatuh_tempo?->format('d M Y') }}" class="inline-flex items-center px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
                                         Kembalikan
                                     </button>
                                 @elseif(!$isKembaliMandiri && !$isBuktiPending)
-                                    <span class="text-sm text-slate-400 font-medium">—</span>
+                                    <span class="text-sm text-slate-400 font-medium">-</span>
                                 @endif
                             </div>
                         </td>
