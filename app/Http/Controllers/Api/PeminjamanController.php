@@ -86,9 +86,11 @@ class PeminjamanController extends Controller
             if ($maxDurasi < 1) {
                 $maxDurasi = 3;
             }
+
+            $durasiDefault = $mode === 'booking' ? min($maxDurasi, 3) : $maxDurasi;
             $durasiDipilih = isset($validated['durasi_hari']) && (int) $validated['durasi_hari'] > 0
                 ? min((int) $validated['durasi_hari'], 3) // max 3 hari untuk reservasi
-                : 1;
+                : $durasiDefault;
 
             $tanggalAmbil = $validated['tanggal_ambil'] ?? now()->toDateString();
             $tanggalJatuhTempo = Carbon::parse($tanggalAmbil)->addDays($durasiDipilih)->toDateString();

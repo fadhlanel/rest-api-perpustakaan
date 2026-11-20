@@ -25,6 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->trustProxies(at: '*');
         $middleware->appendToGroup('api', [LogApiRequest::class]);
+
+        // Pengguna yang sudah login tidak boleh dipantulkan ke "/" lalu balik ke
+        // halaman login. Arahkan langsung ke dasbor admin.
+        $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
