@@ -18,6 +18,9 @@ class PengembalianResource extends JsonResource
             'id' => $this->id,
             'peminjaman' => $this->whenLoaded('peminjaman', fn () => new PeminjamanResource($this->peminjaman)),
             'tanggal_kembali' => $this->tanggal_kembali?->toDateString(),
+            'foto_bukti_url' => $this->foto_bukti_url,
+            'tipe_kembali' => $this->tipe_kembali ?? 'petugas',
+            'catatan' => $this->catatan,
             'dibuat' => $this->created_at?->toDateTimeString(),
             'diubah' => $this->updated_at?->toDateTimeString(),
         ];

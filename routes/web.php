@@ -65,6 +65,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
         Route::post('peminjaman/{peminjaman}/return', [PeminjamanController::class, 'return'])->name('peminjaman.return');
+        Route::post('peminjaman/{peminjaman}/konfirmasi-kembali', [PeminjamanController::class, 'konfirmasiKembali'])->name('peminjaman.konfirmasi-kembali');
+        Route::get('pengembalian/{pengembalian}/bukti', [PeminjamanController::class, 'buktiFoto'])->name('pengembalian.bukti');
     });
 });
 

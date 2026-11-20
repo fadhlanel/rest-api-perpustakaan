@@ -12,6 +12,8 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class PengembalianController extends Controller
 {
@@ -43,7 +45,26 @@ class PengembalianController extends Controller
     {
         $validated = $request->validated();
 
-        $hasil = DB::transaction(function () use ($validated) {
+        $fotoPath = null;
+        if ($request->hasFile('foto_bukti')) {
+            $fotoPath = $request->file('foto_bukti')->store('bukti_kembali', 'public');
+        } elseif ($request->filled('foto_bukti')) {
+            $data = $request->string('foto_bukti')->toString();
+            if (str_starts_with($data, 'data:image')) {
+                @preg_match('/data:image\/(.*?);base64,(.*)$/', $data, $matches);
+                if (isset($matches[2])) {
+                    $ext = $matches[1] ?: 'jpg';
+                    $decoded = base64_decode($matches[2]);
+                    $filename = 'bukti_kembali/bukti_'.uniqid().'.'.$ext;
+                    Storage::disk('public')->put($filename, $decoded);
+                    $fotoPath = $filename;
+                }
+            } else {
+                $fotoPath = $data;
+            }
+        }
+
+        $hasil = DB::transaction(function () use ($validated, $fotoPath) {
             /** @var Peminjaman|null $peminjaman */
             $peminjaman = Peminjaman::query()
                 ->with(['buku' => fn ($query) => $query->lockForUpdate()])
@@ -58,10 +79,24 @@ class PengembalianController extends Controller
                 return ['error' => $this->errorResponse('Buku sudah dikembalikan sebelumnya.', 400)];
             }
 
-            $pengembalian = Pengembalian::create([
+            $dataPengembalian = [
                 'peminjaman_id' => $peminjaman->id,
                 'tanggal_kembali' => now()->toDateString(),
-            ]);
+            ];
+
+            if ($fotoPath) {
+                $dataPengembalian['foto_bukti'] = $fotoPath;
+            }
+            if (isset($validated['tipe_kembali'])) {
+                $dataPengembalian['tipe_kembali'] = $validated['tipe_kembali'];
+            } elseif ($fotoPath) {
+                $dataPengembalian['tipe_kembali'] = 'mandiri';
+            }
+            if (isset($validated['catatan'])) {
+                $dataPengembalian['catatan'] = $validated['catatan'];
+            }
+
+            $pengembalian = Pengembalian::create($dataPengembalian);
 
             $peminjaman->update(['status' => Peminjaman::STATUS_DIKEMBALIKAN]);
 
@@ -77,7 +112,22 @@ class PengembalianController extends Controller
             return $hasil['error'];
         }
 
-        return $this->successResponse($hasil['data'], 'Pengembalian buku berhasil diproses.', 201);
+        return $this->successResponse($hasil['data'], 'Buku berhasil dikembalikan.', 201);
+    }
+
+    /**
+     * Sajikan foto bukti pengembalian.
+     */
+    public function buktiFoto(Pengembalian $pengembalian): Response
+    {
+        $disk = Storage::disk('public');
+        if (! $pengembalian->foto_bukti || ! $disk->exists($pengembalian->foto_bukti)) {
+            return response('Foto bukti tidak ditemukan.', 404);
+        }
+
+        return response($disk->get($pengembalian->foto_bukti), 200, [
+            'Content-Type' => $disk->mimeType($pengembalian->foto_bukti),
+        ]);
     }
 
     /**

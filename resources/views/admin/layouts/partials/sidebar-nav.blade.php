@@ -34,9 +34,23 @@
     </a>
 
     <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Sirkulasi / Transaksi</div>
+    @php
+        $notifPeminjamanKembaliMandiri = \App\Models\Peminjaman::where('status', 'dikembalikan')
+            ->whereHas('pengembalian', fn ($q) => $q->whereNotNull('foto_bukti')->orWhere('tipe_kembali', 'mandiri'))
+            ->count();
+        $notifPeminjamanHampirTenggat = \App\Models\Peminjaman::where('status', 'dipinjam')
+            ->where('tanggal_jatuh_tempo', '<=', now()->addDay()->toDateString())
+            ->where('tanggal_jatuh_tempo', '>=', now()->toDateString())
+            ->count();
+    @endphp
     <a href="{{ route('admin.peminjaman.index') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.peminjaman.*') ? 'bg-cyan-50 text-cyan-700' : 'text-slate-600 hover:bg-slate-50' }}">
         <svg class="w-4 h-4 text-cyan-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-        <span>Peminjaman & Kembali</span>
+        <span class="flex-1">Peminjaman & Kembali</span>
+        @if ($notifPeminjamanKembaliMandiri > 0)
+            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-cyan-600 text-white text-[10px] font-bold leading-none" title="{{ $notifPeminjamanKembaliMandiri }} siswa mengembalikan dengan bukti foto">{{ $notifPeminjamanKembaliMandiri }}</span>
+        @elseif ($notifPeminjamanHampirTenggat > 0)
+            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-amber-500 text-white text-[10px] font-bold leading-none" title="{{ $notifPeminjamanHampirTenggat }} buku hampir jatuh tempo">{{ $notifPeminjamanHampirTenggat }}</span>
+        @endif
     </a>
 
     <div class="py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Anggota & Informasi</div>

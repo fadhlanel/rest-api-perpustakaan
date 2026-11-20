@@ -36,6 +36,9 @@ Route::prefix('v1')->group(function () {
     Route::get('peminjaman/{peminjaman}', [PeminjamanController::class, 'show']);
     Route::post('peminjaman', [PeminjamanController::class, 'store']);
     Route::post('peminjaman/{peminjaman}/perpanjang', [PeminjamanController::class, 'extend']);
+    Route::post('peminjaman/{peminjaman}/upload-bukti', [PeminjamanController::class, 'uploadBuktiKembali']);
+    Route::post('peminjaman/{peminjaman}/batalkan-bukti', [PeminjamanController::class, 'batalkanBuktiKembali']);
+    Route::get('peminjaman/bukti-pending', [PeminjamanController::class, 'buktiPendingKonfirmasi']);
 
     // Rating buku (hanya peminjam, buku sudah dikembalikan).
     Route::get('peminjaman/{peminjaman}/rating', [UlasanController::class, 'index']);
@@ -48,4 +51,5 @@ Route::prefix('v1')->group(function () {
 
     Route::get('pengembalian', [PengembalianController::class, 'index']);
     Route::post('pengembalian', [PengembalianController::class, 'store']);
+    Route::get('pengembalian/{pengembalian}/bukti', [PengembalianController::class, 'buktiFoto'])->name('v1.pengembalian.bukti');
 });

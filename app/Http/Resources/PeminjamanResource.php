@@ -21,7 +21,12 @@ class PeminjamanResource extends JsonResource
 
         $hariBerjalan = $tanggalPinjam ? $tanggalPinjam->diffInDays($now, false) : 0;
         $sisaHari = $tanggalJatuhTempo ? max(0, $now->diffInDays($tanggalJatuhTempo, false)) : 0;
-        $durasiHariTotal = $this->durasi_pinjam ?? 7;
+        $durasiHariTotal = $this->durasi_pinjam ?? 3;
+        $waktuJatuhTempo = $this->waktu_jatuh_tempo;
+        $sisaJam = $this->sisa_jam;
+        $isHampirTenggat = $this->is_hampir_tenggat;
+
+        $pengembalian = $this->relationLoaded('pengembalian') ? $this->pengembalian : null;
 
         return [
             'id' => $this->id,
@@ -31,12 +36,27 @@ class PeminjamanResource extends JsonResource
             'tanggal_pinjam' => $this->tanggal_pinjam?->toDateString(),
             'tanggal_ambil' => $this->tanggal_ambil?->toDateString(),
             'tanggal_jatuh_tempo' => $this->tanggal_jatuh_tempo?->toDateString(),
+            'tanggal_kembali_rencana' => $this->tanggal_kembali_rencana?->toDateString(),
+            'jam_pinjam' => $this->created_at?->format('H:i'),
+            'waktu_pinjam' => $this->created_at?->toIso8601String(),
+            'waktu_jatuh_tempo' => $waktuJatuhTempo?->toIso8601String(),
+            'durasi_pinjam' => (int) $durasiHariTotal,
+            'durasi_reservasi' => $this->durasi_reservasi,
+            'durasi_hari_total' => (int) $durasiHariTotal,
+            'sisa_hari' => (int) $sisaHari,
+            'sisa_jam' => (int) $sisaJam,
+            'hampir_tenggat' => (bool) $isHampirTenggat,
             'jumlah_perpanjangan' => $this->jumlah_perpanjangan,
             'bisa_perpanjang' => $this->status === Peminjaman::STATUS_DIPINJAM && $this->jumlah_perpanjangan < 1,
             'status' => $this->status,
-            'sisa_hari' => (int) $sisaHari,
+            'status_reservasi' => $this->status_reservasi ?? 'dipinjam',
+            'is_booking' => $this->status_reservasi === Peminjaman::STATUS_RESERVASI_BOOKING,
+            'bisa_batalkan_reservasi' => $this->bisa_batalkan_reservasi,
             'hari_berjalan' => (int) $hariBerjalan,
-            'durasi_hari_total' => (int) $durasiHariTotal,
+            'foto_bukti_url' => $pengembalian?->foto_bukti_url,
+            'tipe_kembali' => $pengembalian?->tipe_kembali ?? ($pengembalian ? 'petugas' : null),
+            'is_kembali_mandiri' => $this->is_kembali_mandiri,
+            'bukti_pending_konfirmasi' => $this->bukti_pending_konfirmasi,
             'pengembalian' => $this->whenLoaded('pengembalian', fn () => new PengembalianResource($this->pengembalian)),
             'ulasan' => $this->whenLoaded('ulasan', fn () => new UlasanResource($this->ulasan)),
             'bisa_rating' => $this->status === Peminjaman::STATUS_DIKEMBALIKAN,

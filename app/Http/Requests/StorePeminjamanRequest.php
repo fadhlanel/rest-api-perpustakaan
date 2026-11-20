@@ -25,7 +25,9 @@ class StorePeminjamanRequest extends FormRequest
             'nama_peminjam' => ['required', 'string', 'max:150'],
             'nis' => ['required', 'string', 'max:20'],
             'buku_id' => ['required', 'integer', 'exists:buku,id'],
-            'tanggal_ambil' => ['nullable', 'date', 'after_or_equal:today'],
+            'tanggal_ambil' => ['nullable', 'date', 'after_or_equal:today', 'before_or_equal:'.now()->addDays(5)->toDateString()],
+            'durasi_hari' => ['nullable', 'integer', 'min:1', 'max:3'],
+            'mode' => ['nullable', 'string', 'in:booking,pinjam'], // booking = reservasi, pinjam = langsung pinjam
         ];
     }
 

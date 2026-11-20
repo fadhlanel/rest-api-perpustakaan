@@ -8,11 +8,15 @@ use App\Http\Resources\PeminjamanResource;
 use App\Models\Anggota;
 use App\Models\Buku;
 use App\Models\Peminjaman;
+use App\Models\Pengaturan;
+use App\Models\Pengembalian;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class PeminjamanController extends Controller
 {
@@ -54,6 +58,8 @@ class PeminjamanController extends Controller
 
     /**
      * Mencatat peminjaman buku oleh siswa.
+     * Mode 'booking': reservasi (status_reservasi = booking, status = dipinjam, stok belum dikurangi)
+     * Mode 'pinjam': langsung pinjam (stok dikurangi, status_reservasi = dipinjam)
      */
     public function store(StorePeminjamanRequest $request): JsonResponse
     {
@@ -67,13 +73,51 @@ class PeminjamanController extends Controller
         $validated['nis'] = $anggota->nis;
         $validated['nama_peminjam'] = $anggota->nama;
 
-        $hasil = DB::transaction(function () use ($validated) {
+        $mode = $validated['mode'] ?? 'pinjam'; // default: pinjam langsung
+
+        $hasil = DB::transaction(function () use ($validated, $mode) {
             $buku = Buku::whereKey($validated['buku_id'])->lockForUpdate()->first();
 
             if (! $buku instanceof Buku) {
                 return ['error' => $this->errorResponse('Buku tidak ditemukan.', 404)];
             }
 
+            $maxDurasi = (int) (Pengaturan::get('durasi_peminjaman', 3));
+            if ($maxDurasi < 1) {
+                $maxDurasi = 3;
+            }
+            $durasiDipilih = isset($validated['durasi_hari']) && (int) $validated['durasi_hari'] > 0
+                ? min((int) $validated['durasi_hari'], 3) // max 3 hari untuk reservasi
+                : 1;
+
+            $tanggalAmbil = $validated['tanggal_ambil'] ?? now()->toDateString();
+            $tanggalJatuhTempo = Carbon::parse($tanggalAmbil)->addDays($durasiDipilih)->toDateString();
+
+            if ($mode === 'booking') {
+                // Mode reservasi: stok TIDAK dikurangi, status_reservasi = booking
+                if ($buku->stok_tersedia < 1) {
+                    return ['error' => $this->errorResponse('Stok buku ini sedang habis, tidak dapat direservasi.', 400)];
+                }
+
+                $peminjaman = Peminjaman::create([
+                    'anggota_id' => $validated['anggota_id'],
+                    'nama_peminjam' => $validated['nama_peminjam'],
+                    'nis' => $validated['nis'],
+                    'buku_id' => $buku->id,
+                    'tanggal_pinjam' => now()->toDateString(),
+                    'tanggal_ambil' => $tanggalAmbil,
+                    'tanggal_jatuh_tempo' => $tanggalJatuhTempo,
+                    'durasi_pinjam' => $durasiDipilih,
+                    'durasi_reservasi' => $durasiDipilih,
+                    'tanggal_kembali_rencana' => $tanggalJatuhTempo,
+                    'status' => Peminjaman::STATUS_DIPINJAM,
+                    'status_reservasi' => Peminjaman::STATUS_RESERVASI_BOOKING,
+                ]);
+
+                return ['data' => new PeminjamanResource($peminjaman->load('buku')), 'mode' => 'booking'];
+            }
+
+            // Mode pinjam langsung: stok dikurangi
             if ($buku->stok_tersedia < 1) {
                 return ['error' => $this->errorResponse('Stok buku ini sedang habis, tidak dapat dipinjam.', 400)];
             }
@@ -86,19 +130,27 @@ class PeminjamanController extends Controller
                 'nis' => $validated['nis'],
                 'buku_id' => $buku->id,
                 'tanggal_pinjam' => now()->toDateString(),
-                'tanggal_ambil' => $validated['tanggal_ambil'] ?? now()->toDateString(),
-                'tanggal_jatuh_tempo' => now()->addDays((int) env('LOAN_DURATION_DAYS', 3))->toDateString(),
+                'tanggal_ambil' => $tanggalAmbil,
+                'tanggal_jatuh_tempo' => $tanggalJatuhTempo,
+                'durasi_pinjam' => $durasiDipilih,
+                'durasi_reservasi' => $durasiDipilih,
+                'tanggal_kembali_rencana' => $tanggalJatuhTempo,
                 'status' => Peminjaman::STATUS_DIPINJAM,
+                'status_reservasi' => Peminjaman::STATUS_RESERVASI_DIPINJAM,
             ]);
 
-            return ['data' => new PeminjamanResource($peminjaman->load('buku'))];
+            return ['data' => new PeminjamanResource($peminjaman->load('buku')), 'mode' => 'pinjam'];
         });
 
         if (isset($hasil['error'])) {
             return $hasil['error'];
         }
 
-        return $this->successResponse($hasil['data'], 'Peminjaman buku berhasil dicatat.', 201);
+        $message = $hasil['mode'] === 'booking'
+            ? 'Reservasi buku berhasil. Ambil buku paling lambat tanggal '.$validated['tanggal_ambil'].'.'
+            : 'Peminjaman buku berhasil dicatat.';
+
+        return $this->successResponse($hasil['data'], $message, 201);
     }
 
     /**
@@ -136,6 +188,120 @@ class PeminjamanController extends Controller
             new PeminjamanResource($peminjaman->load($this->relations())),
             'Detail peminjaman.'
         );
+    }
+
+    /**
+     * Upload bukti foto pengembalian oleh siswa (Android).
+     * Status peminjaman TIDAK berubah, menunggu konfirmasi admin.
+     */
+    public function uploadBuktiKembali(Request $request, Peminjaman $peminjaman): JsonResponse
+    {
+        $anggota = $this->authenticatedStudent($request);
+        if (! $anggota) {
+            return $this->errorResponse('Sesi tidak valid. Silakan masuk kembali.', 401);
+        }
+
+        // Cek ownership
+        if ($peminjaman->anggota_id !== $anggota->id) {
+            return $this->errorResponse('Anda tidak memiliki akses ke peminjaman ini.', 403);
+        }
+
+        if ($peminjaman->status === 'dikembalikan') {
+            return $this->errorResponse('Buku sudah dikembalikan dan dikonfirmasi.', 400);
+        }
+
+        $validated = $request->validate([
+            'foto_bukti' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:5120'], // 5MB max
+            'catatan' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        // Hapus foto lama jika ada
+        $pengembalian = $peminjaman->pengembalian;
+        if ($pengembalian && $pengembalian->foto_bukti) {
+            Storage::disk('public')->delete($pengembalian->foto_bukti);
+        }
+
+        $path = $request->file('foto_bukti')->store('bukti-kembali', 'public');
+
+        if (! $pengembalian) {
+            $pengembalian = Pengembalian::create([
+                'peminjaman_id' => $peminjaman->id,
+                'tanggal_kembali' => now()->toDateString(),
+                'foto_bukti' => $path,
+                'tipe_kembali' => 'mandiri',
+                'catatan' => $validated['catatan'] ?? 'Dikembalikan mandiri oleh siswa di perpustakaan',
+                'dikonfirmasi' => false,
+            ]);
+        } else {
+            $pengembalian->update([
+                'foto_bukti' => $path,
+                'tipe_kembali' => 'mandiri',
+                'catatan' => $validated['catatan'] ?? 'Dikembalikan mandiri oleh siswa di perpustakaan',
+                'dikonfirmasi' => false,
+                'tanggal_konfirmasi' => null,
+            ]);
+        }
+
+        return $this->successResponse(
+            [
+                'peminjaman_id' => $peminjaman->id,
+                'foto_bukti_url' => $pengembalian->foto_bukti_url,
+                'dikonfirmasi' => false,
+                'message' => 'Bukti pengembalian berhasil diunggah. Menunggu konfirmasi admin.',
+            ],
+            'Bukti pengembalian berhasil diunggah. Menunggu konfirmasi admin.'
+        );
+    }
+
+    /**
+     * Batalkan/Edit bukti pengembalian (sebelum dikonfirmasi admin).
+     */
+    public function batalkanBuktiKembali(Request $request, Peminjaman $peminjaman): JsonResponse
+    {
+        $anggota = $this->authenticatedStudent($request);
+        if (! $anggota) {
+            return $this->errorResponse('Sesi tidak valid. Silakan masuk kembali.', 401);
+        }
+
+        if ($peminjaman->anggota_id !== $anggota->id) {
+            return $this->errorResponse('Anda tidak memiliki akses ke peminjaman ini.', 403);
+        }
+
+        $pengembalian = $peminjaman->pengembalian;
+
+        if (! $pengembalian || ! $pengembalian->foto_bukti) {
+            return $this->errorResponse('Tidak ada bukti yang bisa dibatalkan.', 400);
+        }
+
+        if ($pengembalian->dikonfirmasi) {
+            return $this->errorResponse('Bukti sudah dikonfirmasi admin, tidak bisa dibatalkan.', 400);
+        }
+
+        Storage::disk('public')->delete($pengembalian->foto_bukti);
+
+        $pengembalian->update([
+            'foto_bukti' => null,
+            'dikonfirmasi' => false,
+            'tanggal_konfirmasi' => null,
+        ]);
+
+        return $this->successResponse(
+            ['peminjaman_id' => $peminjaman->id],
+            'Bukti pengembalian dibatalkan. Anda bisa unggah ulang bukti baru.'
+        );
+    }
+
+    /**
+     * Daftar peminjaman dengan bukti kembalikan menunggu konfirmasi (Admin panel).
+     */
+    public function buktiPendingKonfirmasi(Request $request): JsonResponse
+    {
+        $peminjamans = Peminjaman::buktiPendingKonfirmasi()
+            ->with($this->relations())
+            ->orderBy('id')
+            ->paginate($this->perPage($request));
+
+        return $this->paginatedResponse($peminjamans, PeminjamanResource::class, 'Daftar bukti pengembalian menunggu konfirmasi.', $request);
     }
 
     /**

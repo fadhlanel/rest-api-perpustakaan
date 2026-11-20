@@ -22,6 +22,11 @@ class Pengembalian extends Model
     protected $fillable = [
         'peminjaman_id',
         'tanggal_kembali',
+        'foto_bukti',
+        'tipe_kembali',
+        'catatan',
+        'dikonfirmasi',
+        'tanggal_konfirmasi',
     ];
 
     /**
@@ -31,7 +36,25 @@ class Pengembalian extends Model
      */
     protected $casts = [
         'tanggal_kembali' => 'date:Y-m-d',
+        'dikonfirmasi' => 'boolean',
+        'tanggal_konfirmasi' => 'datetime',
     ];
+
+    /**
+     * URL untuk mengakses foto bukti pengembalian.
+     */
+    public function getFotoBuktiUrlAttribute(): ?string
+    {
+        if (! $this->foto_bukti) {
+            return null;
+        }
+
+        if (str_starts_with($this->foto_bukti, 'http://') || str_starts_with($this->foto_bukti, 'https://') || str_starts_with($this->foto_bukti, 'data:image')) {
+            return $this->foto_bukti;
+        }
+
+        return url('storage/'.$this->foto_bukti);
+    }
 
     /**
      * Peminjaman yang telah dikembalikan.

@@ -7,15 +7,38 @@ use App\Models\Peminjaman;
 use App\Models\Pengembalian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class PeminjamanController extends Controller
 {
     public function index(Request $request)
     {
+        $today = now()->toDateString();
+
+        // Query dasar
         $query = Peminjaman::with(['buku', 'pengembalian']);
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        // Filter status khusus
+        $status = $request->string('status')->toString();
+        if ($status === 'hampir_tenggat') {
+            $query->where('status', 'dipinjam')
+                ->where('tanggal_jatuh_tempo', '<=', now()->addDay()->toDateString())
+                ->where('tanggal_jatuh_tempo', '>=', $today);
+        } elseif ($status === 'bukti_pending') {
+            $query->buktiPendingKonfirmasi();
+        } elseif ($status === 'kembali_mandiri') {
+            $query->where('status', 'dikembalikan')
+                ->whereHas('pengembalian', function ($q) {
+                    $q->whereNotNull('foto_bukti')->orWhere('tipe_kembali', 'mandiri');
+                });
+        } elseif ($status === 'terlambat') {
+            $query->where('status', 'dipinjam')
+                ->where('tanggal_jatuh_tempo', '<', $today);
+        } elseif ($status === 'dikembalikan') {
+            $query->where('status', 'dikembalikan');
+        } elseif ($status === 'dipinjam') {
+            $query->where('status', 'dipinjam');
         }
 
         if ($request->filled('search')) {
@@ -27,9 +50,40 @@ class PeminjamanController extends Controller
             });
         }
 
-        $peminjaman = $query->latest()->paginate(10)->onEachSide(0)->withQueryString();
+        // Default sort: bukti pending di atas
+        if (empty($status)) {
+            $query->orderByRaw('
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM pengembalian p
+                        WHERE p.peminjaman_id = peminjaman.id
+                        AND p.foto_bukti IS NOT NULL
+                        AND p.dikonfirmasi = false
+                    ) THEN 0 ELSE 1 END
+            ')->latest('id');
+        }
 
-        return view('admin.peminjaman.index', compact('peminjaman'));
+        $peminjaman = $query->paginate(10)->onEachSide(0)->withQueryString();
+
+        // Hitung notifikasi & statistik status
+        $stats = [
+            'hampir_tenggat' => Peminjaman::where('status', 'dipinjam')
+                ->where('tanggal_jatuh_tempo', '<=', now()->addDay()->toDateString())
+                ->where('tanggal_jatuh_tempo', '>=', $today)
+                ->count(),
+            'kembali_mandiri' => Peminjaman::where('status', 'dikembalikan')
+                ->whereHas('pengembalian', function ($q) {
+                    $q->whereNotNull('foto_bukti')->orWhere('tipe_kembali', 'mandiri');
+                })->count(),
+            'sudah_dikembalikan' => Peminjaman::where('status', 'dikembalikan')->count(),
+            'terlambat' => Peminjaman::where('status', 'dipinjam')
+                ->where('tanggal_jatuh_tempo', '<', $today)
+                ->count(),
+            'dipinjam_aktif' => Peminjaman::where('status', 'dipinjam')->count(),
+            'bukti_pending' => Peminjaman::buktiPendingKonfirmasi()->count(),
+        ];
+
+        return view('admin.peminjaman.index', compact('peminjaman', 'stats'));
     }
 
     public function return(Peminjaman $peminjaman)
@@ -43,12 +97,62 @@ class PeminjamanController extends Controller
 
             Pengembalian::create([
                 'peminjaman_id' => $peminjaman->id,
-                'tanggal_kembali' => now(),
+                'tanggal_kembali' => now()->toDateString(),
+                'tipe_kembali' => 'petugas',
+                'catatan' => 'Dikonfirmasi kembali oleh admin perpustakaan',
             ]);
 
             $peminjaman->buku->increment('stok_tersedia');
         });
 
         return back()->with('success', 'Buku berhasil dikembalikan.');
+    }
+
+    /**
+     * Sajikan foto bukti pengembalian mandiri siswa.
+     */
+    public function buktiFoto(Pengembalian $pengembalian): Response
+    {
+        $disk = Storage::disk('public');
+        if (! $pengembalian->foto_bukti || ! $disk->exists($pengembalian->foto_bukti)) {
+            return response('Foto bukti tidak ditemukan.', 404);
+        }
+
+        return response($disk->get($pengembalian->foto_bukti), 200, [
+            'Content-Type' => $disk->mimeType($pengembalian->foto_bukti),
+        ]);
+    }
+
+    /**
+     * Konfirmasi pengembalian oleh admin (setelah cek bukti foto).
+     */
+    public function konfirmasiKembali(Peminjaman $peminjaman)
+    {
+        if ($peminjaman->status === 'dikembalikan') {
+            return back()->with('error', 'Buku sudah dikembalikan.');
+        }
+
+        $pengembalian = $peminjaman->pengembalian;
+
+        if (! $pengembalian || ! $pengembalian->foto_bukti) {
+            return back()->with('error', 'Tidak ada bukti foto pengembalian untuk dikonfirmasi.');
+        }
+
+        if ($pengembalian->dikonfirmasi) {
+            return back()->with('error', 'Bukti ini sudah dikonfirmasi sebelumnya.');
+        }
+
+        DB::transaction(function () use ($peminjaman, $pengembalian) {
+            $peminjaman->update(['status' => 'dikembalikan']);
+
+            $pengembalian->update([
+                'dikonfirmasi' => true,
+                'tanggal_konfirmasi' => now(),
+            ]);
+
+            $peminjaman->buku->increment('stok_tersedia');
+        });
+
+        return back()->with('success', 'Pengembalian berhasil dikonfirmasi. Stok buku diperbarui.');
     }
 }

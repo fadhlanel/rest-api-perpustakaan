@@ -23,6 +23,9 @@ class StorePengembalianRequest extends FormRequest
     {
         return [
             'peminjaman_id' => ['required', 'integer', 'exists:peminjaman,id'],
+            'foto_bukti' => ['nullable'],
+            'tipe_kembali' => ['nullable', 'string', 'max:50'],
+            'catatan' => ['nullable', 'string', 'max:500'],
         ];
     }
 
