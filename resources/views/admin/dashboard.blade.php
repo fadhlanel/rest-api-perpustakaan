@@ -194,5 +194,9 @@
       // abaikan: biarkan hasil terakhir tetap tampil
     }
   }
+
+  setInterval(() => {
+    if (!document.hidden) fetchDashboardResults(document.getElementById('dashboardSearch').value);
+  }, 3000);
 </script>
 @endsection
